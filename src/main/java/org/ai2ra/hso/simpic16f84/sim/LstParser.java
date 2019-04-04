@@ -11,26 +11,22 @@ public class LstParser {
 	public static int[] parse(File file) throws IOException {
 		
 		FileReader input = new FileReader(file);
-		BufferedReader inputfile = new BufferedReader(input);
-		ArrayList<String> converter = new ArrayList<String>(); 
-		String testLine = "";
+		BufferedReader inputFile = new BufferedReader(input);
+		ArrayList<String> converter = new ArrayList<>();
+		String testLine;
 		
 		/* loop that checks every line of a given LST file for machine language 
 		 * and saves it into an ArrayList as a String. 
 		*/
-		while (testLine != null) {
-			
-			testLine = inputfile.readLine();
+		while ((testLine = inputFile.readLine()) != null) {
 			
 			if( testLine.startsWith(" ")) {
-							
-			}else {
+				continue;
+			}
 				
-			converter.add(testLine.substring(5, 8));	
-				
-			} 
+			converter.add(testLine.substring(5, 8));
 		}
-		inputfile.close();
+		inputFile.close();
 		
 		/* Array that will output the machine code 
 		 */
