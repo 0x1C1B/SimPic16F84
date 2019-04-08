@@ -24,7 +24,7 @@ public class InstructionDecoder {
     private static final int LITERAL_8BIT_MASK;
     private static final int LITERAL_11BIT_MASK;
 
-    private static final int BIT_BITADDR_OFFSET;
+    private static final int BIT_ADDRESS_OFFSET;
     private static final int DESTINATION_BIT_OFFSET;
 
     static {
@@ -49,7 +49,7 @@ public class InstructionDecoder {
 
         // Offset for shifting/extracting OPC related arguments
 
-        BIT_BITADDR_OFFSET = 7;
+        BIT_ADDRESS_OFFSET = 7;
         DESTINATION_BIT_OFFSET = 7;
     }
 
@@ -124,7 +124,7 @@ public class InstructionDecoder {
 
                 decoded = new int[3];
                 decoded[0] = instruction & BIT_OPC_MASK;
-                decoded[1] = (instruction & BIT_ADDRESS_MASK) >> BIT_BITADDR_OFFSET;
+                decoded[1] = (instruction & BIT_ADDRESS_MASK) >> BIT_ADDRESS_OFFSET;
                 decoded[2] = instruction & FILE_ADDRESS_MASK;
 
                 break;
