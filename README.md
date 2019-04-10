@@ -1,6 +1,13 @@
 # SimPic16F84
 > A simple software simulation of the Pic16F84 µC
 
+## Table of Contents
+
+- [Overview](#overview)
+- [See also](#see-also)
+- [License](#license)
+  - [Forbidden](#forbidden)
+
 ## Overview
 
 The SimPic16F84 project is being developed as part of a practical course in Applied Computer Science at
@@ -8,6 +15,11 @@ The SimPic16F84 project is being developed as part of a practical course in Appl
 [Pic16F84](http://www.microchip.com/wwwproducts/en/PIC16F84) µC is developed.
 This means the simlator will be able to interpret the basic instruction set and to simulate the OPC execution. Due to the fact that
 this is a software simulation and to keep the facts simple, however compliance with CPU cycles and real time execution is waived.
+
+## See also
+
+- [Romux PIC Tutorial](http://romux.com/tutorials/pic-tutorial)
+- [Microchip PIC16F84](https://www.microchip.com/wwwproducts/en/PIC16F84)
 
 ## License
 
