@@ -5,7 +5,10 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import javafx.stage.FileChooser;
@@ -15,26 +18,23 @@ import javax.swing.*;
 
 public class LstParserTest {
 
-	public LstParserTest() {
+	@Test
+	public void testTPicSim1() throws IOException, URISyntaxException {
+
+		Path path = Paths.get(getClass().getResource("/LstFiles/TPicSim1.LST").toURI());
+
+		int[] instructions = parse(path.toFile());
+		assertArrayEquals(instructions, new int[] {0x3011, 0x3930, 0x380D, 0x3C3D, 0x3A20, 0x3E25, 0x2806});
 	}
 
 	@Test
-	public void test() throws IOException {
+	public void testTPicSim12() throws IOException, URISyntaxException {
 
-		JFileChooser chooser = new JFileChooser();
-		int rueckgabe = chooser.showOpenDialog(null);
-		File tester;
-		if(rueckgabe == JFileChooser.APPROVE_OPTION)
-			tester = chooser.getSelectedFile();
-		else return;
+		Path path = Paths.get(getClass().getResource("/LstFiles/TPicSim2.LST").toURI());
 
-		int[] testee = parse(tester);
-
-
-		System.out.println(Arrays.toString(testee));
+		int[] instructions = parse(path.toFile());
+		assertArrayEquals(instructions, new int[] {0x3011, 0x2006, 0x0000, 0x2008, 0x0000, 0x2800, 0x3E25, 0x0008, 0x3477, 0x2809});
 	}
-
-
 
 
 

@@ -6,6 +6,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * @author Freddy1096
+ */
+
 public class LstParser {
 		
 	public static int[] parse(File file) throws IOException {
