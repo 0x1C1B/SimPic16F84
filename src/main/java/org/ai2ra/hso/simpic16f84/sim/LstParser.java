@@ -24,7 +24,7 @@ public class LstParser {
 				continue;
 			}
 				
-			converter.add(testLine.substring(5, 8));
+			converter.add(testLine.substring(5, 9));
 		}
 		inputFile.close();
 		
