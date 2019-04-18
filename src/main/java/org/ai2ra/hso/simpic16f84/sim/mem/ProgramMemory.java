@@ -94,4 +94,44 @@ public class ProgramMemory <T> implements ObservableMemory<T> {
 
         }
     }
+
+
+    public void set(T toSet, int address) {
+
+        lock.writeLock().lock();
+
+        try {
+
+            if (memory.length == 0 || address > memory.length || address < 0) {
+
+                throw new MemoryIndexOutOfBoundsException();
+
+            } else {
+                T beforeSet = memory[address];
+                this.memory[address] = toSet;
+                changes.firePropertyChange(String.format("memory[%d]", address), beforeSet, toSet);
+
+            }
+        }finally {
+
+            lock.writeLock().unlock();
+
+        }
+    }
+
+    public void reset(){
+
+        lock.writeLock().lock();
+
+        try {
+
+            T[] copy = fetch();
+            Arrays.fill(memory, null);
+            changes.firePropertyChange("memory", copy, memory);
+        }finally {
+
+            lock.writeLock().unlock();
+
+        }
+    }
 }
