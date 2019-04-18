@@ -3,6 +3,8 @@ package org.ai2ra.hso.simpic16f84.sim.mem;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Generic limited stack implementation, primarily written for storing return
@@ -17,6 +19,7 @@ public class StackMemory<T> implements ObservableMemory<T> {
     private T[] memory;
     private int pointer;
     private PropertyChangeSupport changes;
+    private ReadWriteLock lock;
 
     @SuppressWarnings("unchecked")
     public StackMemory(int size) {
@@ -24,18 +27,37 @@ public class StackMemory<T> implements ObservableMemory<T> {
         this.memory = (T[]) new Object[size];
         this.pointer = -1;
         this.changes = new PropertyChangeSupport(this);
+        this.lock = new ReentrantReadWriteLock();
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
 
-        changes.addPropertyChangeListener(listener);
+        lock.writeLock().lock();
+
+        try {
+
+            changes.addPropertyChangeListener(listener);
+
+        } finally {
+
+            lock.writeLock().unlock();
+        }
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
 
-        changes.removePropertyChangeListener(listener);
+        lock.writeLock().lock();
+
+        try {
+
+            changes.removePropertyChangeListener(listener);
+
+        } finally {
+
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -50,12 +72,21 @@ public class StackMemory<T> implements ObservableMemory<T> {
     @Deprecated
     public T get(int address) throws MemoryIndexOutOfBoundsException {
 
-        if(0 > address || memory.length <= address) {
+        lock.readLock().lock();
 
-            throw new MemoryIndexOutOfBoundsException("Stack contains only eight levels");
+        try {
+
+            if(0 > address || memory.length <= address) {
+
+                throw new MemoryIndexOutOfBoundsException("Stack contains only eight levels");
+            }
+
+            return memory[address];
+
+        } finally {
+
+            lock.readLock().unlock();
         }
-
-        return memory[address];
     }
 
     /**
@@ -69,7 +100,16 @@ public class StackMemory<T> implements ObservableMemory<T> {
     @Override
     public T[] fetch() {
 
-        return Arrays.copyOf(memory, memory.length);
+        lock.readLock().lock();
+
+        try {
+
+            return Arrays.copyOf(memory, memory.length);
+
+        } finally {
+
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -83,15 +123,24 @@ public class StackMemory<T> implements ObservableMemory<T> {
 
     public void push(T value) throws MemoryIndexOutOfBoundsException {
 
-        if(isFull()) {
+        lock.writeLock().lock();
 
-            throw new MemoryIndexOutOfBoundsException("Stack overflow detected, stack is full");
+        try {
+
+            if(isFull()) {
+
+                throw new MemoryIndexOutOfBoundsException("Stack overflow detected, stack is full");
+            }
+
+            changes.firePropertyChange(String.format("memory[%d]", pointer + 1),
+                    memory[pointer + 1], value);
+
+            memory[++pointer] = value;
+
+        } finally {
+
+            lock.writeLock().unlock();
         }
-
-        changes.firePropertyChange(String.format("memory[%d]", pointer + 1),
-                memory[pointer + 1], value);
-
-        memory[++pointer] = value;
     }
 
     /**
@@ -105,15 +154,24 @@ public class StackMemory<T> implements ObservableMemory<T> {
 
     public T pop() throws MemoryIndexOutOfBoundsException {
 
-        if(isEmpty()) {
+        lock.writeLock().lock();
 
-            throw new MemoryIndexOutOfBoundsException("Stack underflow detected, stack is empty");
+        try {
+
+            if(isEmpty()) {
+
+                throw new MemoryIndexOutOfBoundsException("Stack underflow detected, stack is empty");
+            }
+
+            changes.firePropertyChange(String.format("memory[%d]", pointer),
+                    memory[pointer], 0);
+
+            return memory[pointer--];
+
+        } finally {
+
+            lock.writeLock().unlock();
         }
-
-        changes.firePropertyChange(String.format("memory[%d]", pointer),
-                memory[pointer], 0);
-
-        return memory[pointer--];
     }
 
     /**
@@ -126,12 +184,21 @@ public class StackMemory<T> implements ObservableMemory<T> {
 
     public T top() throws MemoryIndexOutOfBoundsException {
 
-        if(isEmpty()) {
+        lock.readLock().lock();
 
-            throw new MemoryIndexOutOfBoundsException("Stack underflow detected, stack is empty");
+        try {
+
+            if(isEmpty()) {
+
+                throw new MemoryIndexOutOfBoundsException("Stack underflow detected, stack is empty");
+            }
+
+            return memory[pointer];
+
+        } finally {
+
+            lock.readLock().unlock();
         }
-
-        return memory[pointer];
     }
 
     /**
@@ -143,7 +210,16 @@ public class StackMemory<T> implements ObservableMemory<T> {
 
     public boolean isFull() {
 
-        return memory.length - 1 == pointer;
+        lock.readLock().lock();
+
+        try {
+
+            return memory.length - 1 == pointer;
+
+        } finally {
+
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -156,6 +232,15 @@ public class StackMemory<T> implements ObservableMemory<T> {
 
     public boolean isEmpty() {
 
-        return -1 == pointer;
+        lock.readLock().lock();
+
+        try {
+
+            return -1 == pointer;
+
+        } finally {
+
+            lock.readLock().unlock();
+        }
     }
 }

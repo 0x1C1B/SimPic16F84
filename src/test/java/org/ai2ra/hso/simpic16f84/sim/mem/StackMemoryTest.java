@@ -3,9 +3,6 @@ package org.ai2ra.hso.simpic16f84.sim.mem;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import static org.junit.Assert.*;
 
 public class StackMemoryTest {
