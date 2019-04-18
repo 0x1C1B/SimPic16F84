@@ -63,13 +63,10 @@ public class StackMemory<T> implements ObservableMemory<T> {
     /**
      * @param address The memory address
      * @return Returns the data stored at the given address
-     * @deprecated Should be only used by external execution cores, for example if the stack
-     * pointer is implemented in a separate class or if something observes the memory itself
      * @throws MemoryIndexOutOfBoundsException Thrown if address violates the stack bounds
      */
 
     @Override
-    @Deprecated
     public T get(int address) throws MemoryIndexOutOfBoundsException {
 
         lock.readLock().lock();
