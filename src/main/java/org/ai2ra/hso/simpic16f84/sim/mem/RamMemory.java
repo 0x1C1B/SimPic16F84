@@ -19,7 +19,7 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
     public enum Bank {
 
-        BANK_0, BANK_1;
+        BANK_0, BANK_1
     }
 
     /**
@@ -28,6 +28,7 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
     public enum SFR {
 
+        INDF(Bank.BANK_0, 0x00),
         TMR0(Bank.BANK_0, 0x01),
         PCL(Bank.BANK_0, 0x02),
         STATUS(Bank.BANK_0, 0x03),
@@ -208,9 +209,43 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
                 throw new MemoryIndexOutOfBoundsException("Address isn't implemented");
 
-            } else if(0x0C > address && 0x00 <= address) {
+            } else if(0x0C > address) {
 
-                // TODO Implement mapping for SFRs
+                // Fill Special Function Registers and map them if required
+
+                switch(address) {
+
+                    case 0x00: {
+
+                        break; // Indirect Address Register (not physically implemented)
+                    }
+                    case 0x02: // PCL
+                    case 0x03: // STATUS
+                    case 0x04: // FSR
+                    case 0x0A: // PCLATH
+                    case 0x0B: { // INTCON
+
+                        // Handle mapped registers
+
+                        bank0[address] = value;
+                        bank1[address] = value;
+                        break;
+                    }
+                    default: {
+
+                        // Handle single location implemented registers
+
+                        if(bank.equals(Bank.BANK_0)) {
+
+                            bank0[address] = value;
+
+                        } else {
+
+                            bank1[address] = value;
+                        }
+                        break;
+                    }
+                }
 
             } else {
 
