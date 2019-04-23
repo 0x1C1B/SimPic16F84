@@ -4,8 +4,67 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+/**
+ * Hardware specific RAM implementation for the Pic16F84 MCU. Like in the real
+ * hardware implementation this structure works with two banks with size of 128 fields
+ * for each.
+ *
+ * @author 0x1C1B
+ * @param <T> Type of data that is stored, implicit this specifies the field width
+ */
 
 public class RamMemory<T> implements ObservableMemory<T> {
+
+    public enum Bank {
+
+        BANK_0, BANK_1;
+    }
+
+    /**
+     * Definition for the Special Function Registers (SFR) to prevent magic numbers.
+     */
+
+    public enum SFR {
+
+        TMR0(Bank.BANK_0, 0x01),
+        PCL(Bank.BANK_0, 0x02),
+        STATUS(Bank.BANK_0, 0x03),
+        FSR(Bank.BANK_0, 0x04),
+        PORTA(Bank.BANK_0, 0x05),
+        PORTB(Bank.BANK_0, 0x06),
+        EEDATA(Bank.BANK_0, 0x08),
+        EEADR(Bank.BANK_0, 0x09),
+        PCLATH(Bank.BANK_0, 0x0A),
+        INTCON(Bank.BANK_0, 0x0B),
+        OPTION(Bank.BANK_1, 0x01),
+        TRISA(Bank.BANK_1, 0x05),
+        TRISB(Bank.BANK_1, 0x06),
+        EECON1(Bank.BANK_1, 0x08),
+        EECON2(Bank.BANK_1, 0x09);
+
+        private Bank bank;
+        private int address;
+
+        SFR(Bank bank, int address) {
+
+            this.bank = bank;
+            this.address = address;
+        }
+
+        public int getAddress() {
+
+            return address;
+        }
+
+        public Bank getBank() {
+
+            return bank;
+        }
+    }
+
+    public static final int BANK_SIZE;
 
     private T[] bank0;
     private T[] bank1;
@@ -13,11 +72,18 @@ public class RamMemory<T> implements ObservableMemory<T> {
     private PropertyChangeSupport changes;
     private ReadWriteLock lock;
 
-    @SuppressWarnings("unchecked")
-    public RamMemory(int bankSize) {
+    static {
 
-        this.bank0 = (T[]) new Object[bankSize];
-        this.bank1 = (T[]) new Object[bankSize];
+        BANK_SIZE = 128;
+    }
+
+    @SuppressWarnings("unchecked")
+    public RamMemory() {
+
+        this.bank0 = (T[]) new Object[BANK_SIZE];
+        this.bank1 = (T[]) new Object[BANK_SIZE];
+        this.changes = new PropertyChangeSupport(this);
+        this.lock = new ReentrantReadWriteLock();
     }
 
     @Override
@@ -103,5 +169,76 @@ public class RamMemory<T> implements ObservableMemory<T> {
         T[] memory = Arrays.copyOf(bank0, bank0.length + bank1.length);
         System.arraycopy(bank1, 0, memory, bank0.length, bank1.length);
         return memory;
+    }
+
+    public T get(Bank bank, int address) {
+
+        lock.readLock().lock();
+
+        try {
+
+            if(0 > address || BANK_SIZE <= address) {
+
+                throw new MemoryIndexOutOfBoundsException("Address isn't implemented");
+
+            }
+
+            if(bank.equals(Bank.BANK_0)) {
+
+                return bank0[address];
+
+            } else {
+
+                return bank1[address];
+            }
+
+        } finally {
+
+            lock.readLock().unlock();
+        }
+    }
+
+    public void set(Bank bank, int address, T value) {
+
+        lock.writeLock().lock();
+
+        try {
+
+            if(0 > address || BANK_SIZE <= address) {
+
+                throw new MemoryIndexOutOfBoundsException("Address isn't implemented");
+
+            } else if(0x0C > address && 0x00 <= address) {
+
+                // TODO Implement mapping for SFRs
+
+            } else {
+
+                if(bank.equals(Bank.BANK_0)) {
+
+                    bank0[address] = value;
+                    bank1[address] = value; // Mapped to second bank
+
+                } else {
+
+                    bank1[address] = value;
+                    bank0[address] = value; // Mapped to second bank
+                }
+            }
+
+        } finally {
+
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void set(SFR sfr, T value) {
+
+        set(sfr.getBank(), sfr.getAddress(), value);
+    }
+
+    public T get(SFR sfr) {
+
+        return get(sfr.getBank(), sfr.getAddress());
     }
 }
