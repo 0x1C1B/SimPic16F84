@@ -26,7 +26,7 @@ public class BreakpointFactory implements IntFunction<Node> {
 
     @Override public Node apply(int line) {
 
-        Circle breakpoint = new Circle(3);
+        Circle breakpoint = new Circle(4);
         breakpoint.setFill(Color.RED);
         breakpoint.setVisible(false);
 

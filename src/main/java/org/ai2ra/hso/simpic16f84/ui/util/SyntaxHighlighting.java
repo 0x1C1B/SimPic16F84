@@ -32,13 +32,25 @@ public class SyntaxHighlighting {
         }
     }
 
+    public enum Directive {
+
+        EQU, DEVICE, ORG;
+
+        public static String[] names() {
+
+            return Stream.of(Directive.values()).map(Directive::name).map(String::toLowerCase).toArray(String[]::new);
+        }
+    }
+
     private static final String KEYWORD_PATTERN;
+    private static final String DIRECTIVE_PATTERN;
     private static final String COMMENT_PATTERN;
     private static final Pattern PATTERN;
 
     static {
 
         KEYWORD_PATTERN = "\\b(" + String.join("|", Keyword.names()) + ")\\b";
+        DIRECTIVE_PATTERN = "\\b(" + String.join("|", Directive.names()) + ")\\b";
         COMMENT_PATTERN = ";[^\\n]*";
 
         PATTERN = Pattern.compile(
@@ -46,6 +58,7 @@ public class SyntaxHighlighting {
                 String.join("|",
 
                         String.format("(?<KEYWORD>%s)", KEYWORD_PATTERN),
+                        String.format("(?<DIRECTIVE>%s)", DIRECTIVE_PATTERN),
                         String.format("(?<COMMENT>%s)", COMMENT_PATTERN)
                 )
         );
@@ -68,6 +81,7 @@ public class SyntaxHighlighting {
         while(matcher.find()) {
 
             String style = null != matcher.group("KEYWORD") ? "keyword" :
+                    null != matcher.group("DIRECTIVE") ? "directive" :
                     null != matcher.group("COMMENT") ? "comment" : null;
 
             assert null != style; // Should never happens
