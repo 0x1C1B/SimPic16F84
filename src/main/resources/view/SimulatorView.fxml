@@ -60,7 +60,7 @@
                <content>
                   <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
                      <children>
-                        <CodeArea fx:id="lstView" layoutX="107.0" layoutY="138.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <CodeArea fx:id="lstView" editable="false" layoutX="107.0" layoutY="138.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
                </content>

@@ -6,6 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.stage.FileChooser;
+import org.ai2ra.hso.simpic16f84.ui.util.SyntaxHighlighting;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
@@ -13,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ResourceBundle;
 
 public class SimulatorController implements Initializable {
@@ -22,6 +24,12 @@ public class SimulatorController implements Initializable {
     @Override public void initialize(URL location, ResourceBundle resources) {
 
         lstView.setParagraphGraphicFactory(LineNumberFactory.get(lstView));
+
+        // Enable syntax highlighting, updated all 500 ms after typing is stopped/ text is set
+
+        lstView.multiPlainChanges()
+                .successionEnds(Duration.ofMillis(500))
+                .subscribe(change -> lstView.setStyleSpans(0, SyntaxHighlighting.compute(lstView.getText())));
     }
 
     @FXML private void onQuitAction(ActionEvent event) {
