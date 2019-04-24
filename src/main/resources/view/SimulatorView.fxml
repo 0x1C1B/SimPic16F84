@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import org.fxmisc.richtext.CodeArea?>
 
 <VBox prefHeight="600.0" prefWidth="900.0" stylesheets="@../style/SimulatorStyle.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.ai2ra.hso.simpic16f84.ui.controller.SimulatorController">
    <children>
@@ -59,10 +60,7 @@
                <content>
                   <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
                      <children>
-                        <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" style="&#10;" text="LST/Instruction View" textAlignment="CENTER" textFill="#9f9f9f" wrapText="false">
-                           <font>
-                              <Font size="18.0" />
-                           </font></Label>
+                        <CodeArea fx:id="lstView" layoutX="107.0" layoutY="138.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
                </content>
