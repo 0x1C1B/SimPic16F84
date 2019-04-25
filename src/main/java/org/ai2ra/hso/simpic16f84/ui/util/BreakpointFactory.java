@@ -1,47 +1,42 @@
 package org.ai2ra.hso.simpic16f84.ui.util;
 
-import javafx.collections.ObservableSet;
-import javafx.collections.SetChangeListener;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
 
 import java.util.function.IntFunction;
 
 /**
  * This class is responsible for rendering the breakpoints inside of a
- * {@link org.fxmisc.richtext.CodeArea CodeArea}.
+ * {@link LstViewer LstViewer}.
  *
+ * @see LstViewer
  * @author 0x1C1B
  */
 
 public class BreakpointFactory implements IntFunction<Node> {
 
-    private ObservableSet<Integer> breakpoints;
+    private final LstViewer viewer;
 
-    public BreakpointFactory(ObservableSet<Integer> breakpoints) {
+    public BreakpointFactory(LstViewer viewer) {
 
-        this.breakpoints = breakpoints;
+        this.viewer = viewer;
     }
 
     @Override public Node apply(int line) {
 
         Circle breakpoint = new Circle(4);
         breakpoint.setFill(Color.RED);
-        breakpoint.setVisible(false);
 
         // Allow dynamic removing/adding of the breakpoint
 
-        breakpoints.addListener((SetChangeListener<Integer>) change -> {
+        BooleanBinding isVisible = Bindings.createBooleanBinding(() ->
+                viewer.breakpointsProperty().contains(line), viewer.breakpointsProperty());
 
-            int changed = change.wasAdded() ? change.getElementAdded() :
-                    change.getElementRemoved();
-
-            if(changed == line) {
-
-                breakpoint.setVisible(change.wasAdded());
-            }
-        });
+        breakpoint.visibleProperty().bind(isVisible);
 
         return breakpoint;
     }
