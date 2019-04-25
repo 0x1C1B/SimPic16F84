@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import org.fxmisc.richtext.CodeArea?>
+
+
+<fx:root prefHeight="341.0" prefWidth="342.0" stylesheets="@../style/LstViewer.css" type="CodeArea" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" />

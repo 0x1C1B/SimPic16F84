@@ -8,25 +8,27 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="900.0" stylesheets="@../style/SimulatorStyle.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.ai2ra.hso.simpic16f84.ui.controller.SimulatorController">
+<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.ai2ra.hso.simpic16f84.ui.controller.SimulatorController">
    <children>
       <MenuBar VBox.vgrow="NEVER">
          <menus>
             <Menu mnemonicParsing="false" text="File">
                <items>
-                  <MenuItem mnemonicParsing="false" text="Open…" />
+                  <MenuItem mnemonicParsing="false" onAction="#onOpenAction" text="Open…" />
                   <MenuItem mnemonicParsing="false" text="Preferences…" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem mnemonicParsing="false" onAction="#onQuitAction" text="Quit" />
                </items>
             </Menu>
-            <Menu mnemonicParsing="false" text="Edit">
+            <Menu mnemonicParsing="false" text="Run">
                <items>
                   <MenuItem mnemonicParsing="false" text="Start" />
                   <MenuItem mnemonicParsing="false" text="Stop" />
@@ -34,7 +36,10 @@
                   <MenuItem mnemonicParsing="false" text="Continue" />
                   <MenuItem mnemonicParsing="false" text="Next Step" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" text="Reset" />
+                  <MenuItem mnemonicParsing="false" onAction="#onBreakpointAction" text="Breakpoint">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="B" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator></MenuItem>
                </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Help">
@@ -57,12 +62,9 @@
             </AnchorPane>
             <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0">
                <content>
-                  <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
+                  <AnchorPane id="Content" fx:id="contentPane" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
                      <children>
-                        <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" style="&#10;" text="LST/Instruction View" textAlignment="CENTER" textFill="#9f9f9f" wrapText="false">
-                           <font>
-                              <Font size="18.0" />
-                           </font></Label>
+                        <ToolBar layoutX="80.0" layoutY="75.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
                </content>
