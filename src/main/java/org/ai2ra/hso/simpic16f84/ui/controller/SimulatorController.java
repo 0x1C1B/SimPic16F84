@@ -13,8 +13,10 @@ import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
+import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
 import org.ai2ra.hso.simpic16f84.ui.util.BreakpointFactory;
 import org.ai2ra.hso.simpic16f84.ui.util.SyntaxHighlighting;
 import org.fxmisc.richtext.CodeArea;
@@ -35,43 +37,23 @@ import static org.fxmisc.wellbehaved.event.EventPattern.*;
 
 public class SimulatorController implements Initializable {
 
-    @FXML private CodeArea lstView;
-    private ObservableSet<Integer> breakpoints;
+    @FXML private AnchorPane contentPane;
+    private LstViewer lstViewer;
 
     public SimulatorController() {
 
-        breakpoints = FXCollections.observableSet();
+        lstViewer = new LstViewer();
     }
 
     @Override public void initialize(URL location, ResourceBundle resources) {
 
-        IntFunction<Node> numberFactory = LineNumberFactory.get(lstView);
-        IntFunction<Node> breakpointFactory = new BreakpointFactory(breakpoints);
+        // Include custom component via code not markup
 
-        IntFunction<Node> graphicFactory = line -> {
-
-            HBox hbox = new HBox(numberFactory.apply(line),
-                    breakpointFactory.apply(line));
-
-            hbox.setAlignment(Pos.CENTER_LEFT);
-            return hbox;
-        };
-
-        lstView.setParagraphGraphicFactory(graphicFactory);
-
-        // Enable syntax highlighting, updated all 500 ms after typing is stopped/ text is set
-
-        lstView.multiPlainChanges()
-                .successionEnds(Duration.ofMillis(500))
-                .subscribe(change -> lstView.setStyleSpans(0, SyntaxHighlighting.compute(lstView.getText())));
-
-        // Enable key listeners for setting breakpoints
-
-        InputMap<Event> inputMap = InputMap.consume(
-                keyPressed(new KeyCodeCombination(KeyCode.B, KeyCombination.CONTROL_DOWN)),
-                (ignore) -> toggleBreakpoint());
-
-        Nodes.addInputMap(lstView, inputMap);
+        AnchorPane.setTopAnchor(lstViewer, 40.0);
+        AnchorPane.setLeftAnchor(lstViewer, 0.0);
+        AnchorPane.setRightAnchor(lstViewer, 0.0);
+        AnchorPane.setBottomAnchor(lstViewer, 0.0);
+        contentPane.getChildren().add(lstViewer);
     }
 
     @FXML private void onQuitAction(ActionEvent event) {
@@ -114,8 +96,8 @@ public class SimulatorController implements Initializable {
 
             task.setOnSucceeded((evt) -> {
 
-                lstView.replaceText(task.getValue());
-                lstView.moveTo(0, 0);
+                lstViewer.replaceText(task.getValue());
+                lstViewer.moveTo(0, 0);
             });
 
             task.setOnFailed((evt) -> {
@@ -129,30 +111,6 @@ public class SimulatorController implements Initializable {
 
     @FXML private void onBreakpointAction(ActionEvent event) {
 
-        toggleBreakpoint();
-    }
-
-    /**
-     * Toggles a breakpoint for the currently selected line inside of
-     * the LST view. With selection, the current caret position (line)
-     * is meant. If breakpoint is already set, it is removed otherwise
-     * it is set.
-     *
-     * @see #lstView
-     */
-
-    private void toggleBreakpoint() {
-
-        int line = lstView.offsetToPosition(
-                lstView.getCaretPosition(), TwoDimensional.Bias.Forward).getMajor();
-
-        if(breakpoints.contains(line)) {
-
-            breakpoints.remove(line);
-
-        } else {
-
-            breakpoints.add(line);
-        }
+        lstViewer.toggleBreakpoint();
     }
 }
