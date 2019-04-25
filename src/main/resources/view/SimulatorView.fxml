@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.ai2ra.hso.simpic16f84.ui.controller.SimulatorController">
    <children>
@@ -22,7 +26,10 @@
          <menus>
             <Menu mnemonicParsing="false" text="File">
                <items>
-                  <MenuItem mnemonicParsing="false" onAction="#onOpenAction" text="Open…" />
+                  <MenuItem mnemonicParsing="false" onAction="#onOpenAction" text="Open…">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-folder-open" />
+                     </graphic></MenuItem>
                   <MenuItem mnemonicParsing="false" text="Preferences…" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem mnemonicParsing="false" onAction="#onQuitAction" text="Quit" />
@@ -30,16 +37,26 @@
             </Menu>
             <Menu mnemonicParsing="false" text="Run">
                <items>
-                  <MenuItem mnemonicParsing="false" text="Start" />
-                  <MenuItem mnemonicParsing="false" text="Stop" />
+                  <MenuItem mnemonicParsing="false" text="Run">
+                     <graphic>
+                        <FontIcon iconColor="#41a407" iconLiteral="fas-play" />
+                     </graphic></MenuItem>
+                  <MenuItem mnemonicParsing="false" text="Stop">
+                     <graphic>
+                        <FontIcon iconColor="#bf0c0c" iconLiteral="fas-stop" />
+                     </graphic></MenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" text="Continue" />
-                  <MenuItem mnemonicParsing="false" text="Next Step" />
-                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" text="Next Step">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-step-forward" />
+                     </graphic></MenuItem>
                   <MenuItem mnemonicParsing="false" onAction="#onBreakpointAction" text="Breakpoint">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="B" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                     </accelerator></MenuItem>
+                     </accelerator>
+                     <graphic>
+                        <FontIcon iconColor="#bf0c0c" iconLiteral="fas-circle" />
+                     </graphic></MenuItem>
                </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Help">
@@ -64,7 +81,42 @@
                <content>
                   <AnchorPane id="Content" fx:id="contentPane" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
                      <children>
-                        <ToolBar layoutX="80.0" layoutY="75.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <ToolBar layoutX="80.0" layoutY="75.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <items>
+                              <Button mnemonicParsing="false">
+                                 <graphic>
+                                    <FontIcon iconColor="#41a407" iconLiteral="fas-play" />
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Run" />
+                                 </tooltip>
+                              </Button>
+                              <Button mnemonicParsing="false">
+                                 <graphic>
+                                    <FontIcon iconColor="#bf0c0c" iconLiteral="fas-stop" />
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Stop" />
+                                 </tooltip>
+                              </Button>
+                              <Separator orientation="VERTICAL" />
+                              <Button mnemonicParsing="false">
+                                 <graphic>
+                                    <FontIcon iconLiteral="fas-step-forward" />
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Next Step" />
+                                 </tooltip>
+                              </Button>
+                              <Button mnemonicParsing="false">
+                                 <graphic>
+                                    <FontIcon iconColor="#bf0c0c" iconLiteral="fas-circle" />
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Breakpoint" />
+                                 </tooltip>
+                              </Button>
+                           </items></ToolBar>
                      </children>
                   </AnchorPane>
                </content>
