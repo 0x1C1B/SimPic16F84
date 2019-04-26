@@ -5,7 +5,7 @@ package org.ai2ra.hso.simpic16f84.sim;
  * just means that the OPC is separated from it's arguments.
  *
  * @author 0x1C1B
- * @version 0.0.1
+ * @version 0.0.2
  */
 
 public class InstructionDecoder {
@@ -55,16 +55,14 @@ public class InstructionDecoder {
 
     /**
      * Decodes a given instruction by separating OPC and it's arguments. The decoded
-     * version is returned in form of an array. Dependent to the kind of OPC, this array also
-     * contains optional arguments.
+     * version is returned in form of an {@link Instruction Instruction Object}.
+     * Dependent to the kind of OPC, this instruction also contains optional arguments.
      *
      * @param instruction The instruction that should be decoded
-     * @return Returns an array containing the OPC and optional arguments
+     * @return Returns an instruction object containing the OPC and optional arguments
      */
 
-    public static int[] decode(int instruction) {
-
-        int[] decoded; // Contains OPC and related arguments
+    public static Instruction decode(int instruction) {
 
         switch((instruction & OPERATION_TYPE_MASK) >> OPERATION_TYPE_OFFSET) {
 
@@ -74,46 +72,106 @@ public class InstructionDecoder {
 
                 switch(instruction) {
 
-                    case 0b00_0000_0110_0100: // CLRWDT
-                    case 0b00_0000_0000_1001: // RETFIE
-                    case 0b00_0000_0000_1000: // RETURN
-                    case 0b00_0000_0110_0011: { // SLEEP
+                    case 0x0064: { // CLRWDT
 
-                        decoded = new int[1];
-                        decoded[0] = instruction;
+                        return new Instruction(Instruction.OperationCode.CLRWDT);
+                    }
+                    case 0x0009: { // RETFIE
 
-                        break;
+                        return new Instruction(Instruction.OperationCode.RETFIE);
+                    }
+                    case 0x0008: { // RETURN
+
+                        return new Instruction(Instruction.OperationCode.RETURN);
+                    }
+                    case 0x0063: { // SLEEP
+
+                        return new Instruction(Instruction.OperationCode.SLEEP);
                     }
                     default: {
 
                         if((instruction >> 7) == 0b00_0001_0) { // CLRW
 
-                            decoded = new int[1];
-                            decoded[0] = instruction;
+                            return new Instruction(Instruction.OperationCode.CLRW);
 
                         } else if((instruction >> 7) == 0b00 && (instruction & 0b1_1111) == 0b00) { // NOP
 
-                            decoded = new int[1];
-                            decoded[0] = instruction;
+                            return new Instruction(Instruction.OperationCode.NOP);
 
                         } else if((instruction >> 7) == 0b11) { // CLRF
 
-                            decoded = new int[2];
-                            decoded[0] = instruction & 0b11_1111_1000_0000;
-                            decoded[1] = instruction & FILE_ADDRESS_MASK;
+                            int address = instruction & FILE_ADDRESS_MASK;
+                            return new Instruction(Instruction.OperationCode.CLRF, address);
 
                         } else if((instruction >> 7) == 0b01) { // MOVWF
 
-                            decoded = new int[2];
-                            decoded[0] = instruction & 0b11_1111_1000_0000;
-                            decoded[1] = instruction & FILE_ADDRESS_MASK;
+                            int address = instruction & FILE_ADDRESS_MASK;
+                            return new Instruction(Instruction.OperationCode.MOVWF, address);
 
                         } else {
 
-                            decoded = new int[3];
-                            decoded[0] = instruction & BYTE_OPC_MASK;
-                            decoded[1] = (instruction & DESTINATION_BIT_MASK) >> DESTINATION_BIT_OFFSET;
-                            decoded[2] = instruction & FILE_ADDRESS_MASK;
+                            int destination = (instruction & DESTINATION_BIT_MASK) >> DESTINATION_BIT_OFFSET;
+                            int address = instruction & FILE_ADDRESS_MASK;
+
+                            switch(instruction & BYTE_OPC_MASK) {
+
+                                case 0x0700: { // ADDWF
+
+                                    return new Instruction(Instruction.OperationCode.ADDWF, destination, address);
+                                }
+                                case 0x0500: { // ANDWF
+
+                                    return new Instruction(Instruction.OperationCode.ANDWF, destination, address);
+                                }
+                                case 0x0900: { // COMF
+
+                                    return new Instruction(Instruction.OperationCode.COMF, destination, address);
+                                }
+                                case 0x0300: { // DECF
+
+                                    return new Instruction(Instruction.OperationCode.DECF, destination, address);
+                                }
+                                case 0x0B00: { // DECFSZ
+
+                                    return new Instruction(Instruction.OperationCode.DECFSZ, destination, address);
+                                }
+                                case 0x0A00: { // INCF
+
+                                    return new Instruction(Instruction.OperationCode.INCF, destination, address);
+                                }
+                                case 0x0F00: { // INCFSZ
+
+                                    return new Instruction(Instruction.OperationCode.INCFSZ, destination, address);
+                                }
+                                case 0x0400: { // IORWF
+
+                                    return new Instruction(Instruction.OperationCode.IORWF, destination, address);
+                                }
+                                case 0x0800: { // MOVF
+
+                                    return new Instruction(Instruction.OperationCode.MOVF, destination, address);
+                                }
+                                case 0x0D00: { // RLF
+
+                                    return new Instruction(Instruction.OperationCode.RLF, destination, address);
+                                }
+                                case 0x0C00: { // RRF
+
+                                    return new Instruction(Instruction.OperationCode.RRF, destination, address);
+                                }
+                                case 0x0200: { // SUBWF
+
+                                    return new Instruction(Instruction.OperationCode.SUBWF, destination, address);
+                                }
+                                case 0x0E00: { // SWAPF
+
+                                    return new Instruction(Instruction.OperationCode.SWAPF, destination, address);
+                                }
+                                case 0x0600: { // XORWF
+
+                                    return new Instruction(Instruction.OperationCode.XORWF, destination, address);
+                                }
+                            }
                         }
                     }
                 }
@@ -122,35 +180,97 @@ public class InstructionDecoder {
             }
             case 0b01: { // Bit-Oriented Operations
 
-                decoded = new int[3];
-                decoded[0] = instruction & BIT_OPC_MASK;
-                decoded[1] = (instruction & BIT_ADDRESS_MASK) >> BIT_ADDRESS_OFFSET;
-                decoded[2] = instruction & FILE_ADDRESS_MASK;
+                int bitAddress = (instruction & BIT_ADDRESS_MASK) >> BIT_ADDRESS_OFFSET;
+                int fileAddress = instruction & FILE_ADDRESS_MASK;
+
+                switch (instruction & BIT_OPC_MASK) {
+
+                    case 0x1000: { // BCF
+
+                        return new Instruction(Instruction.OperationCode.BCF, bitAddress, fileAddress);
+                    }
+                    case 0x1400: { // BSF
+
+                        return new Instruction(Instruction.OperationCode.BSF, bitAddress, fileAddress);
+                    }
+                    case 0x1800: { // BTFSC
+
+                        return new Instruction(Instruction.OperationCode.BTFSC, bitAddress, fileAddress);
+                    }
+                    case 0x1C00: { // BTFSS
+
+                        return new Instruction(Instruction.OperationCode.BTFSS, bitAddress, fileAddress);
+                    }
+                }
 
                 break;
             }
             case 0b10: { // Jump Operations
 
-                decoded = new int[2];
-                decoded[0] = instruction & JUMP_OPC_MASK;
-                decoded[1] = instruction & LITERAL_11BIT_MASK;
+                int address = instruction & LITERAL_11BIT_MASK;
+
+                switch (instruction & JUMP_OPC_MASK) {
+
+                    case 0x2000: { // CALL
+
+                        return new Instruction(Instruction.OperationCode.CALL, address);
+                    }
+                    case 0x2800: { // GOTO
+
+                        return new Instruction(Instruction.OperationCode.GOTO, address);
+                    }
+                }
 
                 break;
             }
             case 0b11: { // Literal Operations
 
-                decoded = new int[2];
-                decoded[0] = instruction & LITERAL_OPC_MASK;
-                decoded[1] = instruction & LITERAL_8BIT_MASK;
+                int literal = instruction & LITERAL_8BIT_MASK;
+
+                switch(instruction & LITERAL_OPC_MASK) {
+
+                    case 0x3F00: // ADDLW
+                    case 0x3E00: {
+
+                        return new Instruction(Instruction.OperationCode.ADDLW, literal);
+                    }
+                    case 0x3900: { // ANDLW
+
+                        return new Instruction(Instruction.OperationCode.ANDLW, literal);
+                    }
+                    case 0x3800: { // IORLW
+
+                        return new Instruction(Instruction.OperationCode.IORLW, literal);
+                    }
+                    case 0x3300: // MOVLW
+                    case 0x3200:
+                    case 0x3100:
+                    case 0x3000: {
+
+                        return new Instruction(Instruction.OperationCode.MOVLW, literal);
+                    }
+                    case 0x3700: // RETLW
+                    case 0x3600:
+                    case 0x3500:
+                    case 0x3400: {
+
+                        return new Instruction(Instruction.OperationCode.RETLW, literal);
+                    }
+                    case 0x3D00: // SUBLW
+                    case 0x3C00: {
+
+                        return new Instruction(Instruction.OperationCode.SUBLW, literal);
+                    }
+                    case 0x3A00: { // XORLW
+
+                        return new Instruction(Instruction.OperationCode.XORLW, literal);
+                    }
+                }
 
                 break;
             }
-            default: {
-
-                throw new IllegalStateException("Illegal operation type determined");
-            }
         }
 
-        return decoded;
+        throw new IllegalStateException("Illegal operation type determined");
     }
 }
