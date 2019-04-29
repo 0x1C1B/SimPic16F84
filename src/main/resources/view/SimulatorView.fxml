@@ -66,67 +66,65 @@
             </Menu>
          </menus>
       </MenuBar>
-      <SplitPane dividerPositions="0.2505567928730512, 0.7505567928730512" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+      <SplitPane dividerPositions="0.2505567928730512" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
          <items>
+            <AnchorPane />
             <AnchorPane>
                <children>
-                  <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" prefWidth="-1.0" style="&#10;" text="Memory" textAlignment="CENTER" textFill="#9f9f9f" wrapText="false">
-                     <font>
-                        <Font size="18.0" />
-                     </font>
-                  </Label>
-               </children>
-            </AnchorPane>
-            <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0">
-               <content>
-                  <AnchorPane id="Content" fx:id="contentPane" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
-                     <children>
-                        <ToolBar layoutX="80.0" layoutY="75.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <items>
-                              <Button mnemonicParsing="false">
-                                 <graphic>
-                                    <FontIcon iconColor="#41a407" iconLiteral="fas-play" />
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip text="Run" />
-                                 </tooltip>
-                              </Button>
-                              <Button mnemonicParsing="false">
-                                 <graphic>
-                                    <FontIcon iconColor="#bf0c0c" iconLiteral="fas-stop" />
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip text="Stop" />
-                                 </tooltip>
-                              </Button>
-                              <Separator orientation="VERTICAL" />
-                              <Button mnemonicParsing="false">
-                                 <graphic>
-                                    <FontIcon iconLiteral="fas-step-forward" />
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip text="Next Step" />
-                                 </tooltip>
-                              </Button>
-                              <Button mnemonicParsing="false">
-                                 <graphic>
-                                    <FontIcon iconColor="#bf0c0c" iconLiteral="fas-circle" />
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip text="Breakpoint" />
-                                 </tooltip>
-                              </Button>
-                           </items></ToolBar>
-                     </children>
-                  </AnchorPane>
-               </content>
-            </ScrollPane>
-            <AnchorPane>
-               <children>
-                  <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" style="&#10;" text="I/O Ports" textAlignment="CENTER" textFill="#9f9f9f" wrapText="false">
-                     <font>
-                        <Font size="18.0" />
-                     </font></Label>
+                  <SplitPane dividerPositions="0.65" layoutY="97.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <items>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                           <children>
+                              <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <content>
+                                    <AnchorPane id="Content" fx:id="contentPane" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
+                                       <children>
+                                          <ToolBar layoutX="80.0" layoutY="75.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <items>
+                                                <Button mnemonicParsing="false">
+                                                   <graphic>
+                                                      <FontIcon iconColor="#41a407" iconLiteral="fas-play" />
+                                                   </graphic>
+                                                   <tooltip>
+                                                      <Tooltip text="Run" />
+                                                   </tooltip>
+                                                </Button>
+                                                <Button mnemonicParsing="false">
+                                                   <graphic>
+                                                      <FontIcon iconColor="#bf0c0c" iconLiteral="fas-stop" />
+                                                   </graphic>
+                                                   <tooltip>
+                                                      <Tooltip text="Stop" />
+                                                   </tooltip>
+                                                </Button>
+                                                <Separator orientation="VERTICAL" />
+                                                <Button mnemonicParsing="false">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fas-step-forward" />
+                                                   </graphic>
+                                                   <tooltip>
+                                                      <Tooltip text="Next Step" />
+                                                   </tooltip>
+                                                </Button>
+                                                <Button mnemonicParsing="false">
+                                                   <graphic>
+                                                      <FontIcon iconColor="#bf0c0c" iconLiteral="fas-circle" />
+                                                   </graphic>
+                                                   <tooltip>
+                                                      <Tooltip text="Breakpoint" />
+                                                   </tooltip>
+                                                </Button>
+                                             </items>
+                                          </ToolBar>
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </ScrollPane>
+                           </children>
+                        </AnchorPane>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+                    </items>
+                  </SplitPane>
                </children>
             </AnchorPane>
          </items>
