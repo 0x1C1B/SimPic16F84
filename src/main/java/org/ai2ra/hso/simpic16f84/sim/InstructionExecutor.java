@@ -66,6 +66,11 @@ public class InstructionExecutor {
                 executeANDLW(instruction);
                 break;
             }
+		  		case MOVLW: {
+
+		  			 executeMOVLW(instruction);
+		  			 break;
+				}
             case NOP:
             default: {
 
@@ -254,4 +259,13 @@ public class InstructionExecutor {
         }
 
     }
+
+    private void executeMOVLW(Instruction instruction) {
+
+    	 //The literal (here instruction arguments) is loaded into the workingRegister.
+		 // In this case the instruction Arguments are an Array with one Element.
+
+    	 workingRegister = instruction.getArguments()[0];
+
+	 }
 }
