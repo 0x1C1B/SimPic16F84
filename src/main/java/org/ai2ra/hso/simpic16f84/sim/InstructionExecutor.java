@@ -71,6 +71,17 @@ public class InstructionExecutor {
 		  			 executeMOVLW(instruction);
 		  			 break;
 				}
+				case ANDWF: {
+
+				    executeANDWF(instruction);
+				    break;
+            }
+            case IORLW: {
+
+                executeIORLW(instruction);
+                break;
+            }
+
             case NOP:
             default: {
 
@@ -263,9 +274,32 @@ public class InstructionExecutor {
     private void executeMOVLW(Instruction instruction) {
 
     	 //The literal (here instruction arguments) is loaded into the workingRegister.
-		 // In this case the instruction Arguments are an Array with one Element.
+		 //In this case the instruction Arguments are an Array with one Element.
 
     	 workingRegister = instruction.getArguments()[0];
 
 	 }
+
+	 private void executeANDWF(Instruction instruction) {
+
+    }
+
+    private void executeIORLW(Instruction instruction){
+
+        //The content of the workingRegister is OR'ed with the literal (here instructionArguments).
+        //The Instruction Arguments are an Array with one Element.
+
+        workingRegister = instruction.getArguments()[0] | workingRegister;
+
+        //checking for a zero result after the OR operation.
+
+        if (0 == workingRegister) {
+
+            setZeroFlag();
+
+        }   else {
+
+            clearZeroFlag();
+        }
+    }
 }
