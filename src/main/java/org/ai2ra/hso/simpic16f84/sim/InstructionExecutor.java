@@ -99,6 +99,12 @@ public class InstructionExecutor {
                 break;
             }
 
+		  		case SUBWF: {
+
+		  			 executeSUBWF(instruction);
+		  			 break;
+				}
+
             case NOP:
             default: {
 
@@ -472,7 +478,7 @@ public class InstructionExecutor {
 
             }else {
 
-                ram.set(bank, instruction.getArguments()[1], value & workingRegister);
+                ram.set(bank, address, value & workingRegister);
 
             }
 
@@ -589,7 +595,7 @@ public class InstructionExecutor {
 
             }else {
 
-                ram.set(bank, instruction.getArguments()[1], value ^ workingRegister);
+                ram.set(bank, address, value ^ workingRegister);
 
             }
 
@@ -630,4 +636,119 @@ public class InstructionExecutor {
             }
         }
     }
+
+	 /**
+	  * Subtract (2’s complement method) W register from register 'f'.
+	  * If 'd' is 0 the result is stored in the W register.
+	  * If 'd' is 1 the result is stored back in register 'f'.
+	  *
+	  * @param instruction Instruction consisting out of OPC and arguments.
+	  */
+    private void executeSUBWF (Instruction instruction){
+
+		  if(0 == instruction.getArguments()[1]){ //Indirect addressing.
+
+				// Get the lower 7 Bits of FSR if indirect addressing
+				int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+				// Fetch value from given file register
+				int value = ram.get(bank, address);
+
+
+				// Check if digit carry is occurring
+
+				if((value & 0x000F) + ((~workingRegister+1) & 0x000F) > 0xF) {
+
+					 setDigitCarryFlag();
+
+				} else {
+
+					 clearDigitCarryFlag();
+				}
+
+				// Check for an arithmetic number overflow
+				if(255 > (instruction.getArguments()[0] & 0x00FF) + ((~workingRegister + 1) & 0x00FF)) {
+
+					 setCarryFlag();
+
+				} else {
+
+					 clearCarryFlag();
+				}
+
+				// Check for zero result.
+				if (0 == workingRegister-value){
+
+					 setZeroFlag();
+				}else {
+
+					 clearZeroFlag();
+				}
+
+				//Checking for destination.
+				if(instruction.getArguments()[0] == 0){
+
+					 workingRegister = workingRegister - value;
+
+				}else {
+
+					 ram.set(bank, address, workingRegister - value);
+
+				}
+
+		  }else { //Direct addressing.
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+				// Fetch value from given file register
+				int value = ram.get(bank, instruction.getArguments()[1]);
+
+				if((value & 0x000F) + ((~workingRegister+1) & 0x000F) > 0xF) {
+
+					 setDigitCarryFlag();
+
+				} else {
+
+					 clearDigitCarryFlag();
+				}
+
+				// Check for an arithmetic number overflow
+				if(255 > (instruction.getArguments()[0] & 0x00FF) + ((~workingRegister + 1) & 0x00FF)) {
+
+					 setCarryFlag();
+
+				} else {
+
+					 clearCarryFlag();
+				}
+
+				// Check for zero result.
+				if (0 == workingRegister-value){
+
+					 setZeroFlag();
+				}else {
+
+					 clearZeroFlag();
+				}
+
+				//Checking for destination.
+				if(instruction.getArguments()[0] == 0){
+
+					 workingRegister = workingRegister - value;
+
+				}else {
+
+					 ram.set(bank, instruction.getArguments()[1], workingRegister - value);
+
+				}
+
+		  }
+
+
+
+	 }
 }
