@@ -133,11 +133,25 @@ public class InstructionExecutor {
     /**
      * Returns the RP0 bit of the STATUS register. This bit is used for <b>direct</b>
      * addressing, if bit is set (RP0 = 1) second bank is selected, otherwise the first.
+     *
+     * @return Returns 0 if first bank is selected, otherwise a none 0 value
      */
 
     private int getRP0Bit() {
 
-        return (ram.get(RamMemory.SFR.STATUS) & 0b00100000) >> 5;
+        return (ram.get(RamMemory.SFR.STATUS) & 0b0010_0000) >> 5;
+    }
+
+    /**
+     * Returns the IRP bit of the STATUS register. This bit is used for
+     * <b>indirect</b> addressing.
+     *
+     * @return Returns 0 if first bank is selected, otherwise a none 0 value
+     */
+
+    private int getIRPBit() {
+
+        return (ram.get(RamMemory.SFR.STATUS) & 0b1000_0000) >> 7;
     }
 
     // Instruction execution implementation
@@ -254,53 +268,110 @@ public class InstructionExecutor {
 
     private void executeADDWF(Instruction instruction) {
 
-        // Fetch value from given file register using direct addressing
+        if(0 == instruction.getArguments()[1]) { // Indirect addressing
 
-        RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
-        int value = ram.get(bank, instruction.getArguments()[1]);
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
 
-        // Check if digit carry is occurring
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
-        if((value & 0x000F) + (workingRegister & 0x00F) > 0xF) {
+            int value = ram.get(bank, address); // Fetch value from given file register
 
-            setDigitCarryFlag();
+            // Check if digit carry is occurring
 
-        } else {
+            if((value & 0x000F) + (workingRegister & 0x00F) > 0xF) {
 
-            clearDigitCarryFlag();
-        }
+                setDigitCarryFlag();
 
-        // Check for an arithmetic number overflow
+            } else {
 
-        if(255 > value + workingRegister) {
+                clearDigitCarryFlag();
+            }
 
-            setCarryFlag();
+            // Check for an arithmetic number overflow
 
-        } else {
+            if(255 > value + workingRegister) {
 
-            clearCarryFlag();
-        }
+                setCarryFlag();
 
-        // Check for zero result
+            } else {
 
-        if(0 == value + workingRegister) {
+                clearCarryFlag();
+            }
 
-            setZeroFlag();
+            // Check for zero result
 
-        } else {
+            if(0 == value + workingRegister) {
 
-            clearZeroFlag();
-        }
+                setZeroFlag();
 
-        // Check for selected destination
+            } else {
 
-        if(0 == instruction.getArguments()[0]) {
+                clearZeroFlag();
+            }
 
-            workingRegister = value + workingRegister;
+            // Check for selected destination
 
-        } else {
+            if(0 == instruction.getArguments()[0]) {
 
-            ram.set(bank, instruction.getArguments()[1], value + workingRegister);
+                workingRegister = value + workingRegister;
+
+            } else {
+
+                ram.set(bank, address, value + workingRegister);
+            }
+
+        } else { // Direct addressing
+
+            // Fetch value from given file register using direct addressing
+
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+            int value = ram.get(bank, instruction.getArguments()[1]);
+
+            // Check if digit carry is occurring
+
+            if((value & 0x000F) + (workingRegister & 0x00F) > 0xF) {
+
+                setDigitCarryFlag();
+
+            } else {
+
+                clearDigitCarryFlag();
+            }
+
+            // Check for an arithmetic number overflow
+
+            if(255 > value + workingRegister) {
+
+                setCarryFlag();
+
+            } else {
+
+                clearCarryFlag();
+            }
+
+            // Check for zero result
+
+            if(0 == value + workingRegister) {
+
+                setZeroFlag();
+
+            } else {
+
+                clearZeroFlag();
+            }
+
+            // Check for selected destination
+
+            if(0 == instruction.getArguments()[0]) {
+
+                workingRegister = value + workingRegister;
+
+            } else {
+
+                ram.set(bank, instruction.getArguments()[1], value + workingRegister);
+            }
         }
     }
 }
