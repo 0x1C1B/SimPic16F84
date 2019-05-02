@@ -66,6 +66,16 @@ public class InstructionExecutor {
                 executeCLRW();
                 break;
             }
+            case ANDLW: {
+
+                executeANDLW(instruction);
+                break;
+            }
+		  		case MOVLW: {
+
+		  			 executeMOVLW(instruction);
+		  			 break;
+				}
             case NOP:
             default: {
 
@@ -258,6 +268,35 @@ public class InstructionExecutor {
             clearZeroFlag();
         }
     }
+
+    private void executeANDLW(Instruction instruction){
+
+        //The content of the working Register is AND'ed with the literal. In this case with the instruction arguments.
+        //In this case the instruction Arguments are an Array with one Element.
+
+        workingRegister = (instruction.getArguments()[0] & workingRegister);
+
+        //Checking for a Zero result after the AND operation.
+
+        if (0 == workingRegister) {
+
+            setZeroFlag();
+
+        }   else {
+
+            clearZeroFlag();
+        }
+
+    }
+
+    private void executeMOVLW(Instruction instruction) {
+
+    	 //The literal (here instruction arguments) is loaded into the workingRegister.
+		 // In this case the instruction Arguments are an Array with one Element.
+
+    	 workingRegister = instruction.getArguments()[0];
+
+	 }
 
     /**
      * Adds the content of working register with a value stored inside the given
