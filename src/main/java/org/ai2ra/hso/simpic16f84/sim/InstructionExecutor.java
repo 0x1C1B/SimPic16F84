@@ -87,6 +87,12 @@ public class InstructionExecutor {
                 break;
             }
 
+            case XORLW: {
+
+                executeXORLW(instruction);
+                break;
+            }
+
             case NOP:
             default: {
 
@@ -523,6 +529,29 @@ public class InstructionExecutor {
         }   else {
 
             clearZeroFlag();
+        }
+    }
+
+    /**
+     * The contents of the W register are XOR’ed with the eight bit literal 'k'.
+     * The result is placed in the W register.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments.
+     */
+    private void executeXORLW(Instruction instruction){
+
+        workingRegister = instruction.getArguments()[0] ^ workingRegister;
+
+        //checking for a zero result after the OR operation.
+
+        if(0 == workingRegister) {
+
+            setZeroFlag();
+
+        }else  {
+
+            clearZeroFlag();
+
         }
     }
 }
