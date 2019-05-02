@@ -51,6 +51,11 @@ public class InstructionExecutor {
                 executeADDLW(instruction);
                 break;
             }
+            case ADDWF: {
+
+                executeADDWF(instruction);
+                break;
+            }
             case SUBLW: {
 
                 executeSUBLW(instruction);
@@ -123,6 +128,16 @@ public class InstructionExecutor {
     private void clearZeroFlag() {
 
         ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111011));
+    }
+
+    /**
+     * Returns the RP0 bit of the STATUS register. This bit is used for <b>direct</b>
+     * addressing, if bit is set (RP0 = 1) second bank is selected, otherwise the first.
+     */
+
+    private int getRP0Bit() {
+
+        return (ram.get(RamMemory.SFR.STATUS) & 0b00100000) >> 5;
     }
 
     // Instruction execution implementation
@@ -227,6 +242,65 @@ public class InstructionExecutor {
         } else {
 
             clearZeroFlag();
+        }
+    }
+
+    /**
+     * Adds the content of working register with a value stored inside the given
+     * file register address.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    private void executeADDWF(Instruction instruction) {
+
+        // Fetch value from given file register using direct addressing
+
+        RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+        int value = ram.get(bank, instruction.getArguments()[1]);
+
+        // Check if digit carry is occurring
+
+        if((value & 0x000F) + (workingRegister & 0x00F) > 0xF) {
+
+            setDigitCarryFlag();
+
+        } else {
+
+            clearDigitCarryFlag();
+        }
+
+        // Check for an arithmetic number overflow
+
+        if(255 > value + workingRegister) {
+
+            setCarryFlag();
+
+        } else {
+
+            clearCarryFlag();
+        }
+
+        // Check for zero result
+
+        if(0 == value + workingRegister) {
+
+            setZeroFlag();
+
+        } else {
+
+            clearZeroFlag();
+        }
+
+        // Check for selected destination
+
+        if(0 == instruction.getArguments()[0]) {
+
+            workingRegister = value + workingRegister;
+
+        } else {
+
+            ram.set(bank, instruction.getArguments()[1], value + workingRegister);
         }
     }
 }
