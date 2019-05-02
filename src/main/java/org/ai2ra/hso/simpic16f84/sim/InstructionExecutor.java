@@ -280,10 +280,14 @@ public class InstructionExecutor {
         }
     }
 
+    /**
+     * The content of the working Register is AND'ed with the literal. In this case with the instruction arguments.
+     * In this case the instruction Arguments are an Array with one Element.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
     private void executeANDLW(Instruction instruction){
 
-        //The content of the working Register is AND'ed with the literal. In this case with the instruction arguments.
-        //In this case the instruction Arguments are an Array with one Element.
 
         workingRegister = (instruction.getArguments()[0] & workingRegister);
 
@@ -300,10 +304,13 @@ public class InstructionExecutor {
 
     }
 
+    /**
+     * The literal (here instruction arguments) is loaded into the workingRegister.
+     * In this case the instruction Arguments are an Array with one Element.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
     private void executeMOVLW(Instruction instruction) {
-
-    	 //The literal (here instruction arguments) is loaded into the workingRegister.
-		 //In this case the instruction Arguments are an Array with one Element.
 
     	 workingRegister = instruction.getArguments()[0];
 
@@ -425,14 +432,85 @@ public class InstructionExecutor {
         }
     }
 
+    /**
+     * AND the W register with register 'f'.
+     * If 'd' is 0 the result is stored in the W register.
+     * If 'd' is 1 the result is stored back in register 'f'.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments.
+    */
 	 private void executeANDWF(Instruction instruction) {
 
+        if(0 == instruction.getArguments()[1]){ //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetch value from given file register
+            int value = ram.get(bank, address);
+
+
+            //Checking for destination.
+            if(instruction.getArguments()[0] == 0){
+
+                 workingRegister = value & workingRegister;
+
+            }else {
+
+                ram.set(bank, instruction.getArguments()[1], value & workingRegister);
+
+            }
+
+            //Checking for zero result
+            if ((value & workingRegister) == 0){
+
+                setZeroFlag();
+            }else  {
+
+                clearZeroFlag();
+            }
+        }else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetch value from given file register
+            int value = ram.get(bank, instruction.getArguments()[1]);
+
+            //Checking for destination.
+            if(instruction.getArguments()[0] == 0){
+
+                workingRegister = value & workingRegister;
+
+            }else {
+
+                ram.set(bank, instruction.getArguments()[1], value & workingRegister);
+
+            }
+
+            //Checking for zero result
+            if ((value & workingRegister) == 0){
+
+                setZeroFlag();
+            }else  {
+
+                clearZeroFlag();
+            }
+
+        }
     }
 
+    /**
+     * The content of the workingRegister is OR'ed with the literal (here instructionArguments).
+     * The Instruction Arguments are an Array with one Element.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments.
+     */
     private void executeIORLW(Instruction instruction){
 
-        //The content of the workingRegister is OR'ed with the literal (here instructionArguments).
-        //The Instruction Arguments are an Array with one Element.
 
         workingRegister = instruction.getArguments()[0] | workingRegister;
 
