@@ -93,6 +93,12 @@ public class InstructionExecutor {
                 break;
             }
 
+            case XORWF: {
+
+                executeXORWF(instruction);
+                break;
+            }
+
             case NOP:
             default: {
 
@@ -552,6 +558,76 @@ public class InstructionExecutor {
 
             clearZeroFlag();
 
+        }
+    }
+
+    /**
+     * Exclusive OR the contents of the W register with register 'f'.
+     * If 'd' is 0 the result is stored in the W register.
+     * If 'd' is 1 the result is stored back in register 'f'.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments.
+     */
+    private void executeXORWF (Instruction instruction){
+
+        if(0 == instruction.getArguments()[1]){ //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetch value from given file register
+            int value = ram.get(bank, address);
+
+
+            //Checking for destination.
+            if(instruction.getArguments()[0] == 0){
+
+                workingRegister = value ^ workingRegister;
+
+            }else {
+
+                ram.set(bank, instruction.getArguments()[1], value ^ workingRegister);
+
+            }
+
+            //Checking for zero result
+            if ((value ^ workingRegister) == 0){
+
+                setZeroFlag();
+            }else  {
+
+                clearZeroFlag();
+            }
+        }else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetch value from given file register
+            int value = ram.get(bank, instruction.getArguments()[1]);
+
+            //Checking for destination.
+            if(instruction.getArguments()[0] == 0){
+
+                workingRegister = value ^ workingRegister;
+
+            }else {
+
+                ram.set(bank, instruction.getArguments()[1], value ^ workingRegister);
+
+            }
+
+            //Checking for zero result
+            if ((value ^ workingRegister) == 0){
+
+                setZeroFlag();
+            }else  {
+
+                clearZeroFlag();
+            }
         }
     }
 }
