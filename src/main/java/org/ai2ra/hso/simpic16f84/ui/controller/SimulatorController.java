@@ -1,39 +1,19 @@
 package org.ai2ra.hso.simpic16f84.ui.controller;
 
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
-import org.ai2ra.hso.simpic16f84.ui.util.BreakpointFactory;
-import org.ai2ra.hso.simpic16f84.ui.util.SyntaxHighlighting;
-import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.LineNumberFactory;
-import org.fxmisc.richtext.model.TwoDimensional;
-import org.fxmisc.wellbehaved.event.InputMap;
-import org.fxmisc.wellbehaved.event.Nodes;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import java.time.Duration;
 import java.util.ResourceBundle;
-import java.util.function.IntFunction;
-
-import static org.fxmisc.wellbehaved.event.EventPattern.*;
 
 public class SimulatorController implements Initializable {
 
