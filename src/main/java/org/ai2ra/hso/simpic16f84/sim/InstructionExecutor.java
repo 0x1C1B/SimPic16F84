@@ -44,7 +44,7 @@ public class InstructionExecutor {
 
         Instruction instruction = InstructionDecoder.decode(null == instructionRegister ? 0 : instructionRegister);
 
-        switch(instruction.getOpc()) {
+        switch (instruction.getOpc()) {
 
             case ADDLW: {
 
@@ -71,40 +71,36 @@ public class InstructionExecutor {
                 executeANDLW(instruction);
                 break;
             }
-		  		case MOVLW: {
+            case MOVLW: {
 
-		  			 executeMOVLW(instruction);
-		  			 break;
-				}
-				case ANDWF: {
+                executeMOVLW(instruction);
+                break;
+            }
+            case ANDWF: {
 
-				    executeANDWF(instruction);
-				    break;
+                executeANDWF(instruction);
+                break;
             }
             case IORLW: {
 
                 executeIORLW(instruction);
                 break;
             }
-
             case XORLW: {
 
                 executeXORLW(instruction);
                 break;
             }
-
             case XORWF: {
 
                 executeXORWF(instruction);
                 break;
             }
+            case SUBWF: {
 
-		  		case SUBWF: {
-
-		  			 executeSUBWF(instruction);
-		  			 break;
-				}
-
+                executeSUBWF(instruction);
+                break;
+            }
             case NOP:
             default: {
 
@@ -217,7 +213,7 @@ public class InstructionExecutor {
 
         // Check if digit carry is occurring
 
-        if((instruction.getArguments()[0] & 0x000F) + (workingRegister & 0x00F) > 0xF) {
+        if ((instruction.getArguments()[0] & 0x000F) + (workingRegister & 0x00F) > 0xF) {
 
             setDigitCarryFlag();
 
@@ -228,7 +224,7 @@ public class InstructionExecutor {
 
         // Check for an arithmetic number overflow
 
-        if(255 > instruction.getArguments()[0] + workingRegister) {
+        if (255 > instruction.getArguments()[0] + workingRegister) {
 
             setCarryFlag();
 
@@ -241,7 +237,7 @@ public class InstructionExecutor {
 
         // Check for zero result
 
-        if(0 == workingRegister) {
+        if (0 == workingRegister) {
 
             setZeroFlag();
 
@@ -264,7 +260,7 @@ public class InstructionExecutor {
 
         // Check if digit carry is occurring
 
-        if((instruction.getArguments()[0] & 0x000F) + ((~workingRegister + 1) & 0x000F) > 0xF) {
+        if ((instruction.getArguments()[0] & 0x000F) + ((~workingRegister + 1) & 0x000F) > 0xF) {
 
             setDigitCarryFlag();
 
@@ -275,7 +271,7 @@ public class InstructionExecutor {
 
         // Check for an arithmetic number overflow
 
-        if(255 > (instruction.getArguments()[0] & 0x00FF) + ((~workingRegister + 1) & 0x00FF)) {
+        if (255 > (instruction.getArguments()[0] & 0x00FF) + ((~workingRegister + 1) & 0x00FF)) {
 
             setCarryFlag();
 
@@ -288,7 +284,7 @@ public class InstructionExecutor {
 
         // Check for zero result
 
-        if(0 == workingRegister) {
+        if (0 == workingRegister) {
 
             setZeroFlag();
 
@@ -304,7 +300,8 @@ public class InstructionExecutor {
      *
      * @param instruction Instruction consisting out of OPC and arguments
      */
-    private void executeANDLW(Instruction instruction){
+
+    private void executeANDLW(Instruction instruction) {
 
 
         workingRegister = (instruction.getArguments()[0] & workingRegister);
@@ -315,7 +312,7 @@ public class InstructionExecutor {
 
             setZeroFlag();
 
-        }   else {
+        } else {
 
             clearZeroFlag();
         }
@@ -328,11 +325,11 @@ public class InstructionExecutor {
      *
      * @param instruction Instruction consisting out of OPC and arguments
      */
+
     private void executeMOVLW(Instruction instruction) {
 
-    	 workingRegister = instruction.getArguments()[0];
-
-	 }
+        workingRegister = instruction.getArguments()[0];
+    }
 
     /**
      * Adds the content of working register with a value stored inside the given
@@ -343,7 +340,7 @@ public class InstructionExecutor {
 
     private void executeADDWF(Instruction instruction) {
 
-        if(0 == instruction.getArguments()[1]) { // Indirect addressing
+        if (0 == instruction.getArguments()[1]) { // Indirect addressing
 
             // Get the lower 7 Bits of FSR if indirect addressing
             int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
@@ -355,7 +352,7 @@ public class InstructionExecutor {
 
             // Check if digit carry is occurring
 
-            if((value & 0x000F) + (workingRegister & 0x00F) > 0xF) {
+            if ((value & 0x000F) + (workingRegister & 0x00F) > 0xF) {
 
                 setDigitCarryFlag();
 
@@ -366,7 +363,7 @@ public class InstructionExecutor {
 
             // Check for an arithmetic number overflow
 
-            if(255 > value + workingRegister) {
+            if (255 > value + workingRegister) {
 
                 setCarryFlag();
 
@@ -377,7 +374,7 @@ public class InstructionExecutor {
 
             // Check for zero result
 
-            if(0 == value + workingRegister) {
+            if (0 == value + workingRegister) {
 
                 setZeroFlag();
 
@@ -388,7 +385,7 @@ public class InstructionExecutor {
 
             // Check for selected destination
 
-            if(0 == instruction.getArguments()[0]) {
+            if (0 == instruction.getArguments()[0]) {
 
                 workingRegister = value + workingRegister;
 
@@ -406,7 +403,7 @@ public class InstructionExecutor {
 
             // Check if digit carry is occurring
 
-            if((value & 0x000F) + (workingRegister & 0x00F) > 0xF) {
+            if ((value & 0x000F) + (workingRegister & 0x00F) > 0xF) {
 
                 setDigitCarryFlag();
 
@@ -417,7 +414,7 @@ public class InstructionExecutor {
 
             // Check for an arithmetic number overflow
 
-            if(255 > value + workingRegister) {
+            if (255 > value + workingRegister) {
 
                 setCarryFlag();
 
@@ -428,7 +425,7 @@ public class InstructionExecutor {
 
             // Check for zero result
 
-            if(0 == value + workingRegister) {
+            if (0 == value + workingRegister) {
 
                 setZeroFlag();
 
@@ -439,7 +436,7 @@ public class InstructionExecutor {
 
             // Check for selected destination
 
-            if(0 == instruction.getArguments()[0]) {
+            if (0 == instruction.getArguments()[0]) {
 
                 workingRegister = value + workingRegister;
 
@@ -455,11 +452,12 @@ public class InstructionExecutor {
      * If 'd' is 0 the result is stored in the W register.
      * If 'd' is 1 the result is stored back in register 'f'.
      *
-     * @param instruction Instruction consisting out of OPC and arguments.
-    */
-	 private void executeANDWF(Instruction instruction) {
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
 
-        if(0 == instruction.getArguments()[1]){ //Indirect addressing.
+    private void executeANDWF(Instruction instruction) {
+
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
 
             // Get the lower 7 Bits of FSR if indirect addressing
             int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
@@ -472,25 +470,27 @@ public class InstructionExecutor {
 
 
             //Checking for destination.
-            if(instruction.getArguments()[0] == 0){
+            if (instruction.getArguments()[0] == 0) {
 
-                 workingRegister = value & workingRegister;
+                workingRegister = value & workingRegister;
 
-            }else {
+            } else {
 
                 ram.set(bank, address, value & workingRegister);
 
             }
 
             //Checking for zero result
-            if ((value & workingRegister) == 0){
+            if ((value & workingRegister) == 0) {
 
                 setZeroFlag();
-            }else  {
+
+            } else {
 
                 clearZeroFlag();
             }
-        }else { //Direct addressing.
+
+        } else { //Direct addressing.
 
             // Determine selected bank
             RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
@@ -499,21 +499,20 @@ public class InstructionExecutor {
             int value = ram.get(bank, instruction.getArguments()[1]);
 
             //Checking for destination.
-            if(instruction.getArguments()[0] == 0){
+            if (instruction.getArguments()[0] == 0) {
 
                 workingRegister = value & workingRegister;
 
-            }else {
+            } else {
 
                 ram.set(bank, instruction.getArguments()[1], value & workingRegister);
-
             }
 
             //Checking for zero result
-            if ((value & workingRegister) == 0){
+            if ((value & workingRegister) == 0) {
 
                 setZeroFlag();
-            }else  {
+            } else {
 
                 clearZeroFlag();
             }
@@ -527,7 +526,8 @@ public class InstructionExecutor {
      *
      * @param instruction Instruction consisting out of OPC and arguments.
      */
-    private void executeIORLW(Instruction instruction){
+
+    private void executeIORLW(Instruction instruction) {
 
 
         workingRegister = instruction.getArguments()[0] | workingRegister;
@@ -538,7 +538,7 @@ public class InstructionExecutor {
 
             setZeroFlag();
 
-        }   else {
+        } else {
 
             clearZeroFlag();
         }
@@ -550,17 +550,18 @@ public class InstructionExecutor {
      *
      * @param instruction Instruction consisting out of OPC and arguments.
      */
-    private void executeXORLW(Instruction instruction){
+
+    private void executeXORLW(Instruction instruction) {
 
         workingRegister = instruction.getArguments()[0] ^ workingRegister;
 
         //checking for a zero result after the OR operation.
 
-        if(0 == workingRegister) {
+        if (0 == workingRegister) {
 
             setZeroFlag();
 
-        }else  {
+        } else {
 
             clearZeroFlag();
 
@@ -574,9 +575,10 @@ public class InstructionExecutor {
      *
      * @param instruction Instruction consisting out of OPC and arguments.
      */
-    private void executeXORWF (Instruction instruction){
 
-        if(0 == instruction.getArguments()[1]){ //Indirect addressing.
+    private void executeXORWF(Instruction instruction) {
+
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
 
             // Get the lower 7 Bits of FSR if indirect addressing
             int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
@@ -589,25 +591,25 @@ public class InstructionExecutor {
 
 
             //Checking for destination.
-            if(instruction.getArguments()[0] == 0){
+            if (instruction.getArguments()[0] == 0) {
 
                 workingRegister = value ^ workingRegister;
 
-            }else {
+            } else {
 
                 ram.set(bank, address, value ^ workingRegister);
 
             }
 
             //Checking for zero result
-            if ((value ^ workingRegister) == 0){
+            if ((value ^ workingRegister) == 0) {
 
                 setZeroFlag();
-            }else  {
+            } else {
 
                 clearZeroFlag();
             }
-        }else { //Direct addressing.
+        } else { //Direct addressing.
 
             // Determine selected bank
             RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
@@ -616,139 +618,135 @@ public class InstructionExecutor {
             int value = ram.get(bank, instruction.getArguments()[1]);
 
             //Checking for destination.
-            if(instruction.getArguments()[0] == 0){
+            if (instruction.getArguments()[0] == 0) {
 
                 workingRegister = value ^ workingRegister;
 
-            }else {
+            } else {
 
                 ram.set(bank, instruction.getArguments()[1], value ^ workingRegister);
 
             }
 
             //Checking for zero result
-            if ((value ^ workingRegister) == 0){
+            if ((value ^ workingRegister) == 0) {
 
                 setZeroFlag();
-            }else  {
+            } else {
 
                 clearZeroFlag();
             }
         }
     }
 
-	 /**
-	  * Subtract (2’s complement method) W register from register 'f'.
-	  * If 'd' is 0 the result is stored in the W register.
-	  * If 'd' is 1 the result is stored back in register 'f'.
-	  *
-	  * @param instruction Instruction consisting out of OPC and arguments.
-	  */
-    private void executeSUBWF (Instruction instruction){
+    /**
+     * Subtract (2’s complement method) W register from register 'f'.
+     * If 'd' is 0 the result is stored in the W register.
+     * If 'd' is 1 the result is stored back in register 'f'.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments.
+     */
 
-		  if(0 == instruction.getArguments()[1]){ //Indirect addressing.
+    private void executeSUBWF(Instruction instruction) {
 
-				// Get the lower 7 Bits of FSR if indirect addressing
-				int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
 
-				// Determine selected bank
-				RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
 
-				// Fetch value from given file register
-				int value = ram.get(bank, address);
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
-
-				// Check if digit carry is occurring
-
-				if((value & 0x000F) + ((~workingRegister+1) & 0x000F) > 0xF) {
-
-					 setDigitCarryFlag();
-
-				} else {
-
-					 clearDigitCarryFlag();
-				}
-
-				// Check for an arithmetic number overflow
-				if(255 > (instruction.getArguments()[0] & 0x00FF) + ((~workingRegister + 1) & 0x00FF)) {
-
-					 setCarryFlag();
-
-				} else {
-
-					 clearCarryFlag();
-				}
-
-				// Check for zero result.
-				if (0 == workingRegister-value){
-
-					 setZeroFlag();
-				}else {
-
-					 clearZeroFlag();
-				}
-
-				//Checking for destination.
-				if(instruction.getArguments()[0] == 0){
-
-					 workingRegister = workingRegister - value;
-
-				}else {
-
-					 ram.set(bank, address, workingRegister - value);
-
-				}
-
-		  }else { //Direct addressing.
-
-				// Determine selected bank
-				RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
-
-				// Fetch value from given file register
-				int value = ram.get(bank, instruction.getArguments()[1]);
-
-				if((value & 0x000F) + ((~workingRegister+1) & 0x000F) > 0xF) {
-
-					 setDigitCarryFlag();
-
-				} else {
-
-					 clearDigitCarryFlag();
-				}
-
-				// Check for an arithmetic number overflow
-				if(255 > (instruction.getArguments()[0] & 0x00FF) + ((~workingRegister + 1) & 0x00FF)) {
-
-					 setCarryFlag();
-
-				} else {
-
-					 clearCarryFlag();
-				}
-
-				// Check for zero result.
-				if (0 == workingRegister-value){
-
-					 setZeroFlag();
-				}else {
-
-					 clearZeroFlag();
-				}
-
-				//Checking for destination.
-				if(instruction.getArguments()[0] == 0){
-
-					 workingRegister = workingRegister - value;
-
-				}else {
-
-					 ram.set(bank, instruction.getArguments()[1], workingRegister - value);
-
-				}
-
-		  }
+            // Fetch value from given file register
+            int value = ram.get(bank, address);
 
 
+            // Check if digit carry is occurring
 
-	 }
+            if ((value & 0x000F) + ((~workingRegister + 1) & 0x000F) > 0xF) {
+
+                setDigitCarryFlag();
+
+            } else {
+
+                clearDigitCarryFlag();
+            }
+
+            // Check for an arithmetic number overflow
+            if (255 > (instruction.getArguments()[0] & 0x00FF) + ((~workingRegister + 1) & 0x00FF)) {
+
+                setCarryFlag();
+
+            } else {
+
+                clearCarryFlag();
+            }
+
+            // Check for zero result.
+            if (0 == workingRegister - value) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = workingRegister - value;
+
+            } else {
+
+                ram.set(bank, address, workingRegister - value);
+
+            }
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetch value from given file register
+            int value = ram.get(bank, instruction.getArguments()[1]);
+
+            if ((value & 0x000F) + ((~workingRegister + 1) & 0x000F) > 0xF) {
+
+                setDigitCarryFlag();
+
+            } else {
+
+                clearDigitCarryFlag();
+            }
+
+            // Check for an arithmetic number overflow
+            if (255 > (instruction.getArguments()[0] & 0x00FF) + ((~workingRegister + 1) & 0x00FF)) {
+
+                setCarryFlag();
+
+            } else {
+
+                clearCarryFlag();
+            }
+
+            // Check for zero result.
+            if (0 == workingRegister - value) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = workingRegister - value;
+
+            } else {
+
+                ram.set(bank, instruction.getArguments()[1], workingRegister - value);
+            }
+        }
+    }
 }
