@@ -5,9 +5,11 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
+import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,6 +20,8 @@ import java.util.ResourceBundle;
 public class SimulatorController implements Initializable {
 
     @FXML private AnchorPane contentPane;
+    @FXML
+    private TextArea logViewer;
     private LstViewer lstViewer;
 
     public SimulatorController() {
@@ -34,6 +38,10 @@ public class SimulatorController implements Initializable {
         AnchorPane.setRightAnchor(lstViewer, 0.0);
         AnchorPane.setBottomAnchor(lstViewer, 0.0);
         contentPane.getChildren().add(lstViewer);
+
+        // Redirect log stream to log viewer component
+
+        TextAreaAppender.setTextArea(logViewer);
     }
 
     @FXML private void onQuitAction(ActionEvent event) {
