@@ -20,6 +20,7 @@ this is a software simulation and to keep the facts simple, however compliance w
 
 - [Romux PIC Tutorial](http://romux.com/tutorials/pic-tutorial)
 - [Microchip PIC16F84](https://www.microchip.com/wwwproducts/en/PIC16F84)
+- [PIC Microcontrollers](http://www.islavici.ro/cursuriold/conducere%20sist%20cu%20calculatorul/PICbook/0_Uvod.htm)
 
 ## License
 
