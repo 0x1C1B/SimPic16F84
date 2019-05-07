@@ -101,6 +101,11 @@ public class InstructionExecutor {
                 executeSUBWF(instruction);
                 break;
             }
+            case CALL: {
+
+                executeCALL(instruction);
+                break;
+            }
             case NOP:
             default: {
 
@@ -748,5 +753,33 @@ public class InstructionExecutor {
                 ram.set(bank, instruction.getArguments()[1], workingRegister - value);
             }
         }
+    }
+
+    /**
+     * Push the current address as return point to stack and calls a
+     * subroutine. This basically means that it leaves the current control
+     * flow by jumping to another address.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    private void executeCALL(Instruction instruction) {
+
+        /*
+        Save address of next instruction to stack memory
+         */
+
+        stack.push(programCounter + 1);
+
+        /*
+        Consists out of the opcode/address given as argument and the upper bits
+        (bit 3 + 4) of PCLATH register.
+         */
+
+        int pclathBits = (ram.get(RamMemory.SFR.PCLATH) & 0b0001_1000) << 8;
+
+        programCounter = instruction.getArguments()[0]; // Load jump address
+        programCounter &= 0b00111_1111_1111; // Clear upper two bits
+        programCounter = programCounter | pclathBits; // Adding PCLATH
     }
 }
