@@ -106,6 +106,11 @@ public class InstructionExecutor {
                 executeCALL(instruction);
                 break;
             }
+            case RETURN: {
+
+                executeRETURN(instruction);
+                break;
+            }
             case NOP:
             default: {
 
@@ -781,5 +786,21 @@ public class InstructionExecutor {
         programCounter = instruction.getArguments()[0]; // Load jump address
         programCounter &= 0b00111_1111_1111; // Clear upper two bits
         programCounter = programCounter | pclathBits; // Adding PCLATH
+    }
+
+    /**
+     * Returns from subroutine. Address of next instruction is poped from stack
+     * memory.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    private void executeRETURN(Instruction instruction) {
+
+        /*
+        Restores address of next instruction from stack memory
+         */
+
+        programCounter = stack.pop();
     }
 }
