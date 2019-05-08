@@ -1,11 +1,18 @@
 package org.ai2ra.hso.simpic16f84.sim;
 
-import org.ai2ra.hso.simpic16f84.sim.mem.EepromMemory;
-import org.ai2ra.hso.simpic16f84.sim.mem.ProgramMemory;
-import org.ai2ra.hso.simpic16f84.sim.mem.RamMemory;
-import org.ai2ra.hso.simpic16f84.sim.mem.StackMemory;
+import org.ai2ra.hso.simpic16f84.sim.mem.*;
+import org.apache.log4j.Logger;
+
+/**
+ * Instruction executor responsible for executing the operation code.
+ *
+ * @author Freddy1096, 0x1C1B
+ * @see InstructionDecoder
+ */
 
 public class InstructionExecutor {
+
+    private static final Logger LOGGER;
 
     private Integer workingRegister;
     private Integer instructionRegister;
@@ -15,6 +22,11 @@ public class InstructionExecutor {
     private RamMemory<Integer> ram;
     private StackMemory<Integer> stack;
     private EepromMemory<Integer> eeprom;
+
+    static {
+
+        LOGGER = Logger.getLogger(InstructionExecutor.class);
+    }
 
     public InstructionExecutor(ProgramMemory<Integer> programMemory, RamMemory<Integer> ram,
                                StackMemory<Integer> stack, EepromMemory<Integer> eeprom) {
@@ -36,86 +48,99 @@ public class InstructionExecutor {
 
     public void execute() {
 
-        // Fetch current instruction and move PC
+        LOGGER.debug(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
 
-        instructionRegister = programMemory.get(programCounter++);
+        try {
 
-        // Decode current instruction
+            // Fetch current instruction and move PC
 
-        Instruction instruction = InstructionDecoder.decode(null == instructionRegister ? 0 : instructionRegister);
+            instructionRegister = programMemory.get(programCounter++);
 
-        switch (instruction.getOpc()) {
+            // Decode current instruction
 
-            case ADDLW: {
+            Instruction instruction = InstructionDecoder.decode(null == instructionRegister ? 0 : instructionRegister);
 
-                executeADDLW(instruction);
-                break;
+            switch (instruction.getOpc()) {
+
+                case ADDLW: {
+
+                    executeADDLW(instruction);
+                    break;
+                }
+                case ADDWF: {
+
+                    executeADDWF(instruction);
+                    break;
+                }
+                case SUBLW: {
+
+                    executeSUBLW(instruction);
+                    break;
+                }
+                case CLRW: {
+
+                    executeCLRW();
+                    break;
+                }
+                case ANDLW: {
+
+                    executeANDLW(instruction);
+                    break;
+                }
+                case MOVLW: {
+
+                    executeMOVLW(instruction);
+                    break;
+                }
+                case ANDWF: {
+
+                    executeANDWF(instruction);
+                    break;
+                }
+                case IORLW: {
+
+                    executeIORLW(instruction);
+                    break;
+                }
+                case XORLW: {
+
+                    executeXORLW(instruction);
+                    break;
+                }
+                case XORWF: {
+
+                    executeXORWF(instruction);
+                    break;
+                }
+                case SUBWF: {
+
+                    executeSUBWF(instruction);
+                    break;
+                }
+                case CALL: {
+
+                    executeCALL(instruction);
+                    break;
+                }
+                case RETURN: {
+
+                    executeRETURN(instruction);
+                    break;
+                }
+                case NOP:
+                default: {
+
+                    break; // No operation executed
+                }
             }
-            case ADDWF: {
 
-                executeADDWF(instruction);
-                break;
-            }
-            case SUBLW: {
+        } catch (MemoryIndexOutOfBoundsException exc) {
 
-                executeSUBLW(instruction);
-                break;
-            }
-            case CLRW: {
+            LOGGER.error("Unimplemented address accessed", exc);
 
-                executeCLRW();
-                break;
-            }
-            case ANDLW: {
+        } catch (UnsupportedOperationException exc) {
 
-                executeANDLW(instruction);
-                break;
-            }
-            case MOVLW: {
-
-                executeMOVLW(instruction);
-                break;
-            }
-            case ANDWF: {
-
-                executeANDWF(instruction);
-                break;
-            }
-            case IORLW: {
-
-                executeIORLW(instruction);
-                break;
-            }
-            case XORLW: {
-
-                executeXORLW(instruction);
-                break;
-            }
-            case XORWF: {
-
-                executeXORWF(instruction);
-                break;
-            }
-            case SUBWF: {
-
-                executeSUBWF(instruction);
-                break;
-            }
-            case CALL: {
-
-                executeCALL(instruction);
-                break;
-            }
-            case RETURN: {
-
-                executeRETURN(instruction);
-                break;
-            }
-            case NOP:
-            default: {
-
-                break; // No operation executed
-            }
+            LOGGER.error("Unsupported operation code found", exc);
         }
     }
 
@@ -127,6 +152,7 @@ public class InstructionExecutor {
 
     private void setDigitCarryFlag() {
 
+        LOGGER.debug("Set 'Digit Carry' (DC) flag inside of STATUS register");
         ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) | 0b00000010));
     }
 
@@ -136,6 +162,7 @@ public class InstructionExecutor {
 
     private void clearDigitCarryFlag() {
 
+        LOGGER.debug("Clear 'Digit Carry' (DC) flag inside of STATUS register");
         ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111101));
     }
 
@@ -145,6 +172,7 @@ public class InstructionExecutor {
 
     private void setCarryFlag() {
 
+        LOGGER.debug("Set 'Carry' (C) flag inside of STATUS register");
         ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) | 0b00000001));
     }
 
@@ -154,6 +182,7 @@ public class InstructionExecutor {
 
     private void clearCarryFlag() {
 
+        LOGGER.debug("Clear 'Carry' (C) flag inside of STATUS register");
         ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111110));
     }
 
@@ -163,6 +192,7 @@ public class InstructionExecutor {
 
     private void setZeroFlag() {
 
+        LOGGER.debug("Set 'Zero' (Z) flag inside of STATUS register");
         ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) | 0b00000100));
     }
 
@@ -172,6 +202,7 @@ public class InstructionExecutor {
 
     private void clearZeroFlag() {
 
+        LOGGER.debug("Clear 'Zero' (Z) flag inside of STATUS register");
         ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111011));
     }
 
@@ -207,7 +238,10 @@ public class InstructionExecutor {
 
     private void executeCLRW() {
 
+        LOGGER.info("CLRW: Clears the working register");
+
         workingRegister = 0;
+        setZeroFlag();
     }
 
     /**
@@ -220,6 +254,8 @@ public class InstructionExecutor {
      */
 
     private void executeADDLW(Instruction instruction) {
+
+        LOGGER.info(String.format("ADDLW: Adds literal 0x%02X to working register", instruction.getArguments()[0]));
 
         // Check if digit carry is occurring
 
@@ -268,6 +304,8 @@ public class InstructionExecutor {
 
     private void executeSUBLW(Instruction instruction) {
 
+        LOGGER.info(String.format("SUBLW: Subtracts literal 0x%02X from working register", instruction.getArguments()[0]));
+
         // Check if digit carry is occurring
 
         if ((instruction.getArguments()[0] & 0x000F) + ((~workingRegister + 1) & 0x000F) > 0xF) {
@@ -313,6 +351,7 @@ public class InstructionExecutor {
 
     private void executeANDLW(Instruction instruction) {
 
+        LOGGER.info(String.format("ANDLW: Conjuncts literal 0x%02X with working register", instruction.getArguments()[0]));
 
         workingRegister = (instruction.getArguments()[0] & workingRegister);
 
@@ -326,7 +365,6 @@ public class InstructionExecutor {
 
             clearZeroFlag();
         }
-
     }
 
     /**
@@ -337,6 +375,8 @@ public class InstructionExecutor {
      */
 
     private void executeMOVLW(Instruction instruction) {
+
+        LOGGER.info(String.format("MOVLW: Moves literal 0x%02X into working register", instruction.getArguments()[0]));
 
         workingRegister = instruction.getArguments()[0];
     }
@@ -357,8 +397,9 @@ public class InstructionExecutor {
 
             // Determine selected bank
             RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
-
             int value = ram.get(bank, address); // Fetch value from given file register
+
+            LOGGER.info(String.format("ADDWF: Adds content at address 0x%02X in %s with working register", address, bank));
 
             // Check if digit carry is occurring
 
@@ -410,6 +451,8 @@ public class InstructionExecutor {
 
             RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
             int value = ram.get(bank, instruction.getArguments()[1]);
+
+            LOGGER.info(String.format("ADDWF: Adds content at address 0x%02X in %s with working register", instruction.getArguments()[1], bank));
 
             // Check if digit carry is occurring
 
@@ -474,10 +517,9 @@ public class InstructionExecutor {
 
             // Determine selected bank
             RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+            int value = ram.get(bank, address); // Fetch value from given file register
 
-            // Fetch value from given file register
-            int value = ram.get(bank, address);
-
+            LOGGER.info(String.format("ANDWF: Conjuncts content at address 0x%02X in %s with working register", address, bank));
 
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
@@ -504,9 +546,9 @@ public class InstructionExecutor {
 
             // Determine selected bank
             RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+            int value = ram.get(bank, instruction.getArguments()[1]); // Fetch value from given file register
 
-            // Fetch value from given file register
-            int value = ram.get(bank, instruction.getArguments()[1]);
+            LOGGER.info(String.format("ANDWF: Conjuncts content at address 0x%02X in %s with working register", instruction.getArguments()[1], bank));
 
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
@@ -522,11 +564,11 @@ public class InstructionExecutor {
             if ((value & workingRegister) == 0) {
 
                 setZeroFlag();
+
             } else {
 
                 clearZeroFlag();
             }
-
         }
     }
 
@@ -539,6 +581,7 @@ public class InstructionExecutor {
 
     private void executeIORLW(Instruction instruction) {
 
+        LOGGER.info(String.format("IORLW: Inclusive disjunction of literal 0x%02X with working register", instruction.getArguments()[0]));
 
         workingRegister = instruction.getArguments()[0] | workingRegister;
 
@@ -563,6 +606,8 @@ public class InstructionExecutor {
 
     private void executeXORLW(Instruction instruction) {
 
+        LOGGER.info(String.format("XORLW: Exclusive disjunction of literal 0x%02X with working register", instruction.getArguments()[0]));
+
         workingRegister = instruction.getArguments()[0] ^ workingRegister;
 
         //checking for a zero result after the OR operation.
@@ -574,7 +619,6 @@ public class InstructionExecutor {
         } else {
 
             clearZeroFlag();
-
         }
     }
 
@@ -599,6 +643,7 @@ public class InstructionExecutor {
             // Fetch value from given file register
             int value = ram.get(bank, address);
 
+            LOGGER.info(String.format("XORWF: Exclusive disjunction of content at address 0x%02X in %s with working register", address, bank));
 
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
@@ -626,6 +671,8 @@ public class InstructionExecutor {
 
             // Fetch value from given file register
             int value = ram.get(bank, instruction.getArguments()[1]);
+
+            LOGGER.info(String.format("XORWF: Exclusive disjunction of content at address 0x%02X in %s with working register", instruction.getArguments()[1], bank));
 
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
@@ -670,6 +717,7 @@ public class InstructionExecutor {
             // Fetch value from given file register
             int value = ram.get(bank, address);
 
+            LOGGER.info(String.format("SUBLW: Subtracts content at address 0x%02X in %s from working register", address, bank));
 
             // Check if digit carry is occurring
 
@@ -709,7 +757,6 @@ public class InstructionExecutor {
             } else {
 
                 ram.set(bank, address, workingRegister - value);
-
             }
 
         } else { //Direct addressing.
@@ -719,6 +766,8 @@ public class InstructionExecutor {
 
             // Fetch value from given file register
             int value = ram.get(bank, instruction.getArguments()[1]);
+
+            LOGGER.info(String.format("SUBLW: Subtracts content at address 0x%02X in %s from working register", instruction.getArguments()[1], bank));
 
             if ((value & 0x000F) + ((~workingRegister + 1) & 0x000F) > 0xF) {
 
@@ -786,6 +835,8 @@ public class InstructionExecutor {
         programCounter = instruction.getArguments()[0]; // Load jump address
         programCounter &= 0b00111_1111_1111; // Clear upper two bits
         programCounter = programCounter | pclathBits; // Adding PCLATH
+
+        LOGGER.info(String.format("CALL: Stores return address 0x%04X and calls subroutine at 0x%04X", stack.top(), programCounter));
     }
 
     /**
@@ -802,5 +853,7 @@ public class InstructionExecutor {
          */
 
         programCounter = stack.pop();
+
+        LOGGER.info(String.format("RETURN: Return from subroutine to 0x%04X", programCounter));
     }
 }
