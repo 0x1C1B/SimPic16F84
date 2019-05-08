@@ -7,6 +7,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
@@ -15,6 +16,7 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.input.KeyCodeCombination?>
@@ -62,6 +64,19 @@
                      <graphic>
                         <FontIcon iconColor="#bf0c0c" iconLiteral="fas-circle" />
                      </graphic></MenuItem>
+                   <SeparatorMenuItem mnemonicParsing="false"/>
+                   <Menu mnemonicParsing="false" text="Log Level">
+                       <items>
+                           <RadioMenuItem mnemonicParsing="false" text="Debug">
+                               <toggleGroup>
+                                   <ToggleGroup fx:id="logLevel"/>
+                               </toggleGroup>
+                           </RadioMenuItem>
+                           <RadioMenuItem mnemonicParsing="false" selected="true" text="Info" toggleGroup="$logLevel"/>
+                           <RadioMenuItem mnemonicParsing="false" text="Warn" toggleGroup="$logLevel"/>
+                           <RadioMenuItem mnemonicParsing="false" text="Error" toggleGroup="$logLevel"/>
+                       </items>
+                   </Menu>
                </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Help">
@@ -144,7 +159,7 @@
                                                       <Tooltip text="Next Step" />
                                                    </tooltip>
                                                 </Button>
-                                                <Button mnemonicParsing="false">
+                                                 <Button mnemonicParsing="false" onAction="#onBreakpointAction">
                                                    <graphic>
                                                       <FontIcon iconColor="#bf0c0c" iconLiteral="fas-circle" />
                                                    </graphic>
