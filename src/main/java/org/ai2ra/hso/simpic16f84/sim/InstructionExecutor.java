@@ -147,6 +147,37 @@ public class InstructionExecutor {
     // Utility methods
 
     /**
+     * Resets status of RAM and working register to the power-on state.
+     */
+
+    public void reset() {
+
+        LOGGER.info("Reset registers to power-on state");
+
+        workingRegister = 0x00;
+        programCounter = 0x00;
+
+        // Initialize the special function registers
+
+        ram.set(RamMemory.SFR.INDF, 0x00);
+        ram.set(RamMemory.SFR.TMR0, 0x00);
+        ram.set(RamMemory.SFR.PCL, 0x00);
+        ram.set(RamMemory.SFR.STATUS, 0b0001_1100);
+        ram.set(RamMemory.SFR.FSR, 0x000);
+        ram.set(RamMemory.SFR.PORTA, 0x00);
+        ram.set(RamMemory.SFR.PORTB, 0x00);
+        ram.set(RamMemory.SFR.EEDATA, 0x00);
+        ram.set(RamMemory.SFR.EEADR, 0x00);
+        ram.set(RamMemory.SFR.PCLATH, 0x00);
+        ram.set(RamMemory.SFR.INTCON, 0x00);
+        ram.set(RamMemory.SFR.OPTION, 0b1111_1111);
+        ram.set(RamMemory.SFR.TRISA, 0b0001_1111);
+        ram.set(RamMemory.SFR.TRISB, 0b1111_1111);
+        ram.set(RamMemory.SFR.EECON1, 0x00);
+        ram.set(RamMemory.SFR.EECON2, 0x00);
+    }
+
+    /**
      * Sets the digit carry flag inside of status register {@link RamMemory RAM}.
      */
 
