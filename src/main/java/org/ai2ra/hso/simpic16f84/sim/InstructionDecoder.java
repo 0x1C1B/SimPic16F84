@@ -271,6 +271,6 @@ public class InstructionDecoder {
             }
         }
 
-        throw new IllegalStateException("Illegal operation type determined");
+        throw new UnsupportedOperationException("Illegal operation type determined");
     }
 }

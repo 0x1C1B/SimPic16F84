@@ -1,5 +1,7 @@
 package org.ai2ra.hso.simpic16f84.ui.component;
 
+import javafx.beans.property.SetProperty;
+import javafx.beans.property.SimpleSetProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 import javafx.event.Event;
@@ -34,7 +36,7 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 
 public class LstViewer extends CodeArea {
 
-    private ObservableSet<Integer> breakpoints;
+    private SetProperty<Integer> breakpoints;
 
     public LstViewer() {
 
@@ -57,10 +59,10 @@ public class LstViewer extends CodeArea {
 
         // Enable breakpoints and line indicators
 
-        breakpoints = FXCollections.observableSet();
+        breakpoints = new SimpleSetProperty<>(FXCollections.observableSet());
 
         IntFunction<Node> numberFactory = LineNumberFactory.get(this);
-        IntFunction<Node> breakpointFactory = new BreakpointFactory(breakpoints);
+        IntFunction<Node> breakpointFactory = new BreakpointFactory(this);
 
         IntFunction<Node> graphicFactory = line -> {
 
@@ -90,7 +92,17 @@ public class LstViewer extends CodeArea {
 
     public ObservableSet<Integer> getBreakpoints() {
 
+        return breakpoints.get();
+    }
+
+    public SetProperty<Integer> breakpointsProperty() {
+
         return breakpoints;
+    }
+
+    public void setBreakpoints(ObservableSet<Integer> breakpoints) {
+
+        this.breakpoints.set(breakpoints);
     }
 
     /**
