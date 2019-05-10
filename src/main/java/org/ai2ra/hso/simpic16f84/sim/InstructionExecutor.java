@@ -3,6 +3,8 @@ package org.ai2ra.hso.simpic16f84.sim;
 import org.ai2ra.hso.simpic16f84.sim.mem.*;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * Instruction executor responsible for executing the operation code.
  *
@@ -23,6 +25,8 @@ public class InstructionExecutor {
     private StackMemory<Integer> stack;
     private EepromMemory<Integer> eeprom;
 
+    private ReentrantLock lock;
+
     static {
 
         LOGGER = Logger.getLogger(InstructionExecutor.class);
@@ -39,6 +43,8 @@ public class InstructionExecutor {
         this.ram = ram;
         this.stack = stack;
         this.eeprom = eeprom;
+
+        lock = new ReentrantLock();
     }
 
     /**
@@ -48,9 +54,11 @@ public class InstructionExecutor {
 
     public void execute() {
 
-        LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
+        lock.lock();
 
         try {
+
+            LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
 
             // Fetch current instruction and move PC
 
@@ -152,6 +160,10 @@ public class InstructionExecutor {
         } catch (UnsupportedOperationException exc) {
 
             LOGGER.error("Unsupported operation code found", exc);
+
+        } finally {
+
+            lock.unlock();
         }
     }
 
