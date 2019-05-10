@@ -26,17 +26,12 @@ import java.util.ResourceBundle;
 public class SimulatorController implements Initializable {
 
     @FXML private AnchorPane contentPane;
-    @FXML
-    private TextArea logViewer;
-    @FXML
-    private ToggleGroup logLevel;
+    @FXML private TextArea logViewer;
+    @FXML private ToggleGroup logLevel;
 
-    @FXML
-    private Button nextStepTool;
-    @FXML
-    private Button runTool;
-    @FXML
-    private Button stopTool;
+    @FXML private Button nextStepTool;
+    @FXML private Button runTool;
+    @FXML private Button stopTool;
 
     private LstViewer lstViewer;
 
@@ -48,7 +43,8 @@ public class SimulatorController implements Initializable {
         simulator = new Pic16F84VM();
     }
 
-    @Override public void initialize(URL location, ResourceBundle resources) {
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
 
         // Include custom component via code not markup
 
@@ -104,12 +100,14 @@ public class SimulatorController implements Initializable {
         runTool.setDisable(true);
     }
 
-    @FXML private void onQuitAction(ActionEvent event) {
+    @FXML
+    private void onQuitAction(ActionEvent event) {
 
         Platform.exit();
     }
 
-    @FXML private void onOpenAction(ActionEvent event) {
+    @FXML
+    private void onOpenAction(ActionEvent event) {
 
         FileChooser fileChooser = new FileChooser();
 
@@ -120,19 +118,20 @@ public class SimulatorController implements Initializable {
 
         File file = fileChooser.showOpenDialog(null);
 
-        if(null != file) {
+        if (null != file) {
 
             Task<String> task = new Task<String>() {
 
-                @Override protected String call() throws Exception {
+                @Override
+                protected String call() throws Exception {
 
                     StringBuilder builder = new StringBuilder();
 
-                    try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 
                         String line;
 
-                        while(null != (line = reader.readLine())) {
+                        while (null != (line = reader.readLine())) {
 
                             builder.append(line).append(System.lineSeparator());
                         }
@@ -155,16 +154,14 @@ public class SimulatorController implements Initializable {
                 runTool.setDisable(false);
             });
 
-            task.setOnFailed((evt) -> {
-
-                task.getException().printStackTrace(System.err);
-            });
+            task.setOnFailed((evt) -> task.getException().printStackTrace(System.err));
 
             new Thread(task).start();
         }
     }
 
-    @FXML private void onBreakpointAction(ActionEvent event) {
+    @FXML
+    private void onBreakpointAction(ActionEvent event) {
 
         lstViewer.toggleBreakpoint();
     }
@@ -181,15 +178,9 @@ public class SimulatorController implements Initializable {
             }
         };
 
-        task.setOnSucceeded((evt) -> {
+        task.setOnSucceeded((evt) -> lstViewer.setIndicator(lstViewer.addressToLineNumber(task.getValue())));
 
-            lstViewer.setExecutionLineFromAddress(task.getValue());
-        });
-
-        task.setOnFailed((evt) -> {
-
-            task.getException().printStackTrace(System.err);
-        });
+        task.setOnFailed((evt) -> task.getException().printStackTrace(System.err));
 
         new Thread(task).start();
     }
@@ -238,7 +229,8 @@ public class SimulatorController implements Initializable {
 
                     // Continues until a breakpoint is reached
 
-                    if (lstViewer.hasAddressBreakpoint(address)) {
+                    if (lstViewer.getBreakpoints()
+                            .contains(lstViewer.addressToLineNumber(address))) {
 
                         return address;
                     }
@@ -249,10 +241,7 @@ public class SimulatorController implements Initializable {
             }
         };
 
-        task.valueProperty().addListener((observable, prevAddress, address) -> {
-
-            lstViewer.setExecutionLineFromAddress(address);
-        });
+        task.valueProperty().addListener((observable, prevAddress, address) -> lstViewer.setIndicator(lstViewer.addressToLineNumber(address)));
 
         // Important to enable/disable tools and menus again
 

@@ -35,8 +35,8 @@ public class LineIndicatorFactory implements IntFunction<Node> {
         // Allow dynamic removing/adding of the breakpoint
 
         BooleanBinding isVisible = Bindings.createBooleanBinding(() ->
-                        viewer.executionLineProperty().getValue().equals(line),
-                viewer.executionLineProperty());
+                        viewer.indicatorProperty().getValue().equals(line),
+                viewer.indicatorProperty());
 
         indicator.visibleProperty().bind(isVisible);
 

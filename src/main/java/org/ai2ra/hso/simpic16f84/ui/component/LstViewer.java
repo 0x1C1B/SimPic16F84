@@ -40,7 +40,7 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 public class LstViewer extends CodeArea {
 
     private SetProperty<Integer> breakpoints;
-    private IntegerProperty executionLine;
+    private IntegerProperty indicator;
 
     public LstViewer() {
 
@@ -64,9 +64,7 @@ public class LstViewer extends CodeArea {
         // Enable breakpoints and line indicators
 
         breakpoints = new SimpleSetProperty<>(FXCollections.observableSet());
-        executionLine = new SimpleIntegerProperty(1);
-
-        setExecutionLineFromAddress(0); // Sets the line indicator to first valid execution line
+        indicator = new SimpleIntegerProperty();
 
         IntFunction<Node> numberFactory = LineNumberFactory.get(this);
         IntFunction<Node> indicatorFactory = new LineIndicatorFactory(this);
@@ -102,9 +100,11 @@ public class LstViewer extends CodeArea {
 
         this.textProperty().addListener((observable, oldValue, newValue) -> {
 
+            // Clear all breakpoints for the new program
             breakpoints.clear();
-            executionLine.set(1);
-            setExecutionLineFromAddress(0); // Sets the line indicator to first valid execution line
+
+            // Sets the line indicator to first valid execution line
+            indicator.set(addressToLineNumber(0x00));
         });
     }
 
@@ -123,31 +123,31 @@ public class LstViewer extends CodeArea {
         this.breakpoints.set(breakpoints);
     }
 
-    public int getExecutionLine() {
+    public int getIndicator() {
 
-        return executionLine.get();
+        return indicator.get();
     }
 
-    public IntegerProperty executionLineProperty() {
+    public IntegerProperty indicatorProperty() {
 
-        return executionLine;
+        return indicator;
     }
 
     /**
-     * Sets the execution line to the given one. If the given line is invalid because it
+     * Sets the indicator line to the given one. If the given line is invalid because it
      * doesn't contain machine instructions, the method rejects.
      *
-     * @param executionLine The line number should be set as execution line
+     * @param lineNumber The line number should be set as execution line
      * @return Returns true if line was set, otherwise false
      */
 
-    public boolean setExecutionLine(int executionLine) {
+    public boolean setIndicator(int lineNumber) {
 
         // Allow setting execution line only for lines containing machine instructions
 
-        if (containsMachineInstructions(executionLine)) {
+        if (hasMachineInstructions(lineNumber)) {
 
-            this.executionLine.set(executionLine);
+            this.indicator.set(lineNumber);
             return true;
         }
 
@@ -155,50 +155,28 @@ public class LstViewer extends CodeArea {
     }
 
     /**
-     * Sets the execution line inside of the viewer by a given machine address.
+     * Converts a given address to a line number by trying to find the address as
+     * part of the machine instructions.
      *
-     * @param address The machine address
-     * @return Returns true if line with related address was found, otherwise false
+     * @throws IllegalStateException Thrown if no line with address was found
+     * @param address The machine instruction address
+     * @return Returns the number of line which contains the given address
      */
 
-    public boolean setExecutionLineFromAddress(int address) {
+    public int addressToLineNumber(int address) {
 
-        for (int line = 1; line < this.getParagraphs().size(); ++line) {
+        for (int lineNumber = 1; lineNumber < this.getParagraphs().size(); ++lineNumber) {
 
-            if (containsMachineInstructions(line)) {
+            if (hasMachineInstructions(lineNumber)) {
 
-                if (Integer.parseInt(this.getText(line).substring(0, 4), 16) == address) {
+                if (Integer.parseInt(this.getText(lineNumber).substring(0, 4), 16) == address) {
 
-                    executionLine.set(line);
-                    return true;
+                    return lineNumber;
                 }
             }
         }
 
-        return false;
-    }
-
-    /**
-     * Checks if the line containing the given machine address contains a breakpoint.
-     *
-     * @param address The machine address
-     * @return Returns true if line with related address was found, otherwise false
-     */
-
-    public boolean hasAddressBreakpoint(int address) {
-
-        for (int line = 1; line < this.getParagraphs().size(); ++line) {
-
-            if (containsMachineInstructions(line)) {
-
-                if (Integer.parseInt(this.getText(line).substring(0, 4), 16) == address) {
-
-                    return breakpoints.contains(line);
-                }
-            }
-        }
-
-        return false;
+        throw new IllegalStateException("Address doesn't exist");
     }
 
     /**
@@ -210,32 +188,33 @@ public class LstViewer extends CodeArea {
 
     public void toggleBreakpoint() {
 
-        int line = this.offsetToPosition(
+        int lineNumber = this.offsetToPosition(
                 this.getCaretPosition(), TwoDimensional.Bias.Forward).getMajor();
 
         // Allow breakpoints only for lines containing machine instructions
 
-        if (containsMachineInstructions(line)) {
+        if (hasMachineInstructions(lineNumber)) {
 
-            if (breakpoints.contains(line)) {
+            if (breakpoints.contains(lineNumber)) {
 
-                breakpoints.remove(line);
+                breakpoints.remove(lineNumber);
 
             } else {
 
-                breakpoints.add(line);
+                breakpoints.add(lineNumber);
             }
         }
     }
 
     /**
-     * Checks whether a line contains machine instructions or not.
+     * Checks whether a line contains machine instructions or not. That's the
+     * prerequisite for setting breakpoints or the indicator to it.
      *
      * @param lineNumber The line number to check
      * @return Returns true if line contains machine instruction, otherwise false
      */
 
-    private boolean containsMachineInstructions(int lineNumber) {
+    private boolean hasMachineInstructions(int lineNumber) {
 
         return this.getText(lineNumber).matches("^[0-9a-fA-F]{4} [0-9a-fA-F]{4}.*$");
     }
