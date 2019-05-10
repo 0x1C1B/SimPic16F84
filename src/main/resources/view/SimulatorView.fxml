@@ -151,7 +151,7 @@
                                                    </tooltip>
                                                 </Button>
                                                 <Separator orientation="VERTICAL" />
-                                                <Button mnemonicParsing="false">
+                                                 <Button mnemonicParsing="false" onAction="#onNextStepAction">
                                                    <graphic>
                                                       <FontIcon iconLiteral="fas-step-forward" />
                                                    </graphic>

@@ -142,4 +142,10 @@ public class SimulatorController implements Initializable {
 
         lstViewer.toggleBreakpoint();
     }
+
+    @FXML
+    private void onNextStepAction(ActionEvent event) {
+
+        lstViewer.nextExecutionLine();
+    }
 }
