@@ -132,9 +132,15 @@ public class InstructionExecutor {
                     executeRETLW(instruction);
                     break;
                 }
+                case GOTO: {
+
+                    executeGOTO(instruction);
+                    break;
+                }
                 case NOP:
                 default: {
 
+                    LOGGER.debug("NOP: No operation was executed");
                     break; // No operation executed
                 }
             }
@@ -879,5 +885,37 @@ public class InstructionExecutor {
         workingRegister = instruction.getArguments()[0]; // Stores return value
 
         LOGGER.debug(String.format("RETLW: Return from subroutine to 0x%04X with value 0x%02X", programCounter, instruction.getArguments()[0]));
+
+        // Check for zero value
+        if (0 == workingRegister) {
+
+            setZeroFlag();
+
+        } else {
+
+            clearZeroFlag();
+        }
+    }
+
+    /**
+     * Makes a jump to the given address inside of program memory.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    private void executeGOTO(Instruction instruction) {
+
+        /*
+        Consists out of the opcode/address given as argument and the upper bits
+        (bit 3 + 4) of PCLATH register.
+         */
+
+        int pclathBits = (ram.get(RamMemory.SFR.PCLATH) & 0b0001_1000) << 8;
+
+        programCounter = instruction.getArguments()[0]; // Load jump address
+        programCounter &= 0b00111_1111_1111; // Clear upper two bits
+        programCounter = programCounter | pclathBits; // Adding PCLATH
+
+        LOGGER.debug(String.format("GOTO: Goes to instruction at 0x%04X", programCounter));
     }
 }
