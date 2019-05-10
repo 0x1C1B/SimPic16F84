@@ -3,6 +3,8 @@ package org.ai2ra.hso.simpic16f84.sim;
 import org.ai2ra.hso.simpic16f84.sim.mem.*;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * Instruction executor responsible for executing the operation code.
  *
@@ -23,6 +25,8 @@ public class InstructionExecutor {
     private StackMemory<Integer> stack;
     private EepromMemory<Integer> eeprom;
 
+    private ReentrantLock lock;
+
     static {
 
         LOGGER = Logger.getLogger(InstructionExecutor.class);
@@ -39,6 +43,8 @@ public class InstructionExecutor {
         this.ram = ram;
         this.stack = stack;
         this.eeprom = eeprom;
+
+        lock = new ReentrantLock();
     }
 
     /**
@@ -50,9 +56,11 @@ public class InstructionExecutor {
 
     public int execute() {
 
-        LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
+        lock.lock();
 
         try {
+
+            LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
 
             // Fetch current instruction and move PC
 
@@ -129,9 +137,20 @@ public class InstructionExecutor {
                     executeRETURN(instruction);
                     break;
                 }
+                case RETLW: {
+
+                    executeRETLW(instruction);
+                    break;
+                }
+                case GOTO: {
+
+                    executeGOTO(instruction);
+                    break;
+                }
                 case NOP:
                 default: {
 
+                    LOGGER.debug("NOP: No operation was executed");
                     break; // No operation executed
                 }
             }
@@ -143,6 +162,10 @@ public class InstructionExecutor {
         } catch (UnsupportedOperationException exc) {
 
             LOGGER.error("Unsupported operation code found", exc);
+
+        } finally {
+
+            lock.unlock();
         }
 
         return programCounter;
@@ -890,5 +913,56 @@ public class InstructionExecutor {
         programCounter = stack.pop();
 
         LOGGER.debug(String.format("RETURN: Return from subroutine to 0x%04X", programCounter));
+    }
+
+    /**
+     * Returns a value from subroutine. Address of next instruction is poped from stack
+     * memory.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    private void executeRETLW(Instruction instruction) {
+
+        /*
+        Restores address of next instruction from stack memory
+         */
+
+        programCounter = stack.pop();
+        workingRegister = instruction.getArguments()[0]; // Stores return value
+
+        LOGGER.debug(String.format("RETLW: Return from subroutine to 0x%04X with value 0x%02X", programCounter, instruction.getArguments()[0]));
+
+        // Check for zero value
+        if (0 == workingRegister) {
+
+            setZeroFlag();
+
+        } else {
+
+            clearZeroFlag();
+        }
+    }
+
+    /**
+     * Makes a jump to the given address inside of program memory.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    private void executeGOTO(Instruction instruction) {
+
+        /*
+        Consists out of the opcode/address given as argument and the upper bits
+        (bit 3 + 4) of PCLATH register.
+         */
+
+        int pclathBits = (ram.get(RamMemory.SFR.PCLATH) & 0b0001_1000) << 8;
+
+        programCounter = instruction.getArguments()[0]; // Load jump address
+        programCounter &= 0b00111_1111_1111; // Clear upper two bits
+        programCounter = programCounter | pclathBits; // Adding PCLATH
+
+        LOGGER.debug(String.format("GOTO: Goes to instruction at 0x%04X", programCounter));
     }
 }
