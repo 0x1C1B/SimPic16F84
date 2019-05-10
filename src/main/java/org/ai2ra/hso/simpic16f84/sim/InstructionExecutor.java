@@ -127,6 +127,11 @@ public class InstructionExecutor {
                     executeRETURN(instruction);
                     break;
                 }
+                case RETLW: {
+
+                    executeRETLW(instruction);
+                    break;
+                }
                 case NOP:
                 default: {
 
@@ -855,5 +860,24 @@ public class InstructionExecutor {
         programCounter = stack.pop();
 
         LOGGER.debug(String.format("RETURN: Return from subroutine to 0x%04X", programCounter));
+    }
+
+    /**
+     * Returns a value from subroutine. Address of next instruction is poped from stack
+     * memory.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    private void executeRETLW(Instruction instruction) {
+
+        /*
+        Restores address of next instruction from stack memory
+         */
+
+        programCounter = stack.pop();
+        workingRegister = instruction.getArguments()[0]; // Stores return value
+
+        LOGGER.debug(String.format("RETLW: Return from subroutine to 0x%04X with value 0x%02X", programCounter, instruction.getArguments()[0]));
     }
 }
