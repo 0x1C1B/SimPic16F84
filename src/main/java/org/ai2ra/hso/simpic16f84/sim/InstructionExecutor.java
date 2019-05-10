@@ -44,9 +44,11 @@ public class InstructionExecutor {
     /**
      * Loads, decodes and executes the next instruction inside of program memory. Important
      * to note is that just <b>one</b> instruction is executed per method call.
+     *
+     * @return Returns the address of the next instruction
      */
 
-    public void execute() {
+    public int execute() {
 
         LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
 
@@ -142,6 +144,8 @@ public class InstructionExecutor {
 
             LOGGER.error("Unsupported operation code found", exc);
         }
+
+        return programCounter;
     }
 
     // Utility methods
@@ -854,7 +858,7 @@ public class InstructionExecutor {
         Save address of next instruction to stack memory
          */
 
-        stack.push(programCounter + 1);
+        stack.push(programCounter);
 
         /*
         Consists out of the opcode/address given as argument and the upper bits

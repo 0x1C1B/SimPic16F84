@@ -66,7 +66,7 @@ public class LstViewer extends CodeArea {
         breakpoints = new SimpleSetProperty<>(FXCollections.observableSet());
         executionLine = new SimpleIntegerProperty(1);
 
-        nextExecutionLine(); // Sets the line indicator to first valid execution line
+        setExecutionLineFromAddress(0); // Sets the line indicator to first valid execution line
 
         IntFunction<Node> numberFactory = LineNumberFactory.get(this);
         IntFunction<Node> indicatorFactory = new LineIndicatorFactory(this);
@@ -104,7 +104,7 @@ public class LstViewer extends CodeArea {
 
             breakpoints.clear();
             executionLine.set(1);
-            nextExecutionLine(); // Sets the line indicator to first valid execution line
+            setExecutionLineFromAddress(0); // Sets the line indicator to first valid execution line
         });
     }
 
@@ -155,31 +155,27 @@ public class LstViewer extends CodeArea {
     }
 
     /**
-     * Sets the next line that contains machine instructions to the current
-     * execution line.
+     * Sets the execution line inside of the viewer by a given machine address.
      *
-     * @return Return true if a next line was found and set, otherwise false
+     * @param address The machine address
+     * @return Returns true if line with related address was found, otherwise false
      */
 
-    public boolean nextExecutionLine() {
+    public boolean setExecutionLineFromAddress(int address) {
 
-        if (executionLine.get() >= this.getParagraphs().size()) {
+        for (int line = 1; line < this.getParagraphs().size(); ++line) {
 
-            return false;
+            if (containsMachineInstructions(line)) {
 
-        } else {
-
-            for (int line = executionLine.get() + 1; line <= this.getParagraphs().size(); ++line) {
-
-                if (containsMachineInstructions(line)) {
+                if (Integer.parseInt(this.getText(line).substring(0, 4), 16) == address) {
 
                     executionLine.set(line);
                     return true;
                 }
             }
-
-            return false;
         }
+
+        return false;
     }
 
     /**

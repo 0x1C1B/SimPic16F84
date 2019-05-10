@@ -10,6 +10,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import org.ai2ra.hso.simpic16f84.sim.Pic16F84VM;
 import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
 import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
 import org.apache.log4j.Level;
@@ -30,9 +31,12 @@ public class SimulatorController implements Initializable {
     private ToggleGroup logLevel;
     private LstViewer lstViewer;
 
+    private Pic16F84VM simulator;
+
     public SimulatorController() {
 
         lstViewer = new LstViewer();
+        simulator = new Pic16F84VM();
     }
 
     @Override public void initialize(URL location, ResourceBundle resources) {
@@ -119,6 +123,8 @@ public class SimulatorController implements Initializable {
                         }
                     }
 
+                    simulator.load(file); // Loads file also into simulator
+
                     return builder.toString();
                 }
             };
@@ -146,6 +152,25 @@ public class SimulatorController implements Initializable {
     @FXML
     private void onNextStepAction(ActionEvent event) {
 
-        lstViewer.nextExecutionLine();
+        Task<Integer> task = new Task<Integer>() {
+
+            @Override
+            protected Integer call() throws Exception {
+
+                return simulator.nextStep();
+            }
+        };
+
+        task.setOnSucceeded((evt) -> {
+
+            lstViewer.setExecutionLineFromAddress(task.getValue());
+        });
+
+        task.setOnFailed((evt) -> {
+
+            task.getException().printStackTrace(System.err);
+        });
+
+        new Thread(task).start();
     }
 }

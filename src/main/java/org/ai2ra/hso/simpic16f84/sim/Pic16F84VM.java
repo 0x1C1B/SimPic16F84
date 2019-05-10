@@ -126,9 +126,10 @@ public class Pic16F84VM {
      *
      * @throws IllegalStateException Thrown if no valid program was previously loaded
      * @see Pic16F84VM#load(File)
+     * @return Returns the address of next instruction
      */
 
-    public void nextStep() {
+    public int nextStep() {
 
         if (!isLoaded) {
 
@@ -144,7 +145,7 @@ public class Pic16F84VM {
                 executor.reset();
             }
 
-            executor.execute();
+            return executor.execute();
         }
     }
 
