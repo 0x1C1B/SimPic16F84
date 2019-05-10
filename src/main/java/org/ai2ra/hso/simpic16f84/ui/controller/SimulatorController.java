@@ -5,6 +5,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
@@ -29,6 +30,14 @@ public class SimulatorController implements Initializable {
     private TextArea logViewer;
     @FXML
     private ToggleGroup logLevel;
+
+    @FXML
+    private Button nextStepTool;
+    @FXML
+    private Button runTool;
+    @FXML
+    private Button stopTool;
+
     private LstViewer lstViewer;
 
     private Pic16F84VM simulator;
@@ -87,6 +96,12 @@ public class SimulatorController implements Initializable {
                 }
             }
         });
+
+        // Disable tools until its loaded and running
+
+        stopTool.setDisable(true);
+        nextStepTool.setDisable(true);
+        runTool.setDisable(true);
     }
 
     @FXML private void onQuitAction(ActionEvent event) {
@@ -133,6 +148,11 @@ public class SimulatorController implements Initializable {
 
                 lstViewer.replaceText(task.getValue());
                 lstViewer.moveTo(0, 0);
+
+                // Enable tools for controlling execution flow
+
+                nextStepTool.setDisable(false);
+                runTool.setDisable(false);
             });
 
             task.setOnFailed((evt) -> {
@@ -188,6 +208,66 @@ public class SimulatorController implements Initializable {
         };
 
         task.setOnFailed((evt) -> {
+
+            task.getException().printStackTrace(System.err);
+        });
+
+        new Thread(task).start();
+    }
+
+    @FXML
+    private void onRunAction(ActionEvent event) {
+
+        nextStepTool.setDisable(true);
+        runTool.setDisable(true);
+        stopTool.setDisable(false);
+
+        Task<Integer> task = new Task<Integer>() {
+
+            @Override
+            protected Integer call() throws Exception {
+
+                int address;
+
+                do {
+
+                    address = simulator.nextStep();
+
+                    updateValue(address);
+                    Thread.sleep(500); // Give the UI time for rendering updates
+
+                    // Continues until a breakpoint is reached
+
+                    if (lstViewer.hasAddressBreakpoint(address)) {
+
+                        return address;
+                    }
+
+                } while (simulator.isRunning()); // Continues until stop is called
+
+                return address;
+            }
+        };
+
+        task.valueProperty().addListener((observable, prevAddress, address) -> {
+
+            lstViewer.setExecutionLineFromAddress(address);
+        });
+
+        // Important to enable/disable tools and menus again
+
+        task.setOnSucceeded((evt) -> {
+
+            nextStepTool.setDisable(false);
+            runTool.setDisable(false);
+            stopTool.setDisable(true);
+        });
+
+        task.setOnFailed((evt) -> {
+
+            nextStepTool.setDisable(false);
+            runTool.setDisable(false);
+            stopTool.setDisable(true);
 
             task.getException().printStackTrace(System.err);
         });

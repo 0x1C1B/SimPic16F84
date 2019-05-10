@@ -179,6 +179,29 @@ public class LstViewer extends CodeArea {
     }
 
     /**
+     * Checks if the line containing the given machine address contains a breakpoint.
+     *
+     * @param address The machine address
+     * @return Returns true if line with related address was found, otherwise false
+     */
+
+    public boolean hasAddressBreakpoint(int address) {
+
+        for (int line = 1; line < this.getParagraphs().size(); ++line) {
+
+            if (containsMachineInstructions(line)) {
+
+                if (Integer.parseInt(this.getText(line).substring(0, 4), 16) == address) {
+
+                    return breakpoints.contains(line);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Toggles a breakpoint for the currently selected line inside of
      * the LST view. With selection, the current caret position (line)
      * is meant. If breakpoint is already set, it is removed otherwise

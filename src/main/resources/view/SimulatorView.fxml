@@ -134,7 +134,8 @@
                                        <children>
                                           <ToolBar layoutX="80.0" layoutY="75.0" prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                              <items>
-                                                <Button mnemonicParsing="false">
+                                                 <Button fx:id="runTool" mnemonicParsing="false"
+                                                         onAction="#onRunAction">
                                                    <graphic>
                                                       <FontIcon iconColor="#41a407" iconLiteral="fas-play" />
                                                    </graphic>
@@ -142,7 +143,8 @@
                                                       <Tooltip text="Run" />
                                                    </tooltip>
                                                 </Button>
-                                                 <Button mnemonicParsing="false" onAction="#onStopAction">
+                                                 <Button fx:id="stopTool" mnemonicParsing="false"
+                                                         onAction="#onStopAction">
                                                    <graphic>
                                                       <FontIcon iconColor="#bf0c0c" iconLiteral="fas-stop" />
                                                    </graphic>
@@ -151,7 +153,8 @@
                                                    </tooltip>
                                                 </Button>
                                                 <Separator orientation="VERTICAL" />
-                                                 <Button mnemonicParsing="false" onAction="#onNextStepAction">
+                                                 <Button fx:id="nextStepTool" mnemonicParsing="false"
+                                                         onAction="#onNextStepAction">
                                                    <graphic>
                                                       <FontIcon iconLiteral="fas-step-forward" />
                                                    </graphic>
