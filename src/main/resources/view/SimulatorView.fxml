@@ -48,12 +48,12 @@
                      <graphic>
                         <FontIcon iconColor="#41a407" iconLiteral="fas-play" />
                      </graphic></MenuItem>
-                  <MenuItem mnemonicParsing="false" text="Stop">
+                   <MenuItem mnemonicParsing="false" onAction="#onStopAction" text="Stop">
                      <graphic>
                         <FontIcon iconColor="#bf0c0c" iconLiteral="fas-stop" />
                      </graphic></MenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" text="Next Step">
+                   <MenuItem mnemonicParsing="false" onAction="#onNextStepAction" text="Next Step">
                      <graphic>
                         <FontIcon iconLiteral="fas-step-forward" />
                      </graphic></MenuItem>
@@ -142,7 +142,7 @@
                                                       <Tooltip text="Run" />
                                                    </tooltip>
                                                 </Button>
-                                                <Button mnemonicParsing="false">
+                                                 <Button mnemonicParsing="false" onAction="#onStopAction">
                                                    <graphic>
                                                       <FontIcon iconColor="#bf0c0c" iconLiteral="fas-stop" />
                                                    </graphic>

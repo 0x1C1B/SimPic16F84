@@ -173,4 +173,25 @@ public class SimulatorController implements Initializable {
 
         new Thread(task).start();
     }
+
+    @FXML
+    private void onStopAction(ActionEvent event) {
+
+        Task<Void> task = new Task<Void>() {
+
+            @Override
+            protected Void call() throws Exception {
+
+                simulator.stop();
+                return null;
+            }
+        };
+
+        task.setOnFailed((evt) -> {
+
+            task.getException().printStackTrace(System.err);
+        });
+
+        new Thread(task).start();
+    }
 }
