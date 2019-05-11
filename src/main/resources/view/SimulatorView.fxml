@@ -44,16 +44,17 @@
             </Menu>
             <Menu mnemonicParsing="false" text="Run">
                <items>
-                  <MenuItem mnemonicParsing="false" text="Run">
+                   <MenuItem fx:id="runOption" mnemonicParsing="false" onAction="#onRunAction" text="Run">
                      <graphic>
                         <FontIcon iconColor="#41a407" iconLiteral="fas-play" />
                      </graphic></MenuItem>
-                   <MenuItem mnemonicParsing="false" onAction="#onStopAction" text="Stop">
+                   <MenuItem fx:id="stopOption" mnemonicParsing="false" onAction="#onStopAction" text="Stop">
                      <graphic>
                         <FontIcon iconColor="#bf0c0c" iconLiteral="fas-stop" />
                      </graphic></MenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
-                   <MenuItem mnemonicParsing="false" onAction="#onNextStepAction" text="Next Step">
+                   <MenuItem fx:id="nextStepOption" mnemonicParsing="false" onAction="#onNextStepAction"
+                             text="Next Step">
                      <graphic>
                         <FontIcon iconLiteral="fas-step-forward" />
                      </graphic></MenuItem>

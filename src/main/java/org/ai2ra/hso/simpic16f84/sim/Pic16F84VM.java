@@ -1,14 +1,16 @@
 package org.ai2ra.hso.simpic16f84.sim;
 
 import org.ai2ra.hso.simpic16f84.sim.mem.*;
-import org.apache.log4j.Logger;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 
 /**
  * Runtime environment for the Pic16F84 simulator. This class holds all memory
- * blocks as well as the control flow.
+ * blocks as well as the control flow. Supports property change listeners for
+ * observing the current state, means the loaded and running status.
  *
  * @author 0x1C1B
  * @see InstructionExecutor
@@ -17,8 +19,6 @@ import java.io.IOException;
 
 public class Pic16F84VM {
 
-    private static final Logger LOGGER;
-
     private ProgramMemory<Integer> programMemory;
     private RamMemory<Integer> ram;
     private StackMemory<Integer> stack;
@@ -26,13 +26,10 @@ public class Pic16F84VM {
 
     private InstructionExecutor executor;
 
-    private boolean isLoaded;
-    private boolean isRunning;
+    private boolean loaded; // Determines if a valid program was loaded
+    private boolean running; // Determines if the execution is running
 
-    static {
-
-        LOGGER = Logger.getLogger(Pic16F84VM.class);
-    }
+    private PropertyChangeSupport changes;
 
     /**
      * Initializes a usable state of the Pic16F84 runtime environment.
@@ -46,6 +43,7 @@ public class Pic16F84VM {
         this.eeprom = new EepromMemory<>(64);
 
         this.executor = new InstructionExecutor(programMemory, ram, stack, eeprom);
+        this.changes = new PropertyChangeSupport(this);
     }
 
     /**
@@ -96,6 +94,16 @@ public class Pic16F84VM {
         return eeprom;
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+
+        changes.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+
+        changes.removePropertyChangeListener(listener);
+    }
+
     /**
      * Loads the machine instructions of an LST file to program memory. Calling this
      * method is required for executing any kind of program.
@@ -118,7 +126,8 @@ public class Pic16F84VM {
             programMemory.set(instructions[address], address);
         }
 
-        isLoaded = true; // Set state to execution ready
+        loaded = true; // Set state to execution ready
+        changes.firePropertyChange("loaded", false, true);
     }
 
     /**
@@ -131,7 +140,7 @@ public class Pic16F84VM {
 
     public int nextStep() {
 
-        if (!isLoaded) {
+        if (!loaded) {
 
             throw new IllegalStateException("No executable program loaded");
 
@@ -139,9 +148,11 @@ public class Pic16F84VM {
 
             // Reset runtime state at first time
 
-            if (!isRunning) {
+            if (!running) {
 
-                isRunning = true;
+                running = true;
+                changes.firePropertyChange("running", false, true);
+
                 executor.reset();
             }
 
@@ -156,7 +167,8 @@ public class Pic16F84VM {
 
     public void stop() {
 
-        isRunning = false;
+        running = false;
+        changes.firePropertyChange("running", true, false);
     }
 
     /**
@@ -167,7 +179,7 @@ public class Pic16F84VM {
 
     public boolean isRunning() {
 
-        return isRunning;
+        return running;
     }
 
     /**
@@ -178,6 +190,6 @@ public class Pic16F84VM {
 
     public boolean isLoaded() {
 
-        return isLoaded;
+        return loaded;
     }
 }

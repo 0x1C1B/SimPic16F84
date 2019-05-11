@@ -1,14 +1,16 @@
 package org.ai2ra.hso.simpic16f84.ui.controller;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.RadioMenuItem;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import org.ai2ra.hso.simpic16f84.sim.Pic16F84VM;
@@ -33,14 +35,46 @@ public class SimulatorController implements Initializable {
     @FXML private Button runTool;
     @FXML private Button stopTool;
 
+    @FXML private MenuItem nextStepOption;
+    @FXML private MenuItem runOption;
+    @FXML private MenuItem stopOption;
+
     private LstViewer lstViewer;
 
     private Pic16F84VM simulator;
+    private ReadOnlyBooleanProperty runningProperty;
+    private ReadOnlyBooleanProperty loadedProperty;
+    private BooleanProperty executingProperty;
 
     public SimulatorController() {
 
         lstViewer = new LstViewer();
         simulator = new Pic16F84VM();
+
+        // Allow property binding to the simulator state
+
+        try {
+
+            loadedProperty = ReadOnlyJavaBeanBooleanPropertyBuilder
+                    .create()
+                    .bean(simulator)
+                    .name("loaded")
+                    .getter("isLoaded")
+                    .build();
+
+            runningProperty = ReadOnlyJavaBeanBooleanPropertyBuilder
+                    .create()
+                    .bean(simulator)
+                    .name("running")
+                    .getter("isRunning")
+                    .build();
+
+        } catch (NoSuchMethodException exc) {
+
+            exc.printStackTrace(System.err);
+        }
+
+        executingProperty = new SimpleBooleanProperty();
     }
 
     @Override
@@ -93,11 +127,25 @@ public class SimulatorController implements Initializable {
             }
         });
 
-        // Disable tools until its loaded and running
+        // Enable/Disable tools dynamically until its loaded/running
 
-        stopTool.setDisable(true);
-        nextStepTool.setDisable(true);
-        runTool.setDisable(true);
+        stopTool.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), runningProperty.not()));
+
+        stopOption.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), runningProperty.not()));
+
+        runTool.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), executingProperty));
+
+        runOption.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), executingProperty));
+
+        nextStepTool.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), executingProperty));
+
+        nextStepOption.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), executingProperty));
     }
 
     @FXML
@@ -147,14 +195,13 @@ public class SimulatorController implements Initializable {
 
                 lstViewer.replaceText(task.getValue());
                 lstViewer.moveTo(0, 0);
-
-                // Enable tools for controlling execution flow
-
-                nextStepTool.setDisable(false);
-                runTool.setDisable(false);
             });
 
-            task.setOnFailed((evt) -> task.getException().printStackTrace(System.err));
+            task.setOnFailed((evt) -> {
+
+                System.out.println("failed");
+                task.getException().printStackTrace(System.err);
+            });
 
             new Thread(task).start();
         }
@@ -169,6 +216,8 @@ public class SimulatorController implements Initializable {
     @FXML
     private void onNextStepAction(ActionEvent event) {
 
+        executingProperty.set(true);
+
         Task<Integer> task = new Task<Integer>() {
 
             @Override
@@ -178,9 +227,17 @@ public class SimulatorController implements Initializable {
             }
         };
 
-        task.setOnSucceeded((evt) -> lstViewer.setIndicator(lstViewer.addressToLineNumber(task.getValue())));
+        task.setOnSucceeded((evt) -> {
 
-        task.setOnFailed((evt) -> task.getException().printStackTrace(System.err));
+            executingProperty.set(false);
+            lstViewer.setIndicator(lstViewer.addressToLineNumber(task.getValue()));
+        });
+
+        task.setOnFailed((evt) -> {
+
+            executingProperty.set(false);
+            task.getException().printStackTrace(System.err);
+        });
 
         new Thread(task).start();
     }
@@ -198,8 +255,15 @@ public class SimulatorController implements Initializable {
             }
         };
 
+        task.setOnSucceeded((evt -> {
+
+            executingProperty.set(false);
+            lstViewer.setIndicator(lstViewer.addressToLineNumber(0x00));
+        }));
+
         task.setOnFailed((evt) -> {
 
+            executingProperty.set(false);
             task.getException().printStackTrace(System.err);
         });
 
@@ -209,9 +273,7 @@ public class SimulatorController implements Initializable {
     @FXML
     private void onRunAction(ActionEvent event) {
 
-        nextStepTool.setDisable(true);
-        runTool.setDisable(true);
-        stopTool.setDisable(false);
+        executingProperty.set(true);
 
         Task<Integer> task = new Task<Integer>() {
 
@@ -243,21 +305,11 @@ public class SimulatorController implements Initializable {
 
         task.valueProperty().addListener((observable, prevAddress, address) -> lstViewer.setIndicator(lstViewer.addressToLineNumber(address)));
 
-        // Important to enable/disable tools and menus again
-
-        task.setOnSucceeded((evt) -> {
-
-            nextStepTool.setDisable(false);
-            runTool.setDisable(false);
-            stopTool.setDisable(true);
-        });
+        task.setOnSucceeded((evt) -> executingProperty.set(false));
 
         task.setOnFailed((evt) -> {
 
-            nextStepTool.setDisable(false);
-            runTool.setDisable(false);
-            stopTool.setDisable(true);
-
+            executingProperty.set(false);
             task.getException().printStackTrace(System.err);
         });
 
