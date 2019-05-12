@@ -6,6 +6,14 @@ import java.util.Arrays;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Represents the memory block that holds all instructions that are part of the
+ * loaded program.
+ *
+ * @param <T> The type of data that is stored inside of memory
+ * @author Freddy1096
+ */
+
 public class ProgramMemory <T> implements ObservableMemory<T> {
 
     private T[] memory;
@@ -19,7 +27,6 @@ public class ProgramMemory <T> implements ObservableMemory<T> {
         lock = new ReentrantReadWriteLock();
 
     }
-
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -95,7 +102,6 @@ public class ProgramMemory <T> implements ObservableMemory<T> {
         }
     }
 
-
     public void set(T toSet, int address) {
 
         lock.writeLock().lock();
@@ -118,6 +124,13 @@ public class ProgramMemory <T> implements ObservableMemory<T> {
 
         }
     }
+
+    /**
+     * Resets the memory block by initializing all cells with <code>null</code>.
+     * Important to note is, that because it uses objects, in case of the int type
+     * the wrapper class {@link Integer}, all cells are initialized
+     * with <code>null</code> <b>not</b> 0.
+     */
 
     public void reset(){
 

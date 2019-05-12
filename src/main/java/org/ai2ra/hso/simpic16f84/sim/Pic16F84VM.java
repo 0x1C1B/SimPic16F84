@@ -8,9 +8,25 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Runtime environment for the Pic16F84 simulator. This class holds all memory
- * blocks as well as the control flow. Supports property change listeners for
- * observing the current state, means the loaded and running status.
+ * Pic16F84VM is the runtime environment of the simulator itself. It encapsulates the
+ * required memory blocks as well as the control flow components. The former one
+ * includes:
+ *
+ * <ul>
+ *     <li>{@link ProgramMemory}</li>
+ *     <li>{@link RamMemory}</li>
+ *     <li>{@link StackMemory}</li>
+ *     <li>{@link EepromMemory}</li>
+ * </ul>
+ *
+ * Moreover it controls the whole execution flow. Therefor it holds the
+ * {@link InstructionExecutor} utility. Some important methods to consider are the
+ * {@link Pic16F84VM#load(File)} method, that's responsible for parsing and
+ * loading a new program to memory, and the {@link Pic16F84VM#nextStep()} method,
+ * that's executing the next instruction. In addition, it supports
+ * observing important virtual machine states, exclusively the
+ * {@link Pic16F84VM#loaded} and {@link Pic16F84VM#running} state, using
+ * a registered {@link PropertyChangeListener}.
  *
  * @author 0x1C1B
  * @see InstructionExecutor
@@ -25,14 +41,22 @@ public class Pic16F84VM {
     private EepromMemory<Integer> eeprom;
 
     private InstructionExecutor executor;
-
-    private boolean loaded; // Determines if a valid program was loaded
-    private boolean running; // Determines if the execution is running
-
     private PropertyChangeSupport changes;
 
     /**
-     * Initializes a usable state of the Pic16F84 runtime environment.
+     * Indicates if the virtual machine already loaded a valid program.
+     */
+    private boolean loaded;
+
+    /**
+     * Determines if virtual machine is already running
+     */
+    private boolean running;
+
+    /**
+     * Initializes and creates a new usable Pic16F84 runtime environment.
+     * This includes a instantiation of separate memory blocks as well as an
+     * execution unit.
      */
 
     public Pic16F84VM() {
@@ -47,10 +71,17 @@ public class Pic16F84VM {
     }
 
     /**
-     * Fetching program memory in a pseudo read-only state. Method is intended to use
-     * for observing the memory.
+     * Allows pseudo read-only access to the program memory. Important to note is,
+     * that's pseudo read-only, this means that's possible to bypass this restriction
+     * using a type cast. The feature that's intended to use with with methods, is
+     * observing memory changes. Therefor, the returned instance provide the
+     * {@link ObservableMemory#addPropertyChangeListener(PropertyChangeListener)}
+     * method for registering a listener waiting for memory changes. The observed
+     * property is named in the format <code>memory[%d]</code>, while the <i>%d</i> is
+     * replaced by the memory address.
      *
      * @return Returns the program memory in a pseudo read-only state
+     * @see ObservableMemory
      */
 
     public ObservableMemory<Integer> getProgramMemory() {
@@ -59,10 +90,18 @@ public class Pic16F84VM {
     }
 
     /**
-     * Fetching RAM in a pseudo read-only state. Method is intended to use
-     * for observing the memory.
+     * Allows pseudo read-only access to the data memory (RAM). Important to note is,
+     * that's pseudo read-only, this means that's possible to bypass this restriction
+     * using a type cast. The feature that's intended to use with with methods, is
+     * observing memory changes. Therefor, the returned instance provide the
+     * {@link ObservableMemory#addPropertyChangeListener(PropertyChangeListener)}
+     * method for registering a listener waiting for memory changes. The observed
+     * property is named in the format <code>bank0[%d]</code>/<code>bank1[%d]</code>
+     * depending on which bank changed, while the <i>%d</i> is replaced by the
+     * memory address.
      *
-     * @return Returns the RAM in a pseudo read-only state
+     * @return Returns the data memory in a pseudo read-only state
+     * @see ObservableMemory
      */
 
     public ObservableMemory<Integer> getRam() {
@@ -71,10 +110,17 @@ public class Pic16F84VM {
     }
 
     /**
-     * Fetching stack memory in a pseudo read-only state. Method is intended to use
-     * for observing the memory.
+     * Allows pseudo read-only access to the stack memory. Important to note is,
+     * that's pseudo read-only, this means that's possible to bypass this restriction
+     * using a type cast. The feature that's intended to use with with methods, is
+     * observing memory changes. Therefor, the returned instance provide the
+     * {@link ObservableMemory#addPropertyChangeListener(PropertyChangeListener)}
+     * method for registering a listener waiting for memory changes. The observed
+     * property is named in the format <code>memory[%d]</code>, while the <i>%d</i> is
+     * replaced by the memory address.
      *
      * @return Returns the stack memory in a pseudo read-only state
+     * @see ObservableMemory
      */
 
     public ObservableMemory<Integer> getStack() {
@@ -83,10 +129,17 @@ public class Pic16F84VM {
     }
 
     /**
-     * Fetching EEPROM in a pseudo read-only state. Method is intended to use
-     * for observing the memory.
+     * Allows pseudo read-only access to the data memory (EEPROM). Important to note is,
+     * that's pseudo read-only, this means that's possible to bypass this restriction
+     * using a type cast. The feature that's intended to use with with methods, is
+     * observing memory changes. Therefor, the returned instance provide the
+     * {@link ObservableMemory#addPropertyChangeListener(PropertyChangeListener)}
+     * method for registering a listener waiting for memory changes. The observed
+     * property is named in the format <code>memory[%d]</code>, while the <i>%d</i> is
+     * replaced by the memory address.
      *
-     * @return Returns the EEPROM in a pseudo read-only state
+     * @return Returns the data memory in a pseudo read-only state
+     * @see ObservableMemory
      */
 
     public ObservableMemory<Integer> getEeprom() {
@@ -94,10 +147,25 @@ public class Pic16F84VM {
         return eeprom;
     }
 
+    /**
+     * Adds a change listener <b>only</b> for observing the virtual machines state. For
+     * observing memory changes, the listeners must be registered for the related memory
+     * structures.
+     *
+     * @param listener The listener that should be registered
+     */
+
     public void addPropertyChangeListener(PropertyChangeListener listener) {
 
         changes.addPropertyChangeListener(listener);
     }
+
+    /**
+     * Removes a change listener <b>only</b> from the change support of the virtual
+     * machine, <b>not</b> from a memory block.
+     *
+     * @param listener The listener that should be removed
+     */
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
 
@@ -132,6 +200,10 @@ public class Pic16F84VM {
 
     /**
      * Executes the next instruction cycle, basically just the next instruction.
+     * Important to note is, that if it's called the first time for a newly loaded
+     * program, it resets the execution unit with all memory blocks. Moreover for
+     * allowing observing the execution flow, every time this methods succeeds the
+     * address of the next instruction is returned.
      *
      * @throws IllegalStateException Thrown if no valid program was previously loaded
      * @see Pic16F84VM#load(File)

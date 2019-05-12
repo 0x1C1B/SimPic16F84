@@ -6,9 +6,13 @@ import org.apache.log4j.Logger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Instruction executor responsible for executing the operation code.
+ * InstructionExecutor represents the ALU (Arithmetic Logical Unit) and parts of the
+ * CPU (Central Processing Unit) in one class. It's responsible for executing single
+ * instructions specified with their OPC. Thereby it's the core of the execution flow
+ * and controllable using the {@link InstructionExecutor#execute()} method.
  *
- * @author Freddy1096, 0x1C1B
+ * @author Freddy1096
+ * @author 0x1C1B
  * @see InstructionDecoder
  */
 
@@ -16,8 +20,15 @@ public class InstructionExecutor {
 
     private static final Logger LOGGER;
 
+    /**
+     * Working register used as accumulator.
+     */
     private Integer workingRegister;
+    /**
+     * Contains the next instruction before it's execution.
+     */
     private Integer instructionRegister;
+    /** The instruction pointer that points to the next instruction in program memory. */
     private Integer programCounter;
 
     private ProgramMemory<Integer> programMemory;
@@ -25,12 +36,22 @@ public class InstructionExecutor {
     private StackMemory<Integer> stack;
     private EepromMemory<Integer> eeprom;
 
+    /** Used for synchronizing the execution flow. */
     private ReentrantLock lock;
 
     static {
 
         LOGGER = Logger.getLogger(InstructionExecutor.class);
     }
+
+    /**
+     * Constructs a new execution unit by injecting required memory dependencies.
+     *
+     * @param programMemory The program memory which contains the executable program
+     * @param ram The RAM consisting out of SFR's and GPR's
+     * @param stack The stack memory, should contain at least eight levels
+     * @param eeprom The EEPROM for persisting data beyond restarts
+     */
 
     public InstructionExecutor(ProgramMemory<Integer> programMemory, RamMemory<Integer> ram,
                                StackMemory<Integer> stack, EepromMemory<Integer> eeprom) {
@@ -49,9 +70,29 @@ public class InstructionExecutor {
 
     /**
      * Loads, decodes and executes the next instruction inside of program memory. Important
-     * to note is that just <b>one</b> instruction is executed per method call.
+     * to note is that just <b>one</b> instruction is executed per method call. A typical
+     * execution cycle includes the following:
+     *
+     * <ol>
+     *     <li>
+     *         Load next instruction, indicated by the {@link InstructionExecutor#programCounter}
+     *         into {@link InstructionExecutor#instructionRegister}
+     *     </li>
+     *     <li>
+     *         Increments the {@link InstructionExecutor#programCounter} for pointing
+     *         to the next instruction.
+     *     </li>
+     *     <li>
+     *         Decodes the content of the {@link InstructionExecutor#instructionRegister}.
+     *     </li>
+     *     <li>
+     *         Executes the loaded instruction. Internally the instruction implementation
+     *         in form of a separate method is called.
+     *     </li>
+     * </ol>
      *
      * @return Returns the address of the next instruction
+     * @see InstructionDecoder
      */
 
     public int execute() {
@@ -171,10 +212,9 @@ public class InstructionExecutor {
         return programCounter;
     }
 
-    // Utility methods
-
     /**
-     * Resets status of RAM and working register to the power-on state.
+     * Resets status of RAM and working register to the power-on state. The power-on
+     * state is defined inside of the data sheet.
      */
 
     public void reset() {

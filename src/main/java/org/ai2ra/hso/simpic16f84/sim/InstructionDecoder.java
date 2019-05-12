@@ -1,21 +1,31 @@
 package org.ai2ra.hso.simpic16f84.sim;
 
 /**
- * Instruction decoder is responsible for decoding the next instruction. Basically this
- * just means that the OPC is separated from it's arguments.
+ * InstructionDecoder decodes an numeric instruction literal, commonly a short value,
+ * to an {@link Instruction} instance. This decoder implementation supports the whole
+ * instruction set of the Pic16F84 MCU.
  *
  * @author 0x1C1B
- * @version 0.0.2
  */
 
 public class InstructionDecoder {
 
+    /**
+     * Mask for the general operation group. There exists basically four groups.
+     */
     private static final int OPERATION_TYPE_MASK;
+    /**
+     * Offset for shifting the operation group identifier to right.
+     */
     private static final int OPERATION_TYPE_OFFSET;
 
+    /** Specifies the OPC location for kind of jump operation (e.g. CALL). */
     private static final int JUMP_OPC_MASK;
+    /** Specifies the OPC location for bit oriented operations */
     private static final int BIT_OPC_MASK;
+    /** Specifies the OPC location for literal oriented operations (e.g. MOVLW). */
     private static final int LITERAL_OPC_MASK;
+    /** Specifies the OPC location for byte oriented operations */
     private static final int BYTE_OPC_MASK;
 
     private static final int BIT_ADDRESS_MASK;
@@ -60,6 +70,8 @@ public class InstructionDecoder {
      *
      * @param instruction The instruction that should be decoded
      * @return Returns an instruction object containing the OPC and optional arguments
+     * @throws UnsupportedOperationException Thrown if instruction couldn't be decoded
+     * @see Instruction
      */
 
     public static Instruction decode(int instruction) {

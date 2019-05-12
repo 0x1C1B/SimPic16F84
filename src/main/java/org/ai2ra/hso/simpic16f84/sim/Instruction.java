@@ -1,15 +1,17 @@
 package org.ai2ra.hso.simpic16f84.sim;
 
 /**
- * Represents a single instruction, consisting out of operation code (OPC) and
- * optional arguments.
+ * Instruction is the core class for the whole execution flow. It represents a single
+ * machine instruction consisting out of the <i>OPC (Operation Code)</i> and it's
+ * numeric <i>arguments</i>.
+ *
+ * @author 0x1C1B
  */
 
 public class Instruction {
 
     /**
-     * Specifies the type of operation as assembly mnemonic. It represents the OPC
-     * in a readable form.
+     * Specifies the type of operation as assembly mnemonic.
      */
 
     public enum OperationCode {
@@ -29,8 +31,24 @@ public class Instruction {
         SUBLW, XORLW
     }
 
+    /**
+     * The operation code which indicates the type of operation
+     */
     private OperationCode opc;
+
+    /**
+     * Optional arguments depending to the {@link Instruction#opc OPC}
+     */
     private int[] arguments;
+
+    /**
+     * Constructs a new instruction consisting out of OPC and optional integer
+     * arguments.
+     *
+     * @param opc The operation code as assembly mnemonic
+     * @param arguments Optional integer arguments
+     * @see OperationCode
+     */
 
     public Instruction(OperationCode opc, int ... arguments) {
 

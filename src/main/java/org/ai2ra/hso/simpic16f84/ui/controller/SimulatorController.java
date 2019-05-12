@@ -25,6 +25,13 @@ import java.io.FileReader;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Controls the interface of the simulator scene. Every GUI related listener
+ * or task is registered inside this class.
+ *
+ * @author 0x1C1B
+ */
+
 public class SimulatorController implements Initializable {
 
     @FXML private AnchorPane contentPane;
