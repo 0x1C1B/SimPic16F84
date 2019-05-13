@@ -74,7 +74,6 @@ public class EepromMemory<T> implements ObservableMemory<T> {
             if (memory.length == 0 || address > memory.length || address < 0) {
 
                 throw new MemoryIndexOutOfBoundsException();
-
             }
 
             return memory[address];
@@ -120,7 +119,8 @@ public class EepromMemory<T> implements ObservableMemory<T> {
             } else {
                 T beforeSet = memory[address];
                 this.memory[address] = toSet;
-                changes.firePropertyChange(String.format("memory[%d]", address), beforeSet, toSet);
+                changes.fireIndexedPropertyChange("memory",
+                        address, beforeSet, toSet);
 
             }
         }finally {

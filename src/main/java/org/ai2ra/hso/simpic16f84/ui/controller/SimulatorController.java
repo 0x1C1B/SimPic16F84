@@ -2,10 +2,10 @@ package org.ai2ra.hso.simpic16f84.ui.controller;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.*;
 import javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -19,10 +19,15 @@ import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.beans.IndexedPropertyChangeEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -38,6 +43,10 @@ public class SimulatorController implements Initializable {
     @FXML private TextArea logViewer;
     @FXML private ToggleGroup logLevel;
 
+    private LstViewer lstViewer;
+
+    // Toolbar and Menus
+
     @FXML private Button nextStepTool;
     @FXML private Button runTool;
     @FXML private Button stopTool;
@@ -46,7 +55,19 @@ public class SimulatorController implements Initializable {
     @FXML private MenuItem runOption;
     @FXML private MenuItem stopOption;
 
-    private LstViewer lstViewer;
+    // STATUS register representation
+
+    @FXML TableView<List<Integer>> statusRegister;
+    @FXML TableColumn<List<Integer>, String> irpBit;
+    @FXML TableColumn<List<Integer>, String> rp1Bit;
+    @FXML TableColumn<List<Integer>, String> rp0Bit;
+    @FXML TableColumn<List<Integer>, String> toBit;
+    @FXML TableColumn<List<Integer>, String> pdBit;
+    @FXML TableColumn<List<Integer>, String> zBit;
+    @FXML TableColumn<List<Integer>, String> dcBit;
+    @FXML TableColumn<List<Integer>, String> cBit;
+
+    // Simulator related utilities
 
     private Pic16F84VM simulator;
     private ReadOnlyBooleanProperty runningProperty;
@@ -82,6 +103,10 @@ public class SimulatorController implements Initializable {
         }
 
         executingProperty = new SimpleBooleanProperty();
+
+        // Register memory change listeners
+
+        simulator.getRam().addPropertyChangeListener(new RamMemoryChangeListener());
     }
 
     @Override
@@ -153,6 +178,17 @@ public class SimulatorController implements Initializable {
 
         nextStepOption.disableProperty().bind(Bindings.or(
                 loadedProperty.not(), executingProperty));
+
+        // Setup STATUS register table view
+
+        irpBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(7))));
+        rp1Bit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(6))));
+        rp0Bit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(5))));
+        toBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(4))));
+        pdBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(3))));
+        zBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(2))));
+        dcBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(1))));
+        cBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(0))));
     }
 
     @FXML
@@ -321,5 +357,44 @@ public class SimulatorController implements Initializable {
         });
 
         new Thread(task).start();
+    }
+
+    /**
+     * Responsible for handling memory changes inside of the RAM memory
+     * structure. This class updates the user interface when changes are
+     * received.
+     *
+     * @author 0x1C1B
+     * @see PropertyChangeListener
+     */
+
+    private class RamMemoryChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+
+            if (event instanceof IndexedPropertyChangeEvent) {
+
+                // Check which register/location changed
+
+                if (0x03 == ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    int value = (int) event.getNewValue(); // Value of STATUS register
+                    ObservableList<List<Integer>> data = FXCollections.observableArrayList();
+                    List<Integer> status = new ArrayList<>();
+
+                    // Disassemble STATUS register value in single bits
+
+                    for (int bit = 0; bit < 8; ++bit) {
+
+                        status.add(bit, (value >> bit) & 1);
+                    }
+
+                    data.clear();
+                    data.add(status);
+                    statusRegister.setItems(data);
+                }
+            }
+        }
     }
 }

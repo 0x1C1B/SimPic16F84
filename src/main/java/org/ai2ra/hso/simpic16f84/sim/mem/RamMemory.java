@@ -227,11 +227,11 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
                         // Handle mapped registers
 
-                        changes.firePropertyChange(String.format("bank0[%d]", address),
-                                bank0[address], value);
+                        changes.fireIndexedPropertyChange("bank0",
+                                address, bank0[address], value);
 
-                        changes.firePropertyChange(String.format("bank1[%d]", address),
-                                bank1[address], value);
+                        changes.fireIndexedPropertyChange("bank1",
+                                address, bank1[address], value);
 
                         bank0[address] = value;
                         bank1[address] = value;
@@ -244,15 +244,15 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
                         if(bank.equals(Bank.BANK_0)) {
 
-                            changes.firePropertyChange(String.format("bank0[%d]", address),
-                                    bank0[address], value);
+                            changes.fireIndexedPropertyChange("bank0",
+                                    address, bank0[address], value);
 
                             bank0[address] = value;
 
                         } else {
 
-                            changes.firePropertyChange(String.format("bank1[%d]", address),
-                                    bank1[address], value);
+                            changes.fireIndexedPropertyChange("bank1",
+                                    address, bank1[address], value);
 
                             bank1[address] = value;
                         }
@@ -262,11 +262,11 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
             } else {
 
-                changes.firePropertyChange(String.format("bank0[%d]", address),
-                        bank0[address], value);
+                changes.fireIndexedPropertyChange("bank0",
+                        address, bank0[address], value);
 
-                changes.firePropertyChange(String.format("bank1[%d]", address),
-                        bank1[address], value);
+                changes.fireIndexedPropertyChange("bank1",
+                        address, bank1[address], value);
 
                 if(bank.equals(Bank.BANK_0)) {
 

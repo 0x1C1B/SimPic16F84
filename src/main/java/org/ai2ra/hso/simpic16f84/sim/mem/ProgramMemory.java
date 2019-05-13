@@ -115,9 +115,10 @@ public class ProgramMemory <T> implements ObservableMemory<T> {
             } else {
                 T beforeSet = memory[address];
                 this.memory[address] = toSet;
-                changes.firePropertyChange(String.format("memory[%d]", address), beforeSet, toSet);
-
+                changes.fireIndexedPropertyChange("memory",
+                        address, beforeSet, toSet);
             }
+
         }finally {
 
             lock.writeLock().unlock();
