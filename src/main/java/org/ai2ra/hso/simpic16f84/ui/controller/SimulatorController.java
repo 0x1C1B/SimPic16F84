@@ -6,6 +6,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder;
+import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,7 +16,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import org.ai2ra.hso.simpic16f84.sim.Pic16F84VM;
+import org.ai2ra.hso.simpic16f84.sim.mem.RamMemory;
 import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
+import org.ai2ra.hso.simpic16f84.ui.model.SpecialFunctionRegister;
 import org.ai2ra.hso.simpic16f84.ui.model.StatusRegister;
 import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
 import org.apache.log4j.Level;
@@ -66,6 +69,12 @@ public class SimulatorController implements Initializable {
     @FXML TableColumn<StatusRegister, Integer> zBit;
     @FXML TableColumn<StatusRegister, Integer> dcBit;
     @FXML TableColumn<StatusRegister, Integer> cBit;
+
+    // Special Function Registers representation
+
+    @FXML TableView<SpecialFunctionRegister> specialRegisters;
+    @FXML TableColumn<SpecialFunctionRegister, String> registerName;
+    @FXML TableColumn<SpecialFunctionRegister, Integer> registerValue;
 
     // Simulator related utilities
 
@@ -189,6 +198,11 @@ public class SimulatorController implements Initializable {
         zBit.setCellValueFactory(new PropertyValueFactory<>("zeroFlag"));
         dcBit.setCellValueFactory(new PropertyValueFactory<>("digitCarryFlag"));
         cBit.setCellValueFactory(new PropertyValueFactory<>("carryFlag"));
+
+        // Setup Special Function Register table view
+
+        registerName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        registerValue.setCellValueFactory(new PropertyValueFactory<>("value"));
     }
 
     @FXML
@@ -394,6 +408,39 @@ public class SimulatorController implements Initializable {
                     status.setCarryFlag(value & 1);
 
                     statusRegister.getItems().setAll(status);
+
+                } else if (0x0C > ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    int address = ((IndexedPropertyChangeEvent) event).getIndex();
+                    int value = (int) event.getNewValue(); // Value of the SFR
+                    RamMemory.Bank bank = "bank0".equals(event.getPropertyName()) ?
+                            RamMemory.Bank.BANK_0 :
+                            RamMemory.Bank.BANK_1;
+
+                    RamMemory.SFR sfr = RamMemory.SFR.valueOf(bank, address);
+
+                    // Check if entry already exists
+
+                    FilteredList<SpecialFunctionRegister> filtered = specialRegisters.getItems()
+                            .filtered(register -> register.getName().equals(sfr.name()));
+
+                    if (filtered.isEmpty()) {
+
+                        // Add new row if it doesn't exist
+
+                        SpecialFunctionRegister register = new SpecialFunctionRegister();
+
+                        register.setName(sfr.name());
+                        register.setValue(value);
+
+                        specialRegisters.getItems().add(register);
+
+                    } else { // Entry exists, just update the value
+
+                        // Only one match should exist, just uses the first one
+
+                        filtered.get(0).setValue(value);
+                    }
                 }
             }
         }

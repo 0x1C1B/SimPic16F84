@@ -28,30 +28,32 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
     public enum SFR {
 
-        INDF(Bank.BANK_0, 0x00),
-        TMR0(Bank.BANK_0, 0x01),
-        PCL(Bank.BANK_0, 0x02),
-        STATUS(Bank.BANK_0, 0x03),
-        FSR(Bank.BANK_0, 0x04),
-        PORTA(Bank.BANK_0, 0x05),
-        PORTB(Bank.BANK_0, 0x06),
-        EEDATA(Bank.BANK_0, 0x08),
-        EEADR(Bank.BANK_0, 0x09),
-        PCLATH(Bank.BANK_0, 0x0A),
-        INTCON(Bank.BANK_0, 0x0B),
-        OPTION(Bank.BANK_1, 0x01),
-        TRISA(Bank.BANK_1, 0x05),
-        TRISB(Bank.BANK_1, 0x06),
-        EECON1(Bank.BANK_1, 0x08),
-        EECON2(Bank.BANK_1, 0x09);
+        INDF(Bank.BANK_0, 0x00, true),
+        TMR0(Bank.BANK_0, 0x01, false),
+        PCL(Bank.BANK_0, 0x02, true),
+        STATUS(Bank.BANK_0, 0x03, true),
+        FSR(Bank.BANK_0, 0x04, true),
+        PORTA(Bank.BANK_0, 0x05, false),
+        PORTB(Bank.BANK_0, 0x06, false),
+        EEDATA(Bank.BANK_0, 0x08, false),
+        EEADR(Bank.BANK_0, 0x09, false),
+        PCLATH(Bank.BANK_0, 0x0A, true),
+        INTCON(Bank.BANK_0, 0x0B, true),
+        OPTION(Bank.BANK_1, 0x01, false),
+        TRISA(Bank.BANK_1, 0x05, false),
+        TRISB(Bank.BANK_1, 0x06, false),
+        EECON1(Bank.BANK_1, 0x08, false),
+        EECON2(Bank.BANK_1, 0x09, false);
 
         private Bank bank;
         private int address;
+        private boolean mapped;
 
-        SFR(Bank bank, int address) {
+        SFR(Bank bank, int address, boolean mapped) {
 
             this.bank = bank;
             this.address = address;
+            this.mapped = mapped;
         }
 
         public int getAddress() {
@@ -62,6 +64,28 @@ public class RamMemory<T> implements ObservableMemory<T> {
         public Bank getBank() {
 
             return bank;
+        }
+
+        public boolean isMapped() {
+
+            return mapped;
+        }
+
+        public static SFR valueOf(Bank bank, int address) {
+
+            for (SFR sfr : values()) {
+
+                if (sfr.isMapped() && address == sfr.address) {
+
+                    return sfr; // Selected bank doesn't matter
+
+                } else if (sfr.bank.equals(bank) && address == sfr.address) {
+
+                    return sfr;
+                }
+            }
+
+            throw new IllegalArgumentException("No such address found");
         }
     }
 
