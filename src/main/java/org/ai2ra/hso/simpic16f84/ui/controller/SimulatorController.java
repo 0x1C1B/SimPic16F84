@@ -2,19 +2,21 @@ package org.ai2ra.hso.simpic16f84.ui.controller;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import org.ai2ra.hso.simpic16f84.sim.Pic16F84VM;
 import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
+import org.ai2ra.hso.simpic16f84.ui.model.StatusRegister;
 import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -26,8 +28,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -57,15 +57,15 @@ public class SimulatorController implements Initializable {
 
     // STATUS register representation
 
-    @FXML TableView<List<Integer>> statusRegister;
-    @FXML TableColumn<List<Integer>, String> irpBit;
-    @FXML TableColumn<List<Integer>, String> rp1Bit;
-    @FXML TableColumn<List<Integer>, String> rp0Bit;
-    @FXML TableColumn<List<Integer>, String> toBit;
-    @FXML TableColumn<List<Integer>, String> pdBit;
-    @FXML TableColumn<List<Integer>, String> zBit;
-    @FXML TableColumn<List<Integer>, String> dcBit;
-    @FXML TableColumn<List<Integer>, String> cBit;
+    @FXML TableView<StatusRegister> statusRegister;
+    @FXML TableColumn<StatusRegister, Integer> irpBit;
+    @FXML TableColumn<StatusRegister, Integer> rp1Bit;
+    @FXML TableColumn<StatusRegister, Integer> rp0Bit;
+    @FXML TableColumn<StatusRegister, Integer> toBit;
+    @FXML TableColumn<StatusRegister, Integer> pdBit;
+    @FXML TableColumn<StatusRegister, Integer> zBit;
+    @FXML TableColumn<StatusRegister, Integer> dcBit;
+    @FXML TableColumn<StatusRegister, Integer> cBit;
 
     // Simulator related utilities
 
@@ -181,14 +181,14 @@ public class SimulatorController implements Initializable {
 
         // Setup STATUS register table view
 
-        irpBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(7))));
-        rp1Bit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(6))));
-        rp0Bit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(5))));
-        toBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(4))));
-        pdBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(3))));
-        zBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(2))));
-        dcBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(1))));
-        cBit.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().get(0))));
+        irpBit.setCellValueFactory(new PropertyValueFactory<>("irpFlag"));
+        rp1Bit.setCellValueFactory(new PropertyValueFactory<>("rp1Flag"));
+        rp0Bit.setCellValueFactory(new PropertyValueFactory<>("rp0Flag"));
+        toBit.setCellValueFactory(new PropertyValueFactory<>("toFlag"));
+        pdBit.setCellValueFactory(new PropertyValueFactory<>("pdFlag"));
+        zBit.setCellValueFactory(new PropertyValueFactory<>("zeroFlag"));
+        dcBit.setCellValueFactory(new PropertyValueFactory<>("digitCarryFlag"));
+        cBit.setCellValueFactory(new PropertyValueFactory<>("carryFlag"));
     }
 
     @FXML
@@ -380,19 +380,20 @@ public class SimulatorController implements Initializable {
                 if (0x03 == ((IndexedPropertyChangeEvent) event).getIndex()) {
 
                     int value = (int) event.getNewValue(); // Value of STATUS register
-                    ObservableList<List<Integer>> data = FXCollections.observableArrayList();
-                    List<Integer> status = new ArrayList<>();
+                    StatusRegister status = new StatusRegister();
 
                     // Disassemble STATUS register value in single bits
 
-                    for (int bit = 0; bit < 8; ++bit) {
+                    status.setIrpFlag((value >> 7) & 1);
+                    status.setRp1Flag((value >> 6) & 1);
+                    status.setRp0Flag((value >> 5) & 1);
+                    status.setToFlag((value >> 4) & 1);
+                    status.setPdFlag((value >> 3) & 1);
+                    status.setZeroFlag((value >> 2) & 1);
+                    status.setDigitCarryFlag((value >> 1) & 1);
+                    status.setCarryFlag(value & 1);
 
-                        status.add(bit, (value >> bit) & 1);
-                    }
-
-                    data.clear();
-                    data.add(status);
-                    statusRegister.setItems(data);
+                    statusRegister.getItems().setAll(status);
                 }
             }
         }
