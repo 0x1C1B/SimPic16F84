@@ -188,6 +188,11 @@ public class InstructionExecutor {
                     executeGOTO(instruction);
                     break;
                 }
+                case MOVWF: {
+
+                    executeMOVWF(instruction);
+                    break;
+                }
                 case NOP:
                 default: {
 
@@ -1004,5 +1009,39 @@ public class InstructionExecutor {
         programCounter = programCounter | pclathBits; // Adding PCLATH
 
         LOGGER.debug(String.format("GOTO: Goes to instruction at 0x%04X", programCounter));
+    }
+
+    /**
+     * Move data from W register to register 'f'
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+    private void executeMOVWF(Instruction instruction) {
+
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+
+            LOGGER.debug(String.format("MOVWF: Moves data from working register to address 0x%02X in %s", address, bank));
+
+            // Moving data from W register to 'f' register
+            ram.set(bank, address, workingRegister);
+
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+
+            LOGGER.debug(String.format("MOVWF: Moves data from working register to address 0x%02X in %s", instruction.getArguments()[1], bank));
+
+            // Moving data from W register to 'f' register
+            ram.set(bank, instruction.getArguments()[1], workingRegister);
+        }
     }
 }
