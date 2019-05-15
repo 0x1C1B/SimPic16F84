@@ -76,6 +76,10 @@ public class SimulatorController implements Initializable {
     @FXML TableColumn<SpecialFunctionRegister, String> registerName;
     @FXML TableColumn<SpecialFunctionRegister, Integer> registerValue;
 
+    // Address stack components
+
+    @FXML ListView<String> addressStack;
+
     // Simulator related utilities
 
     private Pic16F84VM simulator;
@@ -116,6 +120,7 @@ public class SimulatorController implements Initializable {
         // Register memory change listeners
 
         simulator.getRam().addPropertyChangeListener(new RamMemoryChangeListener());
+        simulator.getStack().addPropertyChangeListener(new StackMemoryChangeListener());
     }
 
     @Override
@@ -407,7 +412,7 @@ public class SimulatorController implements Initializable {
                     status.setDigitCarryFlag((value >> 1) & 1);
                     status.setCarryFlag(value & 1);
 
-                    statusRegister.getItems().setAll(status);
+                    Platform.runLater(() -> statusRegister.getItems().setAll(status));
 
                 } else if (0x0C > ((IndexedPropertyChangeEvent) event).getIndex()) {
 
@@ -419,30 +424,63 @@ public class SimulatorController implements Initializable {
 
                     RamMemory.SFR sfr = RamMemory.SFR.valueOf(bank, address);
 
-                    // Check if entry already exists
+                    Platform.runLater(() -> {
 
-                    FilteredList<SpecialFunctionRegister> filtered = specialRegisters.getItems()
-                            .filtered(register -> register.getName().equals(sfr.name()));
+                        // Check if entry already exists
 
-                    if (filtered.isEmpty()) {
+                        FilteredList<SpecialFunctionRegister> filtered = specialRegisters.getItems()
+                                .filtered(register -> register.getName().equals(sfr.name()));
 
-                        // Add new row if it doesn't exist
+                        if (filtered.isEmpty()) {
 
-                        SpecialFunctionRegister register = new SpecialFunctionRegister();
+                            // Add new row if it doesn't exist
 
-                        register.setName(sfr.name());
-                        register.setValue(value);
+                            SpecialFunctionRegister register = new SpecialFunctionRegister();
 
-                        specialRegisters.getItems().add(register);
+                            register.setName(sfr.name());
+                            register.setValue(value);
 
-                    } else { // Entry exists, just update the value
+                            specialRegisters.getItems().add(register);
 
-                        // Only one match should exist, just uses the first one
+                        } else { // Entry exists, just update the value
 
-                        filtered.get(0).setValue(value);
-                    }
+                            // Only one match should exist, just uses the first one
+
+                            filtered.get(0).setValue(value);
+                        }
+                    });
                 }
             }
+        }
+    }
+
+    /**
+     * Responsible for handling memory changes inside of the stack memory
+     * structure. This class updates the user interface when changes are
+     * received.
+     *
+     * @author 0x1C1B
+     * @see PropertyChangeListener
+     */
+
+    private class StackMemoryChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+
+            Platform.runLater(() -> {
+
+                if (null == event.getNewValue()) { // Element was removed
+
+                    addressStack.getItems().remove(0); // Remove element on top of list
+
+                } else {
+
+                    // Add element to top of list
+
+                    addressStack.getItems().add(0, Integer.toHexString((int) event.getNewValue()));
+                }
+            });
         }
     }
 }

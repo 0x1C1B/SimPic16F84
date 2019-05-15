@@ -130,7 +130,7 @@ public class StackMemory<T> implements ObservableMemory<T> {
             }
 
             changes.fireIndexedPropertyChange("memory",
-                    pointer + 1, 0, value);
+                    pointer + 1, null, value);
 
             memory[++pointer] = value;
 
@@ -161,7 +161,7 @@ public class StackMemory<T> implements ObservableMemory<T> {
             }
 
             changes.fireIndexedPropertyChange("memory",
-                    pointer, memory[pointer], 0);
+                    pointer, memory[pointer], null);
 
             return memory[pointer--];
 
