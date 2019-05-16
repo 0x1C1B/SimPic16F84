@@ -38,9 +38,10 @@ public class InstructionExecutor {
     public InstructionExecutor(ProgramMemory<Integer> programMemory, RamMemory<Integer> ram,
                                StackMemory<Integer> stack, EepromMemory<Integer> eeprom) {
 
-        this.workingRegister = 0;
         this.instructionRegister = 0;
         this.programCounter = 0;
+
+        setWorkingRegister(0);
 
         this.programMemory = programMemory;
         this.ram = ram;
@@ -344,7 +345,7 @@ public class InstructionExecutor {
 
         LOGGER.debug("CLRW: Clears the working register");
 
-        workingRegister = 0;
+        setWorkingRegister(0);
         setZeroFlag();
     }
 
@@ -383,7 +384,7 @@ public class InstructionExecutor {
             clearCarryFlag();
         }
 
-        workingRegister = (instruction.getArguments()[0] + workingRegister);
+        setWorkingRegister(instruction.getArguments()[0] + workingRegister);
 
         // Check for zero result
 
@@ -432,7 +433,7 @@ public class InstructionExecutor {
             clearCarryFlag();
         }
 
-        workingRegister = (instruction.getArguments()[0] - workingRegister);
+        setWorkingRegister(instruction.getArguments()[0] - workingRegister);
 
         // Check for zero result
 
@@ -457,7 +458,7 @@ public class InstructionExecutor {
 
         LOGGER.debug(String.format("ANDLW: Conjuncts literal 0x%02X with working register", instruction.getArguments()[0]));
 
-        workingRegister = (instruction.getArguments()[0] & workingRegister);
+        setWorkingRegister(instruction.getArguments()[0] & workingRegister);
 
         //Checking for a Zero result after the AND operation.
 
@@ -482,7 +483,7 @@ public class InstructionExecutor {
 
         LOGGER.debug(String.format("MOVLW: Moves literal 0x%02X into working register", instruction.getArguments()[0]));
 
-        workingRegister = instruction.getArguments()[0];
+        setWorkingRegister(instruction.getArguments()[0]);
     }
 
     /**
@@ -542,7 +543,7 @@ public class InstructionExecutor {
 
             if (0 == instruction.getArguments()[0]) {
 
-                workingRegister = value + workingRegister;
+                setWorkingRegister(value + workingRegister);
 
             } else {
 
@@ -595,7 +596,7 @@ public class InstructionExecutor {
 
             if (0 == instruction.getArguments()[0]) {
 
-                workingRegister = value + workingRegister;
+                setWorkingRegister(value + workingRegister);
 
             } else {
 
@@ -628,7 +629,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value & workingRegister;
+                setWorkingRegister(value & workingRegister);
 
             } else {
 
@@ -657,7 +658,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value & workingRegister;
+                setWorkingRegister(value & workingRegister);
 
             } else {
 
@@ -687,7 +688,7 @@ public class InstructionExecutor {
 
         LOGGER.debug(String.format("IORLW: Inclusive disjunction of literal 0x%02X with working register", instruction.getArguments()[0]));
 
-        workingRegister = instruction.getArguments()[0] | workingRegister;
+        setWorkingRegister(instruction.getArguments()[0] | workingRegister);
 
         //checking for a zero result after the OR operation.
 
@@ -712,7 +713,7 @@ public class InstructionExecutor {
 
         LOGGER.debug(String.format("XORLW: Exclusive disjunction of literal 0x%02X with working register", instruction.getArguments()[0]));
 
-        workingRegister = instruction.getArguments()[0] ^ workingRegister;
+        setWorkingRegister(instruction.getArguments()[0] ^ workingRegister);
 
         //checking for a zero result after the OR operation.
 
@@ -752,7 +753,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value ^ workingRegister;
+                setWorkingRegister(value ^ workingRegister);
 
             } else {
 
@@ -781,7 +782,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value ^ workingRegister;
+                setWorkingRegister(value ^ workingRegister);
 
             } else {
 
@@ -856,7 +857,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = workingRegister - value;
+                setWorkingRegister(workingRegister - value);
 
             } else {
 
@@ -904,7 +905,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = workingRegister - value;
+                setWorkingRegister(workingRegister - value);
 
             } else {
 
@@ -975,7 +976,7 @@ public class InstructionExecutor {
          */
 
         programCounter = stack.pop();
-        workingRegister = instruction.getArguments()[0]; // Stores return value
+        setWorkingRegister(instruction.getArguments()[0]); // Stores return value
 
         LOGGER.debug(String.format("RETLW: Return from subroutine to 0x%04X with value 0x%02X", programCounter, instruction.getArguments()[0]));
 
@@ -1120,7 +1121,7 @@ public class InstructionExecutor {
 				//Checking for destination.
 				if (instruction.getArguments()[0] == 0) {
 
-					 workingRegister = ~value;
+                    setWorkingRegister(~value);
 
 				} else {
 
@@ -1150,7 +1151,7 @@ public class InstructionExecutor {
 				//Checking for destination.
 				if (instruction.getArguments()[0] == 0) {
 
-					 workingRegister = ~value;
+                    setWorkingRegister(~value);
 
 				} else {
 
@@ -1192,7 +1193,8 @@ public class InstructionExecutor {
             // Checking if value gets negative after decrementing.
             if (0 > value-1 && instruction.getArguments()[0] == 0){
 
-                workingRegister = 0xFF;
+                setWorkingRegister(0xFF);
+
             }else if (0 > value-1){
 
                 ram.set(bank, address, 0xFF);
@@ -1200,7 +1202,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value-1;
+                setWorkingRegister(value - 1);
 
             } else {
 
@@ -1230,7 +1232,8 @@ public class InstructionExecutor {
             // Checking if value gets negative after decrementing.
             if (0 > value-1 && instruction.getArguments()[0] == 0){
 
-                workingRegister = 0xFF;
+                setWorkingRegister(0xFF);
+
             }else if (0 > value-1){
 
                 ram.set(bank, instruction.getArguments()[1], 0xFF);
@@ -1238,7 +1241,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value-1;
+                setWorkingRegister(value - 1);
 
             } else {
 
@@ -1280,7 +1283,7 @@ public class InstructionExecutor {
             // Checking if value gets negative after decrementing.
             if (255 < value+1 && instruction.getArguments()[0] == 0){
 
-                workingRegister = 0x00;
+                setWorkingRegister(0x00);
                 setZeroFlag();
 
             }else if (255 < value+1){
@@ -1291,7 +1294,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value+1;
+                setWorkingRegister(value + 1);
 
             } else {
 
@@ -1321,7 +1324,7 @@ public class InstructionExecutor {
             // Checking if value gets negative after decrementing.
             if (255 < value+1 && instruction.getArguments()[0] == 0){
 
-                workingRegister = 0x00;
+                setWorkingRegister(0x00);
                 setZeroFlag();
 
             }else if (255 < value+1){
@@ -1332,7 +1335,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value+1;
+                setWorkingRegister(value + 1);
 
             } else {
 
@@ -1375,7 +1378,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value;
+                setWorkingRegister(value);
 
             } else {
 
@@ -1405,7 +1408,7 @@ public class InstructionExecutor {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                workingRegister = value;
+                setWorkingRegister(value);
 
             } else {
 
