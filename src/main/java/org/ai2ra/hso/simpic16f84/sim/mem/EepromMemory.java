@@ -6,13 +6,21 @@ import java.util.Arrays;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class EepromMemory<T> implements ObservableMemory<T> {
+/**
+ * Represents the EEPROM (Electrically Erasable Programmable Read-Only Memory) structure.
+ * In theory or of course also hardware implemented, this memory block allows persisting
+ * data beyond MCU restarts. The current software implementation of this class <b>doesn't</b>
+ * support such behaviour.
+ *
+ * @param <T> The type of data that is stored inside of memory
+ * @author Freddy1096
+ */
 
+public class EepromMemory<T> implements ObservableMemory<T> {
 
     private T[] memory;
     private PropertyChangeSupport changes;
     private ReadWriteLock lock;
-
 
     public EepromMemory(int size) {
 
@@ -66,7 +74,6 @@ public class EepromMemory<T> implements ObservableMemory<T> {
             if (memory.length == 0 || address > memory.length || address < 0) {
 
                 throw new MemoryIndexOutOfBoundsException();
-
             }
 
             return memory[address];
@@ -99,7 +106,6 @@ public class EepromMemory<T> implements ObservableMemory<T> {
         }
     }
 
-
     public void set(T toSet, int address) {
 
         lock.writeLock().lock();
@@ -113,7 +119,8 @@ public class EepromMemory<T> implements ObservableMemory<T> {
             } else {
                 T beforeSet = memory[address];
                 this.memory[address] = toSet;
-                changes.firePropertyChange(String.format("memory[%d]", address), beforeSet, toSet);
+                changes.fireIndexedPropertyChange("memory",
+                        address, beforeSet, toSet);
 
             }
         }finally {
@@ -123,6 +130,12 @@ public class EepromMemory<T> implements ObservableMemory<T> {
         }
     }
 
+    /**
+     * Resets the memory block by initializing all cells with <code>null</code>.
+     * Important to note is, that because it uses objects, in case of the int type
+     * the wrapper class {@link Integer}, all cells are initialized
+     * with <code>null</code> <b>not</b> 0.
+     */
 
     public void reset(){
 
