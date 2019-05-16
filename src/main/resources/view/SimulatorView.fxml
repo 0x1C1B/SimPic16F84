@@ -172,6 +172,7 @@
                                                 <columns>
                                                     <TableColumn fx:id="gprAddress" prefWidth="75.0" text="Address"/>
                                                     <TableColumn fx:id="gprValue" prefWidth="75.0" text="Value"/>
+                                                    <TableColumn fx:id="gprOptions" prefWidth="75.0" text="Options"/>
                                                 </columns>
                                                 <columnResizePolicy>
                                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

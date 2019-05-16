@@ -2,16 +2,14 @@ package org.ai2ra.hso.simpic16f84.ui.controller;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
 import javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder;
 import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
@@ -26,6 +24,7 @@ import org.ai2ra.hso.simpic16f84.ui.model.StatusRegister;
 import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.beans.IndexedPropertyChangeEvent;
 import java.beans.PropertyChangeEvent;
@@ -84,6 +83,7 @@ public class SimulatorController implements Initializable {
     @FXML TableView<GeneralPurposeRegister> generalRegisters;
     @FXML TableColumn<GeneralPurposeRegister, String> gprAddress;
     @FXML TableColumn<GeneralPurposeRegister, String> gprValue;
+    @FXML TableColumn<GeneralPurposeRegister, GeneralPurposeRegister> gprOptions;
     @FXML Spinner<Integer> addressField;
 
     // Address stack components
@@ -246,6 +246,33 @@ public class SimulatorController implements Initializable {
         // Use custom factory for printing as hex string in prefix format
         gprAddress.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getAddress())));
         gprValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getValue())));
+
+        gprOptions.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
+        gprOptions.setCellFactory(param -> new TableCell<GeneralPurposeRegister, GeneralPurposeRegister>() {
+
+            private Button delete = new Button();
+
+            {
+                delete.setGraphic(new FontIcon("fas-trash"));
+                delete.setStyle("-fx-background-color: transparent;");
+                setAlignment(Pos.CENTER);
+            }
+
+            @Override
+            protected void updateItem(GeneralPurposeRegister item, boolean empty) {
+
+                super.updateItem(item, empty);
+
+                if (null == item) {
+
+                    setGraphic(null);
+                    return;
+                }
+
+                setGraphic(delete);
+                delete.setOnAction(event -> getTableView().getItems().remove(item));
+            }
+        });
     }
 
     @FXML
