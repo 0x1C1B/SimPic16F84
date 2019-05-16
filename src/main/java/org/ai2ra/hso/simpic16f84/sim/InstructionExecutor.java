@@ -165,9 +165,14 @@ public class InstructionExecutor {
                     executeDECF(instruction);
                     break;
                 }
-                case INCF : {
+                case INCF: {
 
                     executeINCF(instruction);
+                    break;
+                }
+                case MOVF: {
+
+                    executeMOVF(instruction);
                     break;
                 }
                 case NOP:
@@ -1281,6 +1286,79 @@ public class InstructionExecutor {
             } else {
 
                 ram.set(bank, instruction.getArguments()[1], value+1);
+            }
+        }
+    }
+
+    /**
+     * The contents of register f is moved to a
+     * destination dependant upon the status
+     * of d. If d = 0, destination is W register. If
+     * d = 1, the destination is file register f
+     * itself. d = 1 is useful to test a file register since status flag Z is affected.
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+    private void executeMOVF(Instruction instruction){
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+
+            LOGGER.debug(String.format("MOVF: Moves data from register at address 0x%02X in %s to Working register or itself", address, bank));
+
+            int value = ram.get(bank, address);
+
+            // Checking for Zero Flag
+            if (0 == value) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = value;
+
+            } else {
+
+                ram.set(bank, address, value);
+            }
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+
+            LOGGER.debug(String.format("MOVF: Moves data from register at address 0x%02X in %s to Working register or itself", instruction.getArguments()[1], bank));
+
+            int value = ram.get(bank, instruction.getArguments()[1]);
+
+            // Checking for Zero Flag
+            if (0 == value) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+
+
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = value;
+
+            } else {
+
+                ram.set(bank, instruction.getArguments()[1], value);
             }
         }
     }
