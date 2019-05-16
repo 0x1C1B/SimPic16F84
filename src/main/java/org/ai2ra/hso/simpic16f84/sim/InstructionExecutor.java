@@ -3,6 +3,8 @@ package org.ai2ra.hso.simpic16f84.sim;
 import org.ai2ra.hso.simpic16f84.sim.mem.*;
 import org.apache.log4j.Logger;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -26,6 +28,7 @@ public class InstructionExecutor {
     private EepromMemory<Integer> eeprom;
 
     private ReentrantLock lock;
+    private PropertyChangeSupport changes;
 
     static {
 
@@ -45,6 +48,7 @@ public class InstructionExecutor {
         this.eeprom = eeprom;
 
         lock = new ReentrantLock();
+        changes = new PropertyChangeSupport(this);
     }
 
     /**
@@ -192,7 +196,54 @@ public class InstructionExecutor {
         }
     }
 
+    /**
+     * Adds a change listener <b>only</b> for observing the executor's state. This pattern
+     * is specially intended to use for the working register.
+     *
+     * @param listener The listener that should be registered
+     */
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+
+        changes.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Removes a change listener <b>only</b> from the change support of the executor.
+     *
+     * @param listener The listener that should be removed
+     */
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+
+        changes.removePropertyChangeListener(listener);
+    }
+
     // Utility methods
+
+    /**
+     * Used for changing content of working register. Moreover this method allows
+     * notifying all observers.
+     *
+     * @param value The value that should be written to working register
+     */
+
+    private void setWorkingRegister(Integer value) {
+
+        changes.firePropertyChange("workingRegister", workingRegister, value);
+        workingRegister = value;
+    }
+
+    /**
+     * Used for fetching the content of the working register.
+     *
+     * @return Returns the current content of the working register
+     */
+
+    public Integer getWorkingRegister() {
+
+        return workingRegister;
+    }
 
     /**
      * Sets the digit carry flag inside of status register {@link RamMemory RAM}.
