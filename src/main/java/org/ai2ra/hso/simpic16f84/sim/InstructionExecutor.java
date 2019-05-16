@@ -155,6 +155,11 @@ public class InstructionExecutor {
                     executeCLRF(instruction);
                     break;
                 }
+					 case COMF: {
+
+					 	 executeCOMF(instruction);
+					 	 break;
+					 }
                 case NOP:
                 default: {
 
@@ -1014,4 +1019,77 @@ public class InstructionExecutor {
             setZeroFlag();
         }
     }
+
+	 /**
+	  * The contents of register ’f’ are complemented. If ’d’ is 0 the result is stored in
+	  * W. If ’d’ is 1 the result is stored back in
+	  * register ’f’.
+	  * @param instruction Instruction consisting out of OPC and arguments
+	  */
+	 private void executeCOMF(Instruction instruction){
+
+		  if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+				// Get the lower 7 Bits of FSR if indirect addressing
+				int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+				// Fetching value
+				int value = ram.get(bank, address);
+
+
+				// Checking for Zero result
+				if (0 == ~value) {
+
+					 setZeroFlag();
+				} else {
+
+					 clearZeroFlag();
+				}
+
+				LOGGER.debug(String.format("COMF: Complementing data from register at address 0x%02X in %s", address, bank));
+
+				//Checking for destination.
+				if (instruction.getArguments()[0] == 0) {
+
+					 workingRegister = ~value;
+
+				} else {
+
+					 ram.set(bank, address, ~value);
+				}
+
+
+		  } else { //Direct addressing.
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+				// Fetching value
+				int value = ram.get(bank, instruction.getArguments()[1]);
+
+				// Checking for Zero result
+				if (0 == ~value) {
+
+					 setZeroFlag();
+				} else {
+
+					 clearZeroFlag();
+				}
+
+				LOGGER.debug(String.format("COMF: Complementing data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
+
+				//Checking for destination.
+				if (instruction.getArguments()[0] == 0) {
+
+					 workingRegister = ~value;
+
+				} else {
+
+					 ram.set(bank, instruction.getArguments()[1], ~value);
+				}
+		  }
+	 }
 }
