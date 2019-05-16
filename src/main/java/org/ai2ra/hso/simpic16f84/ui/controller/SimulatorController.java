@@ -5,6 +5,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder;
 import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
@@ -15,9 +16,11 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import javafx.util.StringConverter;
 import org.ai2ra.hso.simpic16f84.sim.Pic16F84VM;
 import org.ai2ra.hso.simpic16f84.sim.mem.RamMemory;
 import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
+import org.ai2ra.hso.simpic16f84.ui.model.GeneralPurposeRegister;
 import org.ai2ra.hso.simpic16f84.ui.model.SpecialFunctionRegister;
 import org.ai2ra.hso.simpic16f84.ui.model.StatusRegister;
 import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
@@ -73,8 +76,15 @@ public class SimulatorController implements Initializable {
     // Special Function Registers representation
 
     @FXML TableView<SpecialFunctionRegister> specialRegisters;
-    @FXML TableColumn<SpecialFunctionRegister, String> registerName;
-    @FXML TableColumn<SpecialFunctionRegister, Integer> registerValue;
+    @FXML TableColumn<SpecialFunctionRegister, String> sfrName;
+    @FXML TableColumn<SpecialFunctionRegister, String> sfrValue;
+
+    // General Purpose Registers representation
+
+    @FXML TableView<GeneralPurposeRegister> generalRegisters;
+    @FXML TableColumn<GeneralPurposeRegister, String> gprAddress;
+    @FXML TableColumn<GeneralPurposeRegister, String> gprValue;
+    @FXML Spinner<Integer> addressField;
 
     // Address stack components
 
@@ -206,8 +216,36 @@ public class SimulatorController implements Initializable {
 
         // Setup Special Function Register table view
 
-        registerName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        registerValue.setCellValueFactory(new PropertyValueFactory<>("value"));
+        sfrName.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        // Use custom factory for printing as hex string in prefix format
+        sfrValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getValue())));
+
+        // Setup General Purpose Register section
+
+        SpinnerValueFactory<Integer> addressFactory = new SpinnerValueFactory.
+                IntegerSpinnerValueFactory(0x0C, 0x7F, 0x0C);
+
+        addressFactory.setConverter(new StringConverter<Integer>() {
+
+            @Override
+            public String toString(Integer object) {
+
+                return String.format("0x%02X", object);
+            }
+
+            @Override
+            public Integer fromString(String string) {
+
+                return Integer.decode(string);
+            }
+        });
+
+        addressField.setValueFactory(addressFactory);
+
+        // Use custom factory for printing as hex string in prefix format
+        gprAddress.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getAddress())));
+        gprValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getValue())));
     }
 
     @FXML
@@ -378,6 +416,30 @@ public class SimulatorController implements Initializable {
         new Thread(task).start();
     }
 
+    @FXML
+    private void onObserveRegisterAction(ActionEvent event) {
+
+        int address = addressField.getValue();
+        int value = null == simulator.getRam().get(address) ? 0 : simulator.getRam().get(address);
+
+        // Check if entry already exists
+
+        FilteredList<GeneralPurposeRegister> filtered = generalRegisters.getItems()
+                .filtered(register -> address == register.getAddress());
+
+        if (filtered.isEmpty()) {
+
+            // Add new observer if it doesn't exist
+
+            GeneralPurposeRegister register = new GeneralPurposeRegister();
+
+            register.setAddress(address);
+            register.setValue(value);
+
+            generalRegisters.getItems().add(register);
+        }
+    }
+
     /**
      * Responsible for handling memory changes inside of the RAM memory
      * structure. This class updates the user interface when changes are
@@ -449,6 +511,22 @@ public class SimulatorController implements Initializable {
                             filtered.get(0).setValue(value);
                         }
                     });
+
+                } else if (0x0C <= ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    // Update just observed General Purpose Registers
+
+                    int address = ((IndexedPropertyChangeEvent) event).getIndex();
+
+                    FilteredList<GeneralPurposeRegister> filtered = generalRegisters.getItems()
+                            .filtered(register -> address == register.getAddress());
+
+                    if (!filtered.isEmpty()) {
+
+                        // Only one match should exist, just uses the first one
+
+                        filtered.get(0).setValue((int) event.getNewValue());
+                    }
                 }
             }
         }
@@ -478,7 +556,7 @@ public class SimulatorController implements Initializable {
 
                     // Add element to top of list
 
-                    addressStack.getItems().add(0, Integer.toHexString((int) event.getNewValue()));
+                    addressStack.getItems().add(0, String.format("0x%04X", (int) event.getNewValue()));
                 }
             });
         }
