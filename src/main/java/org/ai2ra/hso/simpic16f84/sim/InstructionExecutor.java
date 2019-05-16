@@ -193,6 +193,26 @@ public class InstructionExecutor {
                     executeMOVWF(instruction);
                     break;
                 }
+                case CLRF: {
+
+                    executeCLRF(instruction);
+                    break;
+                }
+					 case COMF: {
+
+					 	 executeCOMF(instruction);
+					 	 break;
+					 }
+                case DECF: {
+
+                    executeDECF(instruction);
+                    break;
+                }
+                case INCF : {
+
+                    executeINCF(instruction);
+                    break;
+                }
                 case NOP:
                 default: {
 
@@ -1042,6 +1062,301 @@ public class InstructionExecutor {
 
             // Moving data from W register to 'f' register
             ram.set(bank, instruction.getArguments()[1], workingRegister);
+        }
+    }
+
+    /**
+     * The contents of register ’f’ are cleared
+     * and the Z bit is set.
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+    private void executeCLRF(Instruction instruction){
+
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+
+            LOGGER.debug(String.format("CLRF: Clears data from register at address 0x%02X in %s", address, bank));
+
+            // Moving data from W register to 'f' register
+            ram.set(bank, address, 0);
+
+            // Setting Zero Flag
+            setZeroFlag();
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+
+            LOGGER.debug(String.format("CLRF: Clears data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
+
+            // Moving data from W register to 'f' register
+            ram.set(bank, instruction.getArguments()[1], 0);
+
+            // Setting Zero Flag
+            setZeroFlag();
+        }
+    }
+
+	 /**
+	  * The contents of register ’f’ are complemented. If ’d’ is 0 the result is stored in
+	  * W. If ’d’ is 1 the result is stored back in
+	  * register ’f’.
+	  * @param instruction Instruction consisting out of OPC and arguments
+	  */
+	 private void executeCOMF(Instruction instruction){
+
+		  if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+				// Get the lower 7 Bits of FSR if indirect addressing
+				int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+				// Fetching value
+				int value = ram.get(bank, address);
+
+
+				// Checking for Zero result
+				if (0 == ~value) {
+
+					 setZeroFlag();
+				} else {
+
+					 clearZeroFlag();
+				}
+
+				LOGGER.debug(String.format("COMF: Complementing data from register at address 0x%02X in %s", address, bank));
+
+				//Checking for destination.
+				if (instruction.getArguments()[0] == 0) {
+
+					 workingRegister = ~value;
+
+				} else {
+
+					 ram.set(bank, address, ~value);
+				}
+
+
+		  } else { //Direct addressing.
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+				// Fetching value
+				int value = ram.get(bank, instruction.getArguments()[1]);
+
+				// Checking for Zero result
+				if (0 == ~value) {
+
+					 setZeroFlag();
+				} else {
+
+					 clearZeroFlag();
+				}
+
+				LOGGER.debug(String.format("COMF: Complementing data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
+
+				//Checking for destination.
+				if (instruction.getArguments()[0] == 0) {
+
+					 workingRegister = ~value;
+
+				} else {
+
+					 ram.set(bank, instruction.getArguments()[1], ~value);
+				}
+		  }
+	 }
+
+    /**
+     * Decrement register ’f’. If ’d’ is 0 the
+     * result is stored in the W register. If ’d’ is
+     * 1 the result is stored back in register ’f’.
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+	 private void executeDECF(Instruction instruction){
+
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = ram.get(bank, address);
+
+
+            LOGGER.debug(String.format("DECF: Decrements data from register at address 0x%02X in %s", address, bank));
+
+            // Checking for Zero result
+            if (0 == value-1) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+            // Checking if value gets negative after decrementing.
+            if (0 > value-1 && instruction.getArguments()[0] == 0){
+
+                workingRegister = 0xFF;
+            }else if (0 > value-1){
+
+                ram.set(bank, address, 0xFF);
+            }
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = value-1;
+
+            } else {
+
+                ram.set(bank, address, value-1);
+            }
+
+
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = ram.get(bank, instruction.getArguments()[1]);
+
+            LOGGER.debug(String.format("DECF: Decrements data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
+
+            // Checking for Zero result
+            if (0 == value-1) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+            // Checking if value gets negative after decrementing.
+            if (0 > value-1 && instruction.getArguments()[0] == 0){
+
+                workingRegister = 0xFF;
+            }else if (0 > value-1){
+
+                ram.set(bank, instruction.getArguments()[1], 0xFF);
+            }
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = value-1;
+
+            } else {
+
+                ram.set(bank, instruction.getArguments()[1], value-1);
+            }
+        }
+    }
+
+    /**
+     * The contents of register ’f’ are incremented. If ’d’ is 0 the result is placed in
+     * the W register. If ’d’ is 1 the result is
+     * placed back in register ’f’.
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+    private void executeINCF(Instruction instruction){
+
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = ram.get(bank, address);
+
+
+            LOGGER.debug(String.format("INCF: Increments data from register at address 0x%02X in %s", address, bank));
+
+            // Checking for Zero result
+            if (0 == value+1) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+            // Checking if value gets negative after decrementing.
+            if (255 < value+1 && instruction.getArguments()[0] == 0){
+
+                workingRegister = 0x00;
+                setZeroFlag();
+
+            }else if (255 < value+1){
+
+                ram.set(bank, address, 0x00);
+                setZeroFlag();
+            }
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = value+1;
+
+            } else {
+
+                ram.set(bank, address, value+1);
+            }
+
+
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = ram.get(bank, instruction.getArguments()[1]);
+
+            LOGGER.debug(String.format("INCF: Increments data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
+
+            // Checking for Zero result
+            if (0 == value+1) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+            // Checking if value gets negative after decrementing.
+            if (255 < value+1 && instruction.getArguments()[0] == 0){
+
+                workingRegister = 0x00;
+                setZeroFlag();
+
+            }else if (255 < value+1){
+
+                ram.set(bank, instruction.getArguments()[1], 0x00);
+                setZeroFlag();
+            }
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = value+1;
+
+            } else {
+
+                ram.set(bank, instruction.getArguments()[1], value+1);
+            }
         }
     }
 }
