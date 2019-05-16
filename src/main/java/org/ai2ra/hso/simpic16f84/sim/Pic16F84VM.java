@@ -148,6 +148,24 @@ public class Pic16F84VM {
     }
 
     /**
+     * Primarily used for observing internal states of the executor.
+     *
+     * <p>
+     * <b>Important:</b> This method is a security issue and should only be used
+     * for good reasons.
+     * </p>
+     *
+     * @return Returns the internally used instructione executor
+     * @deprecated Should only used for good reasons, because it's not mutable
+     */
+
+    @Deprecated
+    public InstructionExecutor getExecutor() {
+
+        return executor;
+    }
+
+    /**
      * Adds a change listener <b>only</b> for observing the virtual machines state. For
      * observing memory changes, the listeners must be registered for the related memory
      * structures.

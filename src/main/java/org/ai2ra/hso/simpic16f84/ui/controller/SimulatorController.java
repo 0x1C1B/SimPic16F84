@@ -90,6 +90,10 @@ public class SimulatorController implements Initializable {
 
     @FXML ListView<String> addressStack;
 
+    // Working register components
+
+    @FXML TextField workingRegister;
+
     // Simulator related utilities
 
     private Pic16F84VM simulator;
@@ -131,6 +135,7 @@ public class SimulatorController implements Initializable {
 
         simulator.getRam().addPropertyChangeListener(new RamMemoryChangeListener());
         simulator.getStack().addPropertyChangeListener(new StackMemoryChangeListener());
+        simulator.getExecutor().addPropertyChangeListener(new ExecutorChangeListener());
     }
 
     @Override
@@ -586,6 +591,18 @@ public class SimulatorController implements Initializable {
                     addressStack.getItems().add(0, String.format("0x%04X", (int) event.getNewValue()));
                 }
             });
+        }
+    }
+
+    private class ExecutorChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+
+            if (event.getPropertyName().equals("workingRegister")) {
+
+                workingRegister.setText(String.format("0x%02X", (int) event.getNewValue()));
+            }
         }
     }
 }
