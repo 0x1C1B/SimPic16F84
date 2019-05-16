@@ -1201,12 +1201,12 @@ public class InstructionExecutor {
 
 				//Checking for destination.
 				if (instruction.getArguments()[0] == 0) {
-
-                    setWorkingRegister(~value);
+				        // "Erasing" the upper bits due to the usage of int.
+                    setWorkingRegister((~value) & 0b1111_1111);
 
 				} else {
-
-					 ram.set(bank, address, ~value);
+                // "Erasing" the upper bits due to the usage of int.
+					 ram.set(bank, address, ((~value) & 0b1111_1111));
 				}
 
 
@@ -1231,12 +1231,12 @@ public class InstructionExecutor {
 
 				//Checking for destination.
 				if (instruction.getArguments()[0] == 0) {
-
-                    setWorkingRegister(~value);
+                // "Erasing" the upper bits due to the usage of int.
+                    setWorkingRegister((~value) & 0b1111_1111);
 
 				} else {
-
-					 ram.set(bank, instruction.getArguments()[1], ~value);
+                // "Erasing" the upper bits due to the usage of int.
+					 ram.set(bank, instruction.getArguments()[1], ((~value) & 0b1111_1111));
 				}
 		  }
 	 }
