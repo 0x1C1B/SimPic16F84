@@ -160,6 +160,11 @@ public class InstructionExecutor {
 					 	 executeCOMF(instruction);
 					 	 break;
 					 }
+                case DECF: {
+
+                    executeDECF(instruction);
+                    break;
+                }
                 case NOP:
                 default: {
 
@@ -1092,4 +1097,78 @@ public class InstructionExecutor {
 				}
 		  }
 	 }
+
+    /**
+     * Decrement register ’f’. If ’d’ is 0 the
+     * result is stored in the W register. If ’d’ is
+     * 1 the result is stored back in register ’f’.
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+	 private void executeDECF(Instruction instruction){
+
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = ram.get(bank, address);
+
+
+            LOGGER.debug(String.format("DECF: Decrements data from register at address 0x%02X in %s", address, bank));
+
+            // Checking for Zero result
+            if (0 == value-1) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = value-1;
+
+            } else {
+
+                ram.set(bank, address, value-1);
+            }
+
+
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = ram.get(bank, instruction.getArguments()[1]);
+
+            LOGGER.debug(String.format("DECF: Decrements data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
+
+            // Checking for Zero result
+            if (0 == value-1) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                workingRegister = value-1;
+
+            } else {
+
+                ram.set(bank, instruction.getArguments()[1], value-1);
+            }
+        }
+    }
 }
