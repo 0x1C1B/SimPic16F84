@@ -469,6 +469,7 @@ public class SimulatorController implements Initializable {
             register.setValue(value);
 
             generalRegisters.getItems().add(register);
+            generalRegisters.refresh();
         }
     }
 
@@ -506,7 +507,11 @@ public class SimulatorController implements Initializable {
                     status.setDigitCarryFlag((value >> 1) & 1);
                     status.setCarryFlag(value & 1);
 
-                    Platform.runLater(() -> statusRegister.getItems().setAll(status));
+                    Platform.runLater(() -> {
+
+                        statusRegister.getItems().setAll(status);
+                        statusRegister.refresh();
+                    });
 
                 } else if (0x0C > ((IndexedPropertyChangeEvent) event).getIndex()) {
 
@@ -542,6 +547,8 @@ public class SimulatorController implements Initializable {
 
                             filtered.get(0).setValue(value);
                         }
+
+                        specialRegisters.refresh();
                     });
 
                 } else if (0x0C <= ((IndexedPropertyChangeEvent) event).getIndex()) {
@@ -558,6 +565,7 @@ public class SimulatorController implements Initializable {
                         // Only one match should exist, just uses the first one
 
                         filtered.get(0).setValue((int) event.getNewValue());
+                        generalRegisters.refresh();
                     }
                 }
             }
