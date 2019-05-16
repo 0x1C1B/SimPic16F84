@@ -223,6 +223,11 @@ public class InstructionExecutor {
                     executeMOVF(instruction);
                     break;
                 }
+                case IORWF: {
+
+                    executeIORWF(instruction);
+                    break;
+                }
                 case NOP:
                 default: {
 
@@ -1489,6 +1494,78 @@ public class InstructionExecutor {
             } else {
 
                 ram.set(bank, instruction.getArguments()[1], value);
+            }
+        }
+    }
+
+    /**
+     * Inclusive OR the W register with register ’f’. If ’d’ is 0 the result is placed in the
+     * W register. If ’d’ is 1 the result is placed
+     * back in register ’f’.
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+    private void executeIORWF(Instruction instruction){
+
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = ram.get(bank, address);
+
+            LOGGER.debug(String.format("IORWF: Inclusive disjunction of content at address 0x%02X in %s with working register", address, bank));
+
+
+            // Checking for Zero Flag
+            if (0 == (workingRegister | value)) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                setWorkingRegister(workingRegister | value);
+
+            } else {
+
+                ram.set(bank, address, workingRegister | value);
+            }
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = ram.get(bank, instruction.getArguments()[1]);
+
+            LOGGER.debug(String.format("IORWF: Inclusive disjunction of content at address 0x%02X in %s with working register", instruction.getArguments()[1], bank));
+
+            // Checking for Zero Flag
+            if (0 == (workingRegister | value)) {
+
+                setZeroFlag();
+            } else {
+
+                clearZeroFlag();
+            }
+
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                setWorkingRegister(workingRegister | value);
+
+            } else {
+
+                ram.set(bank, instruction.getArguments()[1], workingRegister | value);
             }
         }
     }
