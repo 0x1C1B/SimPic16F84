@@ -1517,27 +1517,24 @@ public class InstructionExecutor {
             // Fetching value
             int value = ram.get(bank, address);
 
+            byte firstByte = (byte)(value & 0xFF);
+
+            byte firstBits = (byte)((firstByte & 0x0F) << 4);
+            byte lastBits = (byte)((firstByte & 0xF0) >> 4);
+
+            int returnValue = (firstBits + lastBits);
             LOGGER.debug(String.format("IORWF: Inclusive disjunction of content at address 0x%02X in %s with working register", address, bank));
-
-
-            // Checking for Zero Flag
-            if (0 == (workingRegister | value)) {
-
-                setZeroFlag();
-            } else {
-
-                clearZeroFlag();
-            }
 
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                setWorkingRegister(workingRegister | value);
+                setWorkingRegister(returnValue);
 
             } else {
 
-                ram.set(bank, address, workingRegister | value);
+                ram.set(bank, address, returnValue);
             }
+
 
         } else { //Direct addressing.
 
@@ -1547,25 +1544,23 @@ public class InstructionExecutor {
             // Fetching value
             int value = ram.get(bank, instruction.getArguments()[1]);
 
+            byte firstByte = (byte)(value & 0xFF);
+
+            byte firstBits = (byte)((firstByte & 0x0F) << 4);
+            byte lastBits = (byte)((firstByte & 0xF0) >> 4);
+
+            int returnValue = (firstBits + lastBits);
+
             LOGGER.debug(String.format("IORWF: Inclusive disjunction of content at address 0x%02X in %s with working register", instruction.getArguments()[1], bank));
-
-            // Checking for Zero Flag
-            if (0 == (workingRegister | value)) {
-
-                setZeroFlag();
-            } else {
-
-                clearZeroFlag();
-            }
 
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                setWorkingRegister(workingRegister | value);
+                setWorkingRegister(returnValue);
 
             } else {
 
-                ram.set(bank, instruction.getArguments()[1], workingRegister | value);
+                ram.set(bank, instruction.getArguments()[1], returnValue);
             }
         }
     }
