@@ -62,8 +62,6 @@ public class InstructionExecutor {
         this.instructionRegister = 0;
         this.programCounter = 0;
 
-        setWorkingRegister(0);
-
         this.programMemory = programMemory;
         this.ram = ram;
         this.stack = stack;
@@ -71,6 +69,8 @@ public class InstructionExecutor {
 
         lock = new ReentrantLock();
         changes = new PropertyChangeSupport(this);
+
+        setWorkingRegister(0);
     }
 
     /**
