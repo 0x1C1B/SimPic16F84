@@ -1100,7 +1100,7 @@ public class InstructionExecutor {
      */
     private void executeMOVWF(Instruction instruction) {
 
-        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+        if (0 == instruction.getArguments()[0]) { //Indirect addressing.
 
             // Get the lower 7 Bits of FSR if indirect addressing
             int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
@@ -1121,10 +1121,10 @@ public class InstructionExecutor {
             RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
 
-            LOGGER.debug(String.format("MOVWF: Moves data from working register to address 0x%02X in %s", instruction.getArguments()[1], bank));
+            LOGGER.debug(String.format("MOVWF: Moves data from working register to address 0x%02X in %s", instruction.getArguments()[0], bank));
 
             // Moving data from W register to 'f' register
-            ram.set(bank, instruction.getArguments()[1], workingRegister);
+            ram.set(bank, instruction.getArguments()[0], workingRegister);
         }
     }
 
@@ -1135,7 +1135,7 @@ public class InstructionExecutor {
      */
     private void executeCLRF(Instruction instruction){
 
-        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+        if (0 == instruction.getArguments()[0]) { //Indirect addressing.
 
             // Get the lower 7 Bits of FSR if indirect addressing
             int address = ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
@@ -1158,10 +1158,10 @@ public class InstructionExecutor {
             RamMemory.Bank bank = 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
 
-            LOGGER.debug(String.format("CLRF: Clears data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
+            LOGGER.debug(String.format("CLRF: Clears data from register at address 0x%02X in %s", instruction.getArguments()[0], bank));
 
             // Moving data from W register to 'f' register
-            ram.set(bank, instruction.getArguments()[1], 0);
+            ram.set(bank, instruction.getArguments()[0], 0);
 
             // Setting Zero Flag
             setZeroFlag();
