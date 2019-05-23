@@ -1,4 +1,4 @@
-package org.ai2ra.hso.simpic16f84.sim;
+package org.ai2ra.hso.simpic16f84.sim.vm;
 
 import org.ai2ra.hso.simpic16f84.sim.mem.*;
 import org.apache.log4j.Logger;
@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @see InstructionDecoder
  */
 
-public class InstructionExecutor {
+public class InstructionExecutor implements ObservableExecution {
 
     private static final Logger LOGGER;
 
@@ -26,9 +26,7 @@ public class InstructionExecutor {
      * Working register used as accumulator.
      */
     private Integer workingRegister;
-    /**
-     * Contains the next instruction before it's execution.
-     */
+    /** Contains the next instruction before it's execution. */
     private Integer instructionRegister;
     /** The instruction pointer that points to the next instruction in program memory. */
     private Integer programCounter;
@@ -40,6 +38,7 @@ public class InstructionExecutor {
 
     /** Used for synchronizing the execution flow. */
     private ReentrantLock lock;
+    /** Used for supporting property changes of the internal state. */
     private PropertyChangeSupport changes;
 
     static {
@@ -58,10 +57,6 @@ public class InstructionExecutor {
 
     public InstructionExecutor(ProgramMemory<Integer> programMemory, RamMemory<Integer> ram,
                                StackMemory<Integer> stack, EepromMemory<Integer> eeprom) {
-
-        this.instructionRegister = 0;
-        this.programCounter = 0;
-
         this.programMemory = programMemory;
         this.ram = ram;
         this.stack = stack;
@@ -70,6 +65,8 @@ public class InstructionExecutor {
         lock = new ReentrantLock();
         changes = new PropertyChangeSupport(this);
 
+        setInstructionRegister(0);
+        setProgramCounter(0);
         setWorkingRegister(0);
     }
 
@@ -108,9 +105,12 @@ public class InstructionExecutor {
 
             LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
 
-            // Fetch current instruction and move PC
+            /*
+            Setters are used to notify observers automatically.
+             */
 
-            instructionRegister = programMemory.get(programCounter++);
+            setInstructionRegister(programMemory.get(programCounter));
+            setProgramCounter(programCounter + 1);
 
             // Decode current instruction
 
@@ -283,6 +283,7 @@ public class InstructionExecutor {
         ram.set(RamMemory.SFR.EECON1, 0x00);
         ram.set(RamMemory.SFR.EECON2, 0x00);
     }
+
     /**
      * Adds a change listener <b>only</b> for observing the executor's state. This pattern
      * is specially intended to use for the working register.
@@ -290,6 +291,7 @@ public class InstructionExecutor {
      * @param listener The listener that should be registered
      */
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
 
         changes.addPropertyChangeListener(listener);
@@ -301,6 +303,7 @@ public class InstructionExecutor {
      * @param listener The listener that should be removed
      */
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
 
         changes.removePropertyChangeListener(listener);
@@ -327,9 +330,60 @@ public class InstructionExecutor {
      * @return Returns the current content of the working register
      */
 
+    @Override
     public Integer getWorkingRegister() {
 
         return workingRegister;
+    }
+
+    /**
+     * Used for changing content of program counter. Moreover this method allows
+     * notifying all observers.
+     *
+     * @param value The value that should be written to program counter
+     */
+
+    private void setProgramCounter(Integer value) {
+
+        changes.firePropertyChange("programCounter", programCounter, value);
+        programCounter = value;
+    }
+
+    /**
+     * Used for fetching the content of the program counter.
+     *
+     * @return Returns the current content of the program counter
+     */
+
+    @Override
+    public Integer getProgramCounter() {
+
+        return programCounter;
+    }
+
+    /**
+     * Used for changing content of instruction register. Moreover this method allows
+     * notifying all observers.
+     *
+     * @param value The value that should be written to instruction register
+     */
+
+    private void setInstructionRegister(Integer value) {
+
+        changes.firePropertyChange("instructionRegister", instructionRegister, value);
+        instructionRegister = value;
+    }
+
+    /**
+     * Used for fetching the content of the instruction register.
+     *
+     * @return Returns the current content of the instruction register
+     */
+
+    @Override
+    public Integer getInstructionRegister() {
+
+        return instructionRegister;
     }
 
     /**

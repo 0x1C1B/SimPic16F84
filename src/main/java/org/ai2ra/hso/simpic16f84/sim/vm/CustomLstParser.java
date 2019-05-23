@@ -1,4 +1,4 @@
-package org.ai2ra.hso.simpic16f84.sim;
+package org.ai2ra.hso.simpic16f84.sim.vm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,12 +8,14 @@ import java.util.ArrayList;
 
 /**
  * Utility class for parsing a LST file. Basically it extracts the machine instructions
- * in form of integers.
+ * in form of integers. This implementation is depended to a <b>custom</b> LST file
+ * version used at the University of Applied Science Offenburg. It may not work for
+ * other kind of formats.
  *
  * @author Freddy1096
  */
 
-public class LstParser {
+public class CustomLstParser implements LstParser {
 
     /**
      * Parses the machine instructions from a given LST file. Important to note is, that
@@ -26,7 +28,8 @@ public class LstParser {
      * @throws NumberFormatException Thrown if the LST file is malformed, instruction couldn't be parsed
      */
 
-	public static int[] parse(File file) throws IOException {
+	@Override
+	public int[] parse(File file) throws IOException {
 		
 		FileReader input = new FileReader(file);
 		BufferedReader inputFile = new BufferedReader(input);
