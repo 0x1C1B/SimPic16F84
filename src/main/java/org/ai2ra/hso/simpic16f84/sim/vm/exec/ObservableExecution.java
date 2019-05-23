@@ -1,4 +1,4 @@
-package org.ai2ra.hso.simpic16f84.sim.vm;
+package org.ai2ra.hso.simpic16f84.sim.vm.exec;
 
 import java.beans.PropertyChangeListener;
 

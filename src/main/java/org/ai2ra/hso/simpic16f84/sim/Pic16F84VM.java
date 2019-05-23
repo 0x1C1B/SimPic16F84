@@ -2,9 +2,9 @@ package org.ai2ra.hso.simpic16f84.sim;
 
 import org.ai2ra.hso.simpic16f84.sim.mem.*;
 import org.ai2ra.hso.simpic16f84.sim.vm.CustomLstParser;
-import org.ai2ra.hso.simpic16f84.sim.vm.InstructionExecutor;
+import org.ai2ra.hso.simpic16f84.sim.vm.exec.InstructionExecutor;
 import org.ai2ra.hso.simpic16f84.sim.vm.LstParser;
-import org.ai2ra.hso.simpic16f84.sim.vm.ObservableExecution;
+import org.ai2ra.hso.simpic16f84.sim.vm.exec.ObservableExecution;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -24,7 +24,7 @@ import java.io.IOException;
  * </ul>
  *
  * Moreover it controls the whole execution flow. Therefor it holds the
- * {@link org.ai2ra.hso.simpic16f84.sim.vm.InstructionExecutor} utility. Some important methods to consider are the
+ * {@link InstructionExecutor} utility. Some important methods to consider are the
  * {@link Pic16F84VM#load(File)} method, that's responsible for parsing and
  * loading a new program to memory, and the {@link Pic16F84VM#nextStep()} method,
  * that's executing the next instruction. In addition, it supports
