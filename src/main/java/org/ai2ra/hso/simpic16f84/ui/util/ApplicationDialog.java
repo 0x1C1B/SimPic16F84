@@ -1,7 +1,6 @@
 package org.ai2ra.hso.simpic16f84.ui.util;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.Hyperlink;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
@@ -14,6 +13,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Optional;
 
 /**
  * Utility class for displaying application related dialogs.
@@ -63,9 +63,14 @@ public class ApplicationDialog {
 
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Warning");
+        alert.setHeaderText(null);
         alert.setContentText(text);
         alert.showAndWait();
     }
+
+    /**
+     * Shows the application specific about dialog.
+     */
 
     public static void showAbout() {
 
@@ -95,5 +100,21 @@ public class ApplicationDialog {
 
         alert.getDialogPane().setContent(contentPane);
         alert.showAndWait();
+    }
+
+    /**
+     * Dialog for confirming application exit.
+     *
+     * @return The selection of the dialog
+     */
+
+    public static Optional<ButtonType> showQuitConfirm() {
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm Exit");
+        alert.setHeaderText(null);
+        alert.setContentText("Are you sure you want to exit SimPic16F84?");
+
+        return alert.showAndWait();
     }
 }

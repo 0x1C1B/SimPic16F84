@@ -36,6 +36,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -407,7 +408,13 @@ public class SimulatorController implements Initializable {
     @FXML
     private void onQuitAction(ActionEvent event) {
 
-        Platform.exit();
+        Optional<ButtonType> option = ApplicationDialog.showQuitConfirm();
+
+        if (option.isPresent() && ButtonType.OK == option.get()) {
+
+            simulator.stop();
+            Platform.exit();
+        }
     }
 
     @FXML
