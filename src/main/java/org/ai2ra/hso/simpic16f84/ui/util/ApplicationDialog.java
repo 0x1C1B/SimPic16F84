@@ -1,12 +1,19 @@
 package org.ai2ra.hso.simpic16f84.ui.util;
 
 import javafx.scene.control.Alert;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
+import java.awt.*;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * Utility class for displaying application related dialogs.
@@ -57,6 +64,36 @@ public class ApplicationDialog {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Warning");
         alert.setContentText(text);
+        alert.showAndWait();
+    }
+
+    public static void showAbout() {
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("About");
+        alert.setHeaderText("SimPic16F84 v0.0.1");
+
+        VBox contentPane = new VBox();
+        Text copyright = new Text("Copyright © 2018 Freddy1096, 0x1C1B");
+        Hyperlink webpage = new Hyperlink("MIT License");
+        TextFlow license = new TextFlow(
+                new Text("Licensed under the terms of the"), webpage);
+
+        webpage.setOnAction((event) -> {
+
+            try {
+
+                Desktop.getDesktop().browse(new URL("https://opensource.org/licenses/MIT").toURI());
+
+            } catch (URISyntaxException | IOException exc) {
+
+                exc.printStackTrace();
+            }
+        });
+
+        contentPane.getChildren().addAll(copyright, license);
+
+        alert.getDialogPane().setContent(contentPane);
         alert.showAndWait();
     }
 }

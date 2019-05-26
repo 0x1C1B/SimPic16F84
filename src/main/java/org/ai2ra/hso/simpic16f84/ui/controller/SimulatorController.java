@@ -493,6 +493,12 @@ public class SimulatorController implements Initializable {
     }
 
     @FXML
+    private void onAboutAction(ActionEvent event) {
+
+        ApplicationDialog.showAbout();
+    }
+
+    @FXML
     private void onObserveRegisterAction(ActionEvent event) {
 
         int address = addressField.getValue();
