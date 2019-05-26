@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 /**
@@ -23,7 +24,10 @@ public class Pic16F84Simulator extends Application {
         Scene scene = new Scene(root);
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Pic16F84Simulator");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png"), 16, 16, true, true));
+        primaryStage.setTitle("SimPic16F84");
+        primaryStage.setMinWidth(320);
+        primaryStage.setMinHeight(240);
         primaryStage.show();
     }
 
