@@ -21,6 +21,11 @@ import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
 import org.ai2ra.hso.simpic16f84.ui.model.GeneralPurposeRegister;
 import org.ai2ra.hso.simpic16f84.ui.model.SpecialFunctionRegister;
 import org.ai2ra.hso.simpic16f84.ui.model.StatusRegister;
+import org.ai2ra.hso.simpic16f84.ui.service.LstReaderService;
+import org.ai2ra.hso.simpic16f84.ui.service.NextStepService;
+import org.ai2ra.hso.simpic16f84.ui.service.RunExecutionService;
+import org.ai2ra.hso.simpic16f84.ui.service.StopExecutionService;
+import org.ai2ra.hso.simpic16f84.ui.util.ApplicationDialog;
 import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -29,9 +34,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.beans.IndexedPropertyChangeEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -118,41 +121,19 @@ public class SimulatorController implements Initializable {
     private ReadOnlyBooleanProperty loadedProperty;
     private BooleanProperty executingProperty;
 
+    // Simulator related services
+
+    private LstReaderService lstReaderService;
+    private NextStepService nextStepService;
+    private StopExecutionService stopExecutionService;
+    private RunExecutionService runExecutionService;
+
     public SimulatorController() {
 
         lstViewer = new LstViewer();
-        simulator = new Pic16F84VM();
 
-        // Allow property binding to the simulator state
-
-        try {
-
-            loadedProperty = ReadOnlyJavaBeanBooleanPropertyBuilder
-                    .create()
-                    .bean(simulator)
-                    .name("loaded")
-                    .getter("isLoaded")
-                    .build();
-
-            runningProperty = ReadOnlyJavaBeanBooleanPropertyBuilder
-                    .create()
-                    .bean(simulator)
-                    .name("running")
-                    .getter("isRunning")
-                    .build();
-
-        } catch (NoSuchMethodException exc) {
-
-            exc.printStackTrace(System.err);
-        }
-
-        executingProperty = new SimpleBooleanProperty();
-
-        // Register memory change listeners
-
-        simulator.getRam().addPropertyChangeListener(new RamMemoryChangeListener());
-        simulator.getStack().addPropertyChangeListener(new StackMemoryChangeListener());
-        simulator.getExecutor().addPropertyChangeListener(new ExecutorChangeListener());
+        initializeSimulator();
+        initializeServices();
     }
 
     @Override
@@ -297,6 +278,132 @@ public class SimulatorController implements Initializable {
         });
     }
 
+    /**
+     * Initializes the simulator with all related properties and bindings.
+     */
+
+    private void initializeSimulator() {
+
+        simulator = new Pic16F84VM();
+
+        // Allow property binding to the simulator state
+
+        try {
+
+            loadedProperty = ReadOnlyJavaBeanBooleanPropertyBuilder
+                    .create()
+                    .bean(simulator)
+                    .name("loaded")
+                    .getter("isLoaded")
+                    .build();
+
+            runningProperty = ReadOnlyJavaBeanBooleanPropertyBuilder
+                    .create()
+                    .bean(simulator)
+                    .name("running")
+                    .getter("isRunning")
+                    .build();
+
+        } catch (NoSuchMethodException exc) {
+
+            exc.printStackTrace(System.err);
+        }
+
+        // Register memory change listeners
+
+        simulator.getRam().addPropertyChangeListener(new RamMemoryChangeListener());
+        simulator.getStack().addPropertyChangeListener(new StackMemoryChangeListener());
+        simulator.getExecutor().addPropertyChangeListener(new ExecutorChangeListener());
+    }
+
+    /**
+     * Initializes the service layer and all related properties as well as
+     * the result listeners.
+     */
+
+    private void initializeServices() {
+
+        // Service for loading a lst file
+
+        lstReaderService = new LstReaderService();
+
+        lstReaderService.setOnSucceeded((event) -> {
+
+            lstViewer.replaceText(event.getSource().getValue().toString());
+            lstViewer.moveTo(0, 0);
+
+            try {
+
+                // Load lst file to simulator
+                simulator.load(lstReaderService.getFile());
+
+            } catch (Exception exc) {
+
+                ApplicationDialog.showError(exc);
+                exc.printStackTrace(System.err);
+            }
+        });
+
+        lstReaderService.setOnFailed((event) -> {
+
+            ApplicationDialog.showError(event.getSource().getException());
+            event.getSource().getException().printStackTrace(System.err);
+        });
+
+        // Service for initiating next execution step
+
+        nextStepService = new NextStepService();
+
+        nextStepService.setOnSucceeded((event) -> {
+
+            lstViewer.setIndicator(lstViewer.addressToLineNumber((Integer) event.getSource().getValue()));
+        });
+
+        nextStepService.setOnFailed((event) -> {
+
+            ApplicationDialog.showError(event.getSource().getException());
+            event.getSource().getException().printStackTrace(System.err);
+        });
+
+        // Service for stopping execution flow
+
+        stopExecutionService = new StopExecutionService();
+
+        stopExecutionService.setOnSucceeded(event -> {
+
+            lstViewer.setIndicator(lstViewer.addressToLineNumber(0x00));
+        });
+
+        stopExecutionService.setOnFailed((event) -> {
+
+            ApplicationDialog.showError(event.getSource().getException());
+            event.getSource().getException().printStackTrace(System.err);
+        });
+
+        // Service for continue execution until breakpoint is reached
+
+        runExecutionService = new RunExecutionService();
+
+        runExecutionService.valueProperty().addListener((observable, prevAddress, address) -> {
+
+            lstViewer.setIndicator(lstViewer.addressToLineNumber(null != address ? address : prevAddress));
+        });
+
+        runExecutionService.setOnFailed(event -> {
+
+            ApplicationDialog.showError(event.getSource().getException());
+            event.getSource().getException().printStackTrace(System.err);
+        });
+
+        // Bind executing property to services
+
+        executingProperty = new SimpleBooleanProperty();
+
+        executingProperty.bind(Bindings.or(
+                runExecutionService.runningProperty(),
+                nextStepService.runningProperty()));
+    }
+
     @FXML
     private void onQuitAction(ActionEvent event) {
 
@@ -310,49 +417,23 @@ public class SimulatorController implements Initializable {
 
         fileChooser.setTitle("Open LST File");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("LST Files", "*.LST")
-        );
+                new FileChooser.ExtensionFilter("LST Files", "*.LST"));
 
         File file = fileChooser.showOpenDialog(null);
 
         if (null != file) {
 
-            Task<String> task = new Task<String>() {
+            if (lstReaderService.isRunning() || executingProperty.getValue()) {
 
-                @Override
-                protected String call() throws Exception {
+                ApplicationDialog.showWarning("The program is still running. Please stop it " +
+                        "before loading a new one.");
 
-                    StringBuilder builder = new StringBuilder();
+            } else {
 
-                    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-
-                        String line;
-
-                        while (null != (line = reader.readLine())) {
-
-                            builder.append(line).append(System.lineSeparator());
-                        }
-                    }
-
-                    simulator.load(file); // Loads file also into simulator
-
-                    return builder.toString();
-                }
-            };
-
-            task.setOnSucceeded((evt) -> {
-
-                lstViewer.replaceText(task.getValue());
-                lstViewer.moveTo(0, 0);
-            });
-
-            task.setOnFailed((evt) -> {
-
-                System.out.println("failed");
-                task.getException().printStackTrace(System.err);
-            });
-
-            new Thread(task).start();
+                lstReaderService.reset();
+                lstReaderService.setFile(file);
+                lstReaderService.start();
+            }
         }
     }
 
@@ -365,104 +446,50 @@ public class SimulatorController implements Initializable {
     @FXML
     private void onNextStepAction(ActionEvent event) {
 
-        executingProperty.set(true);
+        if (nextStepService.isRunning()) {
 
-        Task<Integer> task = new Task<Integer>() {
+            ApplicationDialog.showWarning("The program is already running. This operation " +
+                    "is invalid until it has stopped.");
 
-            @Override
-            protected Integer call() throws Exception {
+        } else {
 
-                return simulator.nextStep();
-            }
-        };
-
-        task.setOnSucceeded((evt) -> {
-
-            executingProperty.set(false);
-            lstViewer.setIndicator(lstViewer.addressToLineNumber(task.getValue()));
-        });
-
-        task.setOnFailed((evt) -> {
-
-            executingProperty.set(false);
-            task.getException().printStackTrace(System.err);
-        });
-
-        new Thread(task).start();
+            nextStepService.reset();
+            nextStepService.setSimulator(simulator);
+            nextStepService.start();
+        }
     }
 
     @FXML
     private void onStopAction(ActionEvent event) {
 
-        Task<Void> task = new Task<Void>() {
+        if (stopExecutionService.isRunning()) {
 
-            @Override
-            protected Void call() throws Exception {
+            ApplicationDialog.showWarning("The program isn't running or is about to " +
+                    "be terminated. This operation is invalid until it is running again.");
 
-                simulator.stop();
-                return null;
-            }
-        };
+        } else {
 
-        task.setOnSucceeded((evt -> {
-
-            executingProperty.set(false);
-            lstViewer.setIndicator(lstViewer.addressToLineNumber(0x00));
-        }));
-
-        task.setOnFailed((evt) -> {
-
-            executingProperty.set(false);
-            task.getException().printStackTrace(System.err);
-        });
-
-        new Thread(task).start();
+            stopExecutionService.reset();
+            stopExecutionService.setSimulator(simulator);
+            stopExecutionService.start();
+        }
     }
 
     @FXML
     private void onRunAction(ActionEvent event) {
 
-        executingProperty.set(true);
+        if (runExecutionService.isRunning()) {
 
-        Task<Integer> task = new Task<Integer>() {
+            ApplicationDialog.showWarning("The program is already running. This operation " +
+                    "is invalid until it has stopped.");
 
-            @Override
-            protected Integer call() throws Exception {
+        } else {
 
-                int address;
-
-                do {
-
-                    address = simulator.nextStep();
-
-                    updateValue(address);
-                    Thread.sleep(500); // Give the UI time for rendering updates
-
-                    // Continues until a breakpoint is reached
-
-                    if (lstViewer.getBreakpoints()
-                            .contains(lstViewer.addressToLineNumber(address))) {
-
-                        return address;
-                    }
-
-                } while (simulator.isRunning()); // Continues until stop is called
-
-                return address;
-            }
-        };
-
-        task.valueProperty().addListener((observable, prevAddress, address) -> lstViewer.setIndicator(lstViewer.addressToLineNumber(address)));
-
-        task.setOnSucceeded((evt) -> executingProperty.set(false));
-
-        task.setOnFailed((evt) -> {
-
-            executingProperty.set(false);
-            task.getException().printStackTrace(System.err);
-        });
-
-        new Thread(task).start();
+            runExecutionService.reset();
+            runExecutionService.setSimulator(simulator);
+            runExecutionService.setLstViewer(lstViewer);
+            runExecutionService.start();
+        }
     }
 
     @FXML
