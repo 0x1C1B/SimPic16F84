@@ -94,6 +94,23 @@ public class SimulatorController implements Initializable {
 
     @FXML TextField workingRegister;
 
+    // I/O Pin representation
+
+    @FXML CheckBox ra0;
+    @FXML CheckBox ra1;
+    @FXML CheckBox ra2;
+    @FXML CheckBox ra3;
+    @FXML CheckBox ra4;
+
+    @FXML CheckBox rb0;
+    @FXML CheckBox rb1;
+    @FXML CheckBox rb2;
+    @FXML CheckBox rb3;
+    @FXML CheckBox rb4;
+    @FXML CheckBox rb5;
+    @FXML CheckBox rb6;
+    @FXML CheckBox rb7;
+
     // Simulator related utilities
 
     private Pic16F84VM simulator;

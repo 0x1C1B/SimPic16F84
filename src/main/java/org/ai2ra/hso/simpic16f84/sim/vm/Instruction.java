@@ -1,17 +1,22 @@
-package org.ai2ra.hso.simpic16f84.sim;
+package org.ai2ra.hso.simpic16f84.sim.vm;
 
 /**
- * Instruction is the core class for the whole execution flow. It represents a single
- * machine instruction consisting out of the <i>OPC (Operation Code)</i> and it's
- * numeric <i>arguments</i>.
+ * Simple pseudo instruction of the Pic16F84. It represents a single
+ * machine instruction consisting out of the <i>OPC (Operation Code)</i>,
+ * represented by an assembly mnemonic, and optional numeric <i>arguments</i>.
  *
  * @author 0x1C1B
+ * @see OperationCode
  */
 
 public class Instruction {
 
     /**
-     * Specifies the type of operation as assembly mnemonic.
+     * Specifies the type of operation as assembly mnemonic. The contained operation
+     * mnemonics are Pic16F84 related and are representing the whole instruction set.
+     *
+     * @author 0x1C1B
+     * @see Instruction
      */
 
     public enum OperationCode {
@@ -35,10 +40,7 @@ public class Instruction {
      * The operation code which indicates the type of operation
      */
     private OperationCode opc;
-
-    /**
-     * Optional arguments depending to the {@link Instruction#opc OPC}
-     */
+    /** Optional arguments depending to the {@link Instruction#opc OPC} */
     private int[] arguments;
 
     /**
@@ -46,7 +48,7 @@ public class Instruction {
      * arguments.
      *
      * @param opc The operation code as assembly mnemonic
-     * @param arguments Optional integer arguments
+     * @param arguments Optional numeric arguments
      * @see OperationCode
      */
 
@@ -56,10 +58,23 @@ public class Instruction {
         this.arguments = arguments;
     }
 
+    /**
+     * The operation code that indicates the kind of operation.
+     *
+     * @return Returns the operation code
+     */
+
     public OperationCode getOpc() {
 
         return opc;
     }
+
+    /**
+     * Optional arguments of the instruction. Existence and amount depends to the
+     * kind of operation.
+     *
+     * @return Returns the optional numeric arguments
+     */
 
     public int[] getArguments() {
 

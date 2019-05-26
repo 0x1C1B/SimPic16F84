@@ -1,6 +1,10 @@
 package org.ai2ra.hso.simpic16f84.sim;
 
 import org.ai2ra.hso.simpic16f84.sim.mem.*;
+import org.ai2ra.hso.simpic16f84.sim.vm.CustomLstParser;
+import org.ai2ra.hso.simpic16f84.sim.vm.exec.InstructionExecutor;
+import org.ai2ra.hso.simpic16f84.sim.vm.LstParser;
+import org.ai2ra.hso.simpic16f84.sim.vm.exec.ObservableExecution;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -40,17 +44,15 @@ public class Pic16F84VM {
     private StackMemory<Integer> stack;
     private EepromMemory<Integer> eeprom;
 
+    private LstParser parser;
     private InstructionExecutor executor;
     private PropertyChangeSupport changes;
 
     /**
-     * Indicates if the virtual machine already loaded a valid program.
+     * Indicates if the virtual machine already loaded a valid program
      */
     private boolean loaded;
-
-    /**
-     * Determines if virtual machine is already running
-     */
+    /** Determines if virtual machine is already running */
     private boolean running;
 
     /**
@@ -66,6 +68,7 @@ public class Pic16F84VM {
         this.stack = new StackMemory<>(8);
         this.eeprom = new EepromMemory<>(64);
 
+        this.parser = new CustomLstParser();
         this.executor = new InstructionExecutor(programMemory, ram, stack, eeprom);
         this.changes = new PropertyChangeSupport(this);
     }
@@ -150,17 +153,10 @@ public class Pic16F84VM {
     /**
      * Primarily used for observing internal states of the executor.
      *
-     * <p>
-     * <b>Important:</b> This method is a security issue and should only be used
-     * for good reasons.
-     * </p>
-     *
      * @return Returns the internally used instructione executor
-     * @deprecated Should only used for good reasons, because it's not mutable
      */
 
-    @Deprecated
-    public InstructionExecutor getExecutor() {
+    public ObservableExecution getExecutor() {
 
         return executor;
     }
@@ -203,7 +199,7 @@ public class Pic16F84VM {
 
         stop(); // Stops current execution flow if runtime environment is already running
 
-        int[] instructions = LstParser.parse(file); // Extract machine instructions
+        int[] instructions = parser.parse(file); // Extract machine instructions
 
         // Load extracted machine instructions into program memory
 
