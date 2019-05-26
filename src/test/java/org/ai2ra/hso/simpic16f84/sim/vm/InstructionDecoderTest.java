@@ -1,4 +1,4 @@
-package org.ai2ra.hso.simpic16f84.sim;
+package org.ai2ra.hso.simpic16f84.sim.vm;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

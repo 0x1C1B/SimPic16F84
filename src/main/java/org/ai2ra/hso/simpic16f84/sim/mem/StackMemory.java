@@ -129,8 +129,8 @@ public class StackMemory<T> implements ObservableMemory<T> {
                 throw new MemoryIndexOutOfBoundsException("Stack overflow detected, stack is full");
             }
 
-            changes.firePropertyChange(String.format("memory[%d]", pointer + 1),
-                    memory[pointer + 1], value);
+            changes.fireIndexedPropertyChange("memory",
+                    pointer + 1, null, value);
 
             memory[++pointer] = value;
 
@@ -160,8 +160,8 @@ public class StackMemory<T> implements ObservableMemory<T> {
                 throw new MemoryIndexOutOfBoundsException("Stack underflow detected, stack is empty");
             }
 
-            changes.firePropertyChange(String.format("memory[%d]", pointer),
-                    memory[pointer], 0);
+            changes.fireIndexedPropertyChange("memory",
+                    pointer, memory[pointer], null);
 
             return memory[pointer--];
 

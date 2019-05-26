@@ -2,23 +2,33 @@ package org.ai2ra.hso.simpic16f84.ui.controller;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.*;
 import javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder;
+import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import javafx.util.StringConverter;
 import org.ai2ra.hso.simpic16f84.sim.Pic16F84VM;
+import org.ai2ra.hso.simpic16f84.sim.mem.RamMemory;
 import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
+import org.ai2ra.hso.simpic16f84.ui.model.GeneralPurposeRegister;
+import org.ai2ra.hso.simpic16f84.ui.model.SpecialFunctionRegister;
+import org.ai2ra.hso.simpic16f84.ui.model.StatusRegister;
 import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.beans.IndexedPropertyChangeEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -38,6 +48,10 @@ public class SimulatorController implements Initializable {
     @FXML private TextArea logViewer;
     @FXML private ToggleGroup logLevel;
 
+    private LstViewer lstViewer;
+
+    // Toolbar and Menus
+
     @FXML private Button nextStepTool;
     @FXML private Button runTool;
     @FXML private Button stopTool;
@@ -46,7 +60,58 @@ public class SimulatorController implements Initializable {
     @FXML private MenuItem runOption;
     @FXML private MenuItem stopOption;
 
-    private LstViewer lstViewer;
+    // STATUS register representation
+
+    @FXML TableView<StatusRegister> statusRegister;
+    @FXML TableColumn<StatusRegister, Integer> irpBit;
+    @FXML TableColumn<StatusRegister, Integer> rp1Bit;
+    @FXML TableColumn<StatusRegister, Integer> rp0Bit;
+    @FXML TableColumn<StatusRegister, Integer> toBit;
+    @FXML TableColumn<StatusRegister, Integer> pdBit;
+    @FXML TableColumn<StatusRegister, Integer> zBit;
+    @FXML TableColumn<StatusRegister, Integer> dcBit;
+    @FXML TableColumn<StatusRegister, Integer> cBit;
+
+    // Special Function Registers representation
+
+    @FXML TableView<SpecialFunctionRegister> specialRegisters;
+    @FXML TableColumn<SpecialFunctionRegister, String> sfrName;
+    @FXML TableColumn<SpecialFunctionRegister, String> sfrValue;
+
+    // General Purpose Registers representation
+
+    @FXML TableView<GeneralPurposeRegister> generalRegisters;
+    @FXML TableColumn<GeneralPurposeRegister, String> gprAddress;
+    @FXML TableColumn<GeneralPurposeRegister, String> gprValue;
+    @FXML TableColumn<GeneralPurposeRegister, GeneralPurposeRegister> gprOptions;
+    @FXML Spinner<Integer> addressField;
+
+    // Address stack components
+
+    @FXML ListView<String> addressStack;
+
+    // Working register components
+
+    @FXML TextField workingRegister;
+
+    // I/O Pin representation
+
+    @FXML CheckBox ra0;
+    @FXML CheckBox ra1;
+    @FXML CheckBox ra2;
+    @FXML CheckBox ra3;
+    @FXML CheckBox ra4;
+
+    @FXML CheckBox rb0;
+    @FXML CheckBox rb1;
+    @FXML CheckBox rb2;
+    @FXML CheckBox rb3;
+    @FXML CheckBox rb4;
+    @FXML CheckBox rb5;
+    @FXML CheckBox rb6;
+    @FXML CheckBox rb7;
+
+    // Simulator related utilities
 
     private Pic16F84VM simulator;
     private ReadOnlyBooleanProperty runningProperty;
@@ -82,6 +147,12 @@ public class SimulatorController implements Initializable {
         }
 
         executingProperty = new SimpleBooleanProperty();
+
+        // Register memory change listeners
+
+        simulator.getRam().addPropertyChangeListener(new RamMemoryChangeListener());
+        simulator.getStack().addPropertyChangeListener(new StackMemoryChangeListener());
+        simulator.getExecutor().addPropertyChangeListener(new ExecutorChangeListener());
     }
 
     @Override
@@ -153,6 +224,77 @@ public class SimulatorController implements Initializable {
 
         nextStepOption.disableProperty().bind(Bindings.or(
                 loadedProperty.not(), executingProperty));
+
+        // Setup STATUS register table view
+
+        irpBit.setCellValueFactory(new PropertyValueFactory<>("irpFlag"));
+        rp1Bit.setCellValueFactory(new PropertyValueFactory<>("rp1Flag"));
+        rp0Bit.setCellValueFactory(new PropertyValueFactory<>("rp0Flag"));
+        toBit.setCellValueFactory(new PropertyValueFactory<>("toFlag"));
+        pdBit.setCellValueFactory(new PropertyValueFactory<>("pdFlag"));
+        zBit.setCellValueFactory(new PropertyValueFactory<>("zeroFlag"));
+        dcBit.setCellValueFactory(new PropertyValueFactory<>("digitCarryFlag"));
+        cBit.setCellValueFactory(new PropertyValueFactory<>("carryFlag"));
+
+        // Setup Special Function Register table view
+
+        sfrName.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        // Use custom factory for printing as hex string in prefix format
+        sfrValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getValue())));
+
+        // Setup General Purpose Register section
+
+        SpinnerValueFactory<Integer> addressFactory = new SpinnerValueFactory.
+                IntegerSpinnerValueFactory(0x0C, 0x7F, 0x0C);
+
+        addressFactory.setConverter(new StringConverter<Integer>() {
+
+            @Override
+            public String toString(Integer object) {
+
+                return String.format("0x%02X", object);
+            }
+
+            @Override
+            public Integer fromString(String string) {
+
+                return Integer.decode(string);
+            }
+        });
+
+        addressField.setValueFactory(addressFactory);
+
+        // Use custom factory for printing as hex string in prefix format
+        gprAddress.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getAddress())));
+        gprValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getValue())));
+
+        gprOptions.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
+        gprOptions.setCellFactory(param -> new TableCell<GeneralPurposeRegister, GeneralPurposeRegister>() {
+
+            private Button delete = new Button();
+
+            {
+                delete.setGraphic(new FontIcon("fas-trash"));
+                delete.setStyle("-fx-background-color: transparent;");
+                setAlignment(Pos.CENTER);
+            }
+
+            @Override
+            protected void updateItem(GeneralPurposeRegister item, boolean empty) {
+
+                super.updateItem(item, empty);
+
+                if (null == item) {
+
+                    setGraphic(null);
+                    return;
+                }
+
+                setGraphic(delete);
+                delete.setOnAction(event -> getTableView().getItems().remove(item));
+            }
+        });
     }
 
     @FXML
@@ -321,5 +463,171 @@ public class SimulatorController implements Initializable {
         });
 
         new Thread(task).start();
+    }
+
+    @FXML
+    private void onObserveRegisterAction(ActionEvent event) {
+
+        int address = addressField.getValue();
+        int value = null == simulator.getRam().get(address) ? 0 : simulator.getRam().get(address);
+
+        // Check if entry already exists
+
+        FilteredList<GeneralPurposeRegister> filtered = generalRegisters.getItems()
+                .filtered(register -> address == register.getAddress());
+
+        if (filtered.isEmpty()) {
+
+            // Add new observer if it doesn't exist
+
+            GeneralPurposeRegister register = new GeneralPurposeRegister();
+
+            register.setAddress(address);
+            register.setValue(value);
+
+            generalRegisters.getItems().add(register);
+            generalRegisters.refresh();
+        }
+    }
+
+    /**
+     * Responsible for handling memory changes inside of the RAM memory
+     * structure. This class updates the user interface when changes are
+     * received.
+     *
+     * @author 0x1C1B
+     * @see PropertyChangeListener
+     */
+
+    private class RamMemoryChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+
+            if (event instanceof IndexedPropertyChangeEvent) {
+
+                // Check which register/location changed
+
+                if (0x03 == ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    int value = (int) event.getNewValue(); // Value of STATUS register
+                    StatusRegister status = new StatusRegister();
+
+                    // Disassemble STATUS register value in single bits
+
+                    status.setIrpFlag((value >> 7) & 1);
+                    status.setRp1Flag((value >> 6) & 1);
+                    status.setRp0Flag((value >> 5) & 1);
+                    status.setToFlag((value >> 4) & 1);
+                    status.setPdFlag((value >> 3) & 1);
+                    status.setZeroFlag((value >> 2) & 1);
+                    status.setDigitCarryFlag((value >> 1) & 1);
+                    status.setCarryFlag(value & 1);
+
+                    Platform.runLater(() -> {
+
+                        statusRegister.getItems().setAll(status);
+                        statusRegister.refresh();
+                    });
+
+                } else if (0x0C > ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    int address = ((IndexedPropertyChangeEvent) event).getIndex();
+                    int value = (int) event.getNewValue(); // Value of the SFR
+                    RamMemory.Bank bank = "bank0".equals(event.getPropertyName()) ?
+                            RamMemory.Bank.BANK_0 :
+                            RamMemory.Bank.BANK_1;
+
+                    RamMemory.SFR sfr = RamMemory.SFR.valueOf(bank, address);
+
+                    Platform.runLater(() -> {
+
+                        // Check if entry already exists
+
+                        FilteredList<SpecialFunctionRegister> filtered = specialRegisters.getItems()
+                                .filtered(register -> register.getName().equals(sfr.name()));
+
+                        if (filtered.isEmpty()) {
+
+                            // Add new row if it doesn't exist
+
+                            SpecialFunctionRegister register = new SpecialFunctionRegister();
+
+                            register.setName(sfr.name());
+                            register.setValue(value);
+
+                            specialRegisters.getItems().add(register);
+
+                        } else { // Entry exists, just update the value
+
+                            // Only one match should exist, just uses the first one
+
+                            filtered.get(0).setValue(value);
+                        }
+
+                        specialRegisters.refresh();
+                    });
+
+                } else if (0x0C <= ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    // Update just observed General Purpose Registers
+
+                    int address = ((IndexedPropertyChangeEvent) event).getIndex();
+
+                    FilteredList<GeneralPurposeRegister> filtered = generalRegisters.getItems()
+                            .filtered(register -> address == register.getAddress());
+
+                    if (!filtered.isEmpty()) {
+
+                        // Only one match should exist, just uses the first one
+
+                        filtered.get(0).setValue((int) event.getNewValue());
+                        generalRegisters.refresh();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Responsible for handling memory changes inside of the stack memory
+     * structure. This class updates the user interface when changes are
+     * received.
+     *
+     * @author 0x1C1B
+     * @see PropertyChangeListener
+     */
+
+    private class StackMemoryChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+
+            Platform.runLater(() -> {
+
+                if (null == event.getNewValue()) { // Element was removed
+
+                    addressStack.getItems().remove(0); // Remove element on top of list
+
+                } else {
+
+                    // Add element to top of list
+
+                    addressStack.getItems().add(0, String.format("0x%04X", (int) event.getNewValue()));
+                }
+            });
+        }
+    }
+
+    private class ExecutorChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+
+            if (event.getPropertyName().equals("workingRegister")) {
+
+                workingRegister.setText(String.format("0x%02X", (int) event.getNewValue()));
+            }
+        }
     }
 }

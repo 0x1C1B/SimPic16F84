@@ -3,7 +3,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
@@ -11,18 +13,25 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
@@ -87,7 +96,7 @@
             </Menu>
          </menus>
       </MenuBar>
-      <SplitPane dividerPositions="0.2505567928730512" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+       <SplitPane dividerPositions="0.3" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
          <items>
             <AnchorPane>
                <children>
@@ -95,9 +104,125 @@
                     <panes>
                         <TitledPane prefHeight="200.0" prefWidth="200.0" text="Data Memory">
                            <content>
-                              <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
+                               <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
                                 <content>
-                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" />
+                                    <AnchorPane prefHeight="235.0">
+                                        <children>
+                                            <TableView fx:id="statusRegister" fixedCellSize="25.0" layoutX="20.0"
+                                                       layoutY="20.0" minHeight="-Infinity" prefHeight="50.0"
+                                                       prefWidth="244.0" AnchorPane.leftAnchor="0.0"
+                                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                                                <columns>
+                                                    <TableColumn fx:id="irpBit" prefWidth="75.0" text="IRP"/>
+                                                    <TableColumn fx:id="rp1Bit" prefWidth="75.0" text="RP1"/>
+                                                    <TableColumn fx:id="rp0Bit" prefWidth="75.0" text="RP0"/>
+                                                    <TableColumn fx:id="toBit" prefWidth="75.0" text="TO"/>
+                                                    <TableColumn fx:id="pdBit" prefWidth="75.0" text="PD"/>
+                                                    <TableColumn fx:id="zBit" prefWidth="75.0" text="Z"/>
+                                                    <TableColumn fx:id="dcBit" prefWidth="75.0" text="DC"/>
+                                                    <TableColumn fx:id="cBit" prefWidth="75.0" text="C"/>
+                                                </columns>
+                                                <columnResizePolicy>
+                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                                </columnResizePolicy>
+                                                <tooltip>
+                                                    <Tooltip text="Status Flags"/>
+                                                </tooltip>
+                                            </TableView>
+                                            <Label layoutX="14.0" layoutY="14.0" text="STATUS Register"
+                                                   AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                <font>
+                                                    <Font name="System Bold" size="12.0"/>
+                                                </font>
+                                            </Label>
+                                            <Label layoutX="14.0" layoutY="158.0" text="Special Function Registers"
+                                                   AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="100.0">
+                                                <font>
+                                                    <Font name="System Bold" size="12.0"/>
+                                                </font>
+                                            </Label>
+                                            <Separator layoutX="14.0" layoutY="27.0" prefWidth="200.0"
+                                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                       AnchorPane.topAnchor="20.0"/>
+                                            <Separator layoutX="32.0" layoutY="143.0" prefWidth="200.0"
+                                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                       AnchorPane.topAnchor="120.0"/>
+                                            <TableView fx:id="specialRegisters" fixedCellSize="25.0" layoutX="32.0"
+                                                       layoutY="70.0" prefHeight="200.0" prefWidth="200.0"
+                                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                       AnchorPane.topAnchor="135.0">
+                                                <columns>
+                                                    <TableColumn fx:id="sfrName" prefWidth="75.0" text="Register"/>
+                                                    <TableColumn fx:id="sfrValue" prefWidth="75.0" text="Value"/>
+                                                </columns>
+                                                <columnResizePolicy>
+                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                                </columnResizePolicy>
+                                                <tooltip>
+                                                    <Tooltip text="Special Function Registers"/>
+                                                </tooltip>
+                                            </TableView>
+                                            <Label layoutX="10.0" layoutY="345.0" text="General Purpose Registers"
+                                                   AnchorPane.topAnchor="350.0">
+                                                <font>
+                                                    <Font name="System Bold" size="12.0"/>
+                                                </font>
+                                            </Label>
+                                            <Separator layoutX="32.0" layoutY="376.0" prefWidth="200.0"
+                                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                       AnchorPane.topAnchor="370.0"/>
+                                            <TableView fx:id="generalRegisters" layoutX="-8.0" layoutY="283.0"
+                                                       prefHeight="200.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0"
+                                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="425.0">
+                                                <columns>
+                                                    <TableColumn fx:id="gprAddress" prefWidth="75.0" text="Address"/>
+                                                    <TableColumn fx:id="gprValue" prefWidth="75.0" text="Value"/>
+                                                    <TableColumn fx:id="gprOptions" prefWidth="75.0" text="Options"/>
+                                                </columns>
+                                                <columnResizePolicy>
+                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                                </columnResizePolicy>
+                                            </TableView>
+                                            <HBox layoutX="25.0" layoutY="333.0" spacing="10.0"
+                                                  AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                  AnchorPane.topAnchor="385.0">
+                                                <children>
+                                                    <Spinner fx:id="addressField" editable="true"
+                                                             maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                        <tooltip>
+                                                            <Tooltip text="Select General Purpose Register address"/>
+                                                        </tooltip>
+                                                    </Spinner>
+                                                    <Button mnemonicParsing="false" onAction="#onObserveRegisterAction"
+                                                            text="Observe">
+                                                        <tooltip>
+                                                            <Tooltip text="Observe selected address"/>
+                                                        </tooltip>
+                                                    </Button>
+                                                </children>
+                                            </HBox>
+                                            <Label text="Working Register" AnchorPane.leftAnchor="0.0"
+                                                   AnchorPane.topAnchor="640.0">
+                                                <font>
+                                                    <Font name="System Bold" size="12.0"/>
+                                                </font>
+                                            </Label>
+                                            <Separator prefWidth="200.0" AnchorPane.leftAnchor="0.0"
+                                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="660.0"/>
+                                            <HBox spacing="10.0" AnchorPane.leftAnchor="0.0"
+                                                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="675.0">
+                                                <children>
+                                                    <Label alignment="CENTER" maxHeight="1.7976931348623157E308"
+                                                           maxWidth="1.7976931348623157E308" text="Value:"/>
+                                                    <TextField fx:id="workingRegister" editable="false" text="0x00"
+                                                               HBox.hgrow="ALWAYS"/>
+                                                </children>
+                                            </HBox>
+                                        </children>
+                                        <padding>
+                                            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                                        </padding>
+                                    </AnchorPane>
                                 </content>
                               </ScrollPane>
                            </content>
@@ -106,7 +231,29 @@
                            <content>
                               <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
                                 <content>
-                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" />
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
+                                        <children>
+                                            <Label layoutX="71.0" layoutY="71.0" text="Address Stack"
+                                                   AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                <font>
+                                                    <Font name="System Bold" size="12.0"/>
+                                                </font>
+                                            </Label>
+                                            <Separator layoutX="41.0" layoutY="38.0" prefWidth="200.0"
+                                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                       AnchorPane.topAnchor="20.0"/>
+                                            <ListView fx:id="addressStack" layoutX="32.0" layoutY="45.0"
+                                                      prefHeight="200.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0"
+                                                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                                                <tooltip>
+                                                    <Tooltip text="Return Addresses"/>
+                                                </tooltip>
+                                            </ListView>
+                                        </children>
+                                        <padding>
+                                            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                                        </padding>
+                                    </AnchorPane>
                                 </content>
                               </ScrollPane>
                            </content>
@@ -115,7 +262,97 @@
                            <content>
                               <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
                                 <content>
-                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" />
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
+                                        <children>
+                                            <Label layoutX="47.0" layoutY="32.0" text="Port A"
+                                                   AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                <font>
+                                                    <Font name="System Bold" size="12.0"/>
+                                                </font>
+                                            </Label>
+                                            <Separator layoutX="32.0" layoutY="40.0" prefWidth="200.0"
+                                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                       AnchorPane.topAnchor="20.0"/>
+                                            <GridPane layoutX="14.0" layoutY="43.0" AnchorPane.leftAnchor="0.0"
+                                                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                                                <columnConstraints>
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                                                       prefWidth="100.0"/>
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                                                       prefWidth="100.0"/>
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                                                       prefWidth="100.0"/>
+                                                </columnConstraints>
+                                                <rowConstraints>
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                                                    vgrow="SOMETIMES"/>
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                                                    vgrow="SOMETIMES"/>
+                                                </rowConstraints>
+                                                <children>
+                                                    <CheckBox fx:id="ra0" mnemonicParsing="false" text="RA0"
+                                                              GridPane.halignment="LEFT"/>
+                                                    <CheckBox fx:id="ra1" mnemonicParsing="false" text="RA1"
+                                                              GridPane.columnIndex="1" GridPane.halignment="LEFT"/>
+                                                    <CheckBox fx:id="ra2" mnemonicParsing="false" text="RA2"
+                                                              GridPane.columnIndex="2" GridPane.halignment="LEFT"/>
+                                                    <CheckBox fx:id="ra3" mnemonicParsing="false" text="RA3"
+                                                              GridPane.halignment="LEFT" GridPane.rowIndex="1"/>
+                                                    <CheckBox fx:id="ra4" mnemonicParsing="false" text="RA4/T0CKI"
+                                                              GridPane.columnIndex="1" GridPane.halignment="LEFT"
+                                                              GridPane.rowIndex="1"/>
+                                                </children>
+                                            </GridPane>
+                                            <Label layoutX="14.0" layoutY="109.0" text="Port B"
+                                                   AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="105.0">
+                                                <font>
+                                                    <Font name="System Bold" size="12.0"/>
+                                                </font>
+                                            </Label>
+                                            <Separator layoutX="28.0" layoutY="188.0" prefWidth="200.0"
+                                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                       AnchorPane.topAnchor="125.0"/>
+                                            <GridPane layoutX="10.0" layoutY="154.0" AnchorPane.leftAnchor="0.0"
+                                                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="135.0">
+                                                <columnConstraints>
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                                                       prefWidth="100.0"/>
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                                                       prefWidth="100.0"/>
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
+                                                                       prefWidth="100.0"/>
+                                                </columnConstraints>
+                                                <rowConstraints>
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                                                    vgrow="SOMETIMES"/>
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                                                    vgrow="SOMETIMES"/>
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0"
+                                                                    vgrow="SOMETIMES"/>
+                                                </rowConstraints>
+                                                <children>
+                                                    <CheckBox fx:id="rb0" mnemonicParsing="false" text="RB0/INT"/>
+                                                    <CheckBox fx:id="rb1" mnemonicParsing="false" text="RB1"
+                                                              GridPane.columnIndex="1"/>
+                                                    <CheckBox fx:id="rb2" mnemonicParsing="false" text="RB2"
+                                                              GridPane.columnIndex="2"/>
+                                                    <CheckBox fx:id="rb3" mnemonicParsing="false" text="RB3"
+                                                              GridPane.rowIndex="1"/>
+                                                    <CheckBox fx:id="rb4" mnemonicParsing="false" text="RB4"
+                                                              GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                                    <CheckBox fx:id="rb5" mnemonicParsing="false" text="RB5"
+                                                              GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                                                    <CheckBox fx:id="rb6" mnemonicParsing="false" text="RB6"
+                                                              GridPane.rowIndex="2"/>
+                                                    <CheckBox fx:id="rb7" mnemonicParsing="false" text="RB7"
+                                                              GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                                </children>
+                                            </GridPane>
+                                        </children>
+                                        <padding>
+                                            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                                        </padding>
+                                    </AnchorPane>
                                 </content>
                               </ScrollPane>
                            </content>
