@@ -123,9 +123,10 @@ public final class InstructionExecutor implements ObservableExecution {
      *
      * @return Returns the address of the next instruction
      * @see InstructionDecoder
+     * @throws IllegalStateException Thrown if requested operation is not supported
      */
 
-    public int execute() {
+    public int execute() throws IllegalStateException {
 
         lock.lock();
 
@@ -284,7 +285,11 @@ public final class InstructionExecutor implements ObservableExecution {
                     byteAndControlExecutionUnit.executeRLF(instruction);
                     break;
                 }
-                case NOP:
+                case NOP: {
+
+                    byteAndControlExecutionUnit.executeNOP();
+                    break;
+                }
 
                  // Bit-oriented instructions:
 
@@ -310,8 +315,7 @@ public final class InstructionExecutor implements ObservableExecution {
                 }
                 default: {
 
-                    LOGGER.debug("NOP: No operation was executed");
-                    break; // No operation executed
+                    throw new IllegalStateException("Unsupported instruction code");
                 }
             }
 

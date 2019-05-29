@@ -1291,6 +1291,16 @@ public class ByteAndControlExecutionUnit {
 				}
 		  }
 	 }
+
+    /**
+     * Execute the No Operation instruction. This method exists for the sake of completeness
+     * to prevent breaking the runtime counter;
+     */
+
+    void executeNOP() {
+
+        LOGGER.debug("NOP: No operation was executed"); // No operation is executed
+    }
 }
 
 
