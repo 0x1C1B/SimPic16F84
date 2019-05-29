@@ -696,4 +696,310 @@ public class BitExecutionUnit
             }
         }
     }
+
+	 /**
+	  * If bit ’b’ in register ’f’ is ’0’ then the next
+	  * instruction is executed.
+	  * If bit ’b’ is ’1’, then the next instruction is
+	  * discarded and a NOP is executed
+	  * instead, making this a 2TCY instruction.
+	  * @param instruction Instruction consisting out of OPC and arguments
+	  */
+	 void executeBTFSS(Instruction instruction){
+		  if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+				// Get the lower 7 Bits of FSR if indirect addressing
+				int address = executor.ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == executor.getIRPBit() ?
+						RamMemory.Bank.BANK_0 :
+						RamMemory.Bank.BANK_1;
+
+				LOGGER.debug(String.format("BTFSC: If bit %s at address 0x%02X is set, then the next instruction is executed, else NOP is executed instead",
+						instruction.getArguments()[0], address));
+
+				int value = executor.ram.get(bank, address);
+
+				int firstByte = value & 0xFF;
+
+				switch (instruction.getArguments()[0]) {
+
+				case 0: {
+
+					 firstByte = firstByte & 0b0000_0001;
+
+					 if (firstByte == 0b0000_0001) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 1: {
+
+					 firstByte = firstByte & 0b0000_0010;
+
+					 if (firstByte == 0b0000_0010) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 2: {
+
+					 firstByte = firstByte & 0b0000_0100;
+
+					 if (firstByte == 0b0000_0100) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 3: {
+
+					 firstByte = firstByte & 0b0000_1000;
+
+					 if (firstByte == 0b0000_1000) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 4: {
+
+					 firstByte = firstByte & 0b0001_0000;
+
+					 if (firstByte == 0b0001_0000) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 5: {
+
+					 firstByte = firstByte & 0b0010_0000;
+
+					 if (firstByte == 0b0010_0000) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 6: {
+
+					 firstByte = firstByte & 0b0100_0000;
+
+					 if (firstByte == 0b0100_0000) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 7: {
+
+					 firstByte = firstByte & 0b1000_0000;
+
+					 if (firstByte == 0b1000_0000) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				default: {
+
+					 LOGGER.error(String.format("ERROR: No bit was found!"));
+					 break;
+				}
+
+				}
+
+		  } else { //Direct addressing.
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == executor.getRP0Bit() ?
+						RamMemory.Bank.BANK_0 :
+						RamMemory.Bank.BANK_1;
+
+				LOGGER.debug(String.format("BTFSC: If bit %s at address 0x%02X is set, then the next instruction is executed, else NOP is executed instead",
+						instruction.getArguments()[0], instruction.getArguments()[1]));
+
+				int value = executor.ram.get(bank, instruction.getArguments()[1]);
+
+				int firstByte = value & 0xFF;
+
+				switch (instruction.getArguments()[0]) {
+
+				case 0: {
+
+					 firstByte = firstByte & 0b0000_0001;
+
+					 if (firstByte == 0b0000_0001) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 1: {
+
+					 firstByte = firstByte & 0b0000_0010;
+
+					 if (firstByte == 0b0000_0010) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 2: {
+
+					 firstByte = firstByte & 0b0000_0100;
+
+					 if (firstByte == 0b0000_0100) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 3: {
+
+					 firstByte = firstByte & 0b0000_1000;
+
+					 if (firstByte == 0b0000_1000) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 4: {
+
+					 firstByte = firstByte & 0b0001_0000;
+
+					 if (firstByte == 0b0001_0000) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 5: {
+
+					 firstByte = firstByte & 0b0010_0000;
+
+					 if (firstByte == 0b0010_0000) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+					 }
+
+					 break;
+				}
+				case 6: {
+
+					 firstByte = firstByte & 0b0100_0000;
+
+					 if (firstByte == 0b0100_0000) {
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+
+					 }
+
+					 break;
+				}
+				case 7: {
+
+					 firstByte = firstByte & 0b1000_0000;
+
+					 if (firstByte == 0b1000_0000) {
+
+
+						  // NOP operation is executed.
+
+					 } else {
+
+						  // Next Instruction is executed.
+
+					 }
+
+					 break;
+				}
+				default: {
+
+					 LOGGER.error(String.format("ERROR: No bit was found!"));
+					 break;
+				}
+
+				}
+		  }
+
+	 }
 }

@@ -298,6 +298,11 @@ public final class InstructionExecutor implements ObservableExecution {
                     bitExecutionUnit.executeBTFSC(instruction);
                     break;
                 }
+                case BTFSS: {
+
+                    bitExecutionUnit.executeBTFSS(instruction);
+                    break;
+                }
                 default: {
 
                     LOGGER.debug("NOP: No operation was executed");
