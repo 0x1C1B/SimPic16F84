@@ -21,16 +21,14 @@ import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
 import org.ai2ra.hso.simpic16f84.ui.model.GeneralPurposeRegister;
 import org.ai2ra.hso.simpic16f84.ui.model.SpecialFunctionRegister;
 import org.ai2ra.hso.simpic16f84.ui.model.StatusRegister;
-import org.ai2ra.hso.simpic16f84.ui.service.LstReaderService;
-import org.ai2ra.hso.simpic16f84.ui.service.NextStepService;
-import org.ai2ra.hso.simpic16f84.ui.service.RunExecutionService;
-import org.ai2ra.hso.simpic16f84.ui.service.StopExecutionService;
+import org.ai2ra.hso.simpic16f84.ui.service.*;
 import org.ai2ra.hso.simpic16f84.ui.util.ApplicationDialog;
 import org.ai2ra.hso.simpic16f84.ui.util.TextAreaAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.beans.EventHandler;
 import java.beans.IndexedPropertyChangeEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -345,11 +343,7 @@ public class SimulatorController implements Initializable {
             }
         });
 
-        lstReaderService.setOnFailed((event) -> {
-
-            ApplicationDialog.showError(event.getSource().getException());
-            event.getSource().getException().printStackTrace(System.err);
-        });
+        lstReaderService.setOnFailed(new ServiceErrorHandler());
 
         // Service for initiating next execution step
 
@@ -360,11 +354,7 @@ public class SimulatorController implements Initializable {
             lstViewer.setIndicator(lstViewer.addressToLineNumber((Integer) event.getSource().getValue()));
         });
 
-        nextStepService.setOnFailed((event) -> {
-
-            ApplicationDialog.showError(event.getSource().getException());
-            event.getSource().getException().printStackTrace(System.err);
-        });
+        nextStepService.setOnFailed(new ServiceErrorHandler());
 
         // Service for stopping execution flow
 
@@ -375,11 +365,7 @@ public class SimulatorController implements Initializable {
             lstViewer.setIndicator(lstViewer.addressToLineNumber(0x00));
         });
 
-        stopExecutionService.setOnFailed((event) -> {
-
-            ApplicationDialog.showError(event.getSource().getException());
-            event.getSource().getException().printStackTrace(System.err);
-        });
+        stopExecutionService.setOnFailed(new ServiceErrorHandler());
 
         // Service for continue execution until breakpoint is reached
 
@@ -390,11 +376,7 @@ public class SimulatorController implements Initializable {
             lstViewer.setIndicator(lstViewer.addressToLineNumber(null != address ? address : prevAddress));
         });
 
-        runExecutionService.setOnFailed(event -> {
-
-            ApplicationDialog.showError(event.getSource().getException());
-            event.getSource().getException().printStackTrace(System.err);
-        });
+        runExecutionService.setOnFailed(new ServiceErrorHandler());
 
         // Bind executing property to services
 
