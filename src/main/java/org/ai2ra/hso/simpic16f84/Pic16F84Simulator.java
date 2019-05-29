@@ -53,4 +53,9 @@ public class Pic16F84Simulator extends Application {
 
         exc.printStackTrace(System.err);
     }
+
+    public static void main(String... args) {
+
+        launch(args);
+    }
 }

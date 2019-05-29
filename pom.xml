@@ -74,7 +74,7 @@
                         </goals>
                         <configuration>
                             <excludeGroupIds>junit,org.hamcrest</excludeGroupIds>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/build/lib</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
@@ -93,6 +93,31 @@
                             <mainClass>org.ai2ra.hso.simpic16f84.Pic16F84Simulator</mainClass>
                         </manifest>
                     </archive>
+                    <outputDirectory>${project.build.directory}/build</outputDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <executable>javapackager</executable>
+                    <arguments>
+                        <argument>-deploy</argument>
+                        <argument>-native</argument>
+                        <argument>-outdir</argument>
+                        <argument>${project.build.directory}</argument>
+                        <argument>-outfile</argument>
+                        <argument>SimPic16F84</argument>
+                        <argument>-srcdir</argument>
+                        <argument>${project.build.directory}/build</argument>
+                        <argument>-appclass</argument>
+                        <argument>org.ai2ra.hso.simpic16f84.Pic16F84Simulator</argument>
+                        <argument>-name</argument>
+                        <argument>SimPic16F84</argument>
+                        <argument>-title</argument>
+                        <argument>SimPic16F84</argument>
+                    </arguments>
                 </configuration>
             </plugin>
         </plugins>
