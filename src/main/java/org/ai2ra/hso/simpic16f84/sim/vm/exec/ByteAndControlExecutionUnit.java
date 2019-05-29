@@ -949,10 +949,13 @@ public class ByteAndControlExecutionUnit {
             // Checking for Zero result
             if (0 == value - 1) {
 
-                // NOP is executed.
-            } else {
+                /**
+                 * Skip the next operation, in general a jump operation as part of loop.
+                 * The hardware would execute a NOP instead of the actual next instruction.
+                 * This software implementation just skips the next instruction.
+                 */
 
-                // The next Instruction is being executed.
+                executor.setProgramCounter(executor.getProgramCounter() + 1);
             }
 
             //Checking for destination.
@@ -997,10 +1000,13 @@ public class ByteAndControlExecutionUnit {
             // Checking for Zero result
             if (0 == value - 1) {
 
-            // NOP is executed.
-            } else {
+                /**
+                 * Skip the next operation, in general a jump operation as part of loop.
+                 * The hardware would execute a NOP instead of the actual next instruction.
+                 * This software implementation just skips the next instruction.
+                 */
 
-                // The next Instruction is being executed.
+                executor.setProgramCounter(executor.getProgramCounter() + 1);
             }
 
             //Checking for destination.
