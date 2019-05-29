@@ -201,7 +201,175 @@ public class BitExecutionUnit
             }
 
             }
+        }
+    }
 
+    /**
+     * Bit ’b’ in register ’f’ is set.
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+    void executeBSF(Instruction instruction) {
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = executor.ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == executor.getIRPBit() ?
+                  RamMemory.Bank.BANK_0 :
+                  RamMemory.Bank.BANK_1;
+
+            LOGGER.debug(String.format("BSF: Bit %s at address 0x%02X is set",
+                  instruction.getArguments()[0], address));
+
+            int value = executor.ram.get(bank, address);
+
+            byte firstByte = (byte) (value & 0xFF);
+
+            switch (instruction.getArguments()[0]) {
+
+            case 0: {
+
+                firstByte = (byte) (firstByte | 0b1111_1110);
+                value = firstByte;
+                executor.ram.set(bank, address, value);
+                break;
+            }
+            case 1: {
+
+                firstByte = (byte) (firstByte | 0b1111_1101);
+                value = firstByte;
+                executor.ram.set(bank, address, value);
+                break;
+            }
+            case 2: {
+
+                firstByte = (byte) (firstByte | 0b1111_1011);
+                value = firstByte;
+                executor.ram.set(bank, address, value);
+                break;
+            }
+            case 3: {
+
+                firstByte = (byte) (firstByte | 0b1111_0111);
+                value = firstByte;
+                executor.ram.set(bank, address, value);
+                break;
+            }
+            case 4: {
+
+                firstByte = (byte) (firstByte | 0b1110_1111);
+                value = firstByte;
+                executor.ram.set(bank, address, value);
+                break;
+            }
+            case 5: {
+
+                firstByte = (byte) (firstByte | 0b1101_1111);
+                value = firstByte;
+                executor.ram.set(bank, address, value);
+                break;
+            }
+            case 6: {
+
+                firstByte = (byte) (firstByte | 0b1011_1111);
+                value = firstByte;
+                executor.ram.set(bank, address, value);
+                break;
+            }
+            case 7: {
+
+                firstByte = (byte) (firstByte | 0b0111_1111);
+                value = firstByte;
+                executor.ram.set(bank, address, value);
+                break;
+            }
+            default: {
+
+                LOGGER.debug(String.format("ERROR: No bit was found!"));
+                break;
+            }
+
+            }
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == executor.getRP0Bit() ?
+                  RamMemory.Bank.BANK_0 :
+                  RamMemory.Bank.BANK_1;
+
+            LOGGER.debug(String.format("BSF: Bit %s at address 0x%02X is set",
+                  instruction.getArguments()[0], instruction.getArguments()[1]));
+
+            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+
+            byte firstByte = (byte) (value & 0xFF);
+
+            switch (instruction.getArguments()[0]) {
+
+            case 0: {
+
+                firstByte = (byte) (firstByte & 0b1111_1110);
+                value = firstByte;
+                executor.ram.set(bank, instruction.getArguments()[1], value);
+                break;
+            }
+            case 1: {
+
+                firstByte = (byte) (firstByte & 0b1111_1101);
+                value = firstByte;
+                executor.ram.set(bank, instruction.getArguments()[1], value);
+                break;
+            }
+            case 2: {
+
+                firstByte = (byte) (firstByte & 0b1111_1011);
+                value = firstByte;
+                executor.ram.set(bank, instruction.getArguments()[1], value);
+                break;
+            }
+            case 3: {
+
+                firstByte = (byte) (firstByte & 0b1111_0111);
+                value = firstByte;
+                executor.ram.set(bank, instruction.getArguments()[1], value);
+                break;
+            }
+            case 4: {
+
+                firstByte = (byte) (firstByte & 0b1110_1111);
+                value = firstByte;
+                executor.ram.set(bank, instruction.getArguments()[1], value);
+                break;
+            }
+            case 5: {
+
+                firstByte = (byte) (firstByte & 0b1101_1111);
+                value = firstByte;
+                executor.ram.set(bank, instruction.getArguments()[1], value);
+                break;
+            }
+            case 6: {
+
+                firstByte = (byte) (firstByte & 0b1011_1111);
+                value = firstByte;
+                executor.ram.set(bank, instruction.getArguments()[1], value);
+                break;
+            }
+            case 7: {
+
+                firstByte = (byte) (firstByte & 0b0111_1111);
+                value = firstByte;
+                executor.ram.set(bank, instruction.getArguments()[1], value);
+                break;
+            }
+            default: {
+
+                LOGGER.debug(String.format("ERROR: No bit was found!"));
+                break;
+            }
+            }
         }
     }
 }

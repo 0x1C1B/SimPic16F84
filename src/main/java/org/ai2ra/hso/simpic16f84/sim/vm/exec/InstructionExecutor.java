@@ -288,6 +288,11 @@ public final class InstructionExecutor implements ObservableExecution {
 
                     bitExecutionUnit.executeBCF(instruction);
                 }
+                case BSF: {
+
+                    bitExecutionUnit.executeBSF(instruction);
+                    break;
+                }
 
                 default: {
 
