@@ -249,6 +249,10 @@ public final class InstructionExecutor implements ObservableExecution {
                     byteAndControlExecutionUnit.executeDECF(instruction);
                     break;
                 }
+                case DECFSZ: {
+
+                    byteAndControlExecutionUnit.executeDECFSZ(instruction);
+                }
                 case INCF: {
 
                     byteAndControlExecutionUnit.executeINCF(instruction);

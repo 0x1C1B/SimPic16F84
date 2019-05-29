@@ -919,4 +919,99 @@ public class ByteAndControlExecutionUnit {
             }
         }
     }
+
+
+    /**
+    * The contents of register ’f’ are decremented. If ’d’ is 0 the result is placed in the
+    * W register. If ’d’ is 1 the result is placed
+    * back in register ’f’.
+    * If the result is not 0, the next instruction, is
+    * executed. If the result is 0, then a NOP is
+    * executed instead making it a 2T CY instruction.
+    * @param instruction Instruction consisting out of OPC and arguments
+     */
+    void executeDECFSZ(Instruction instruction){
+
+        if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+            // Get the lower 7 Bits of FSR if indirect addressing
+            int address = executor.ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = executor.ram.get(bank, address);
+
+
+            LOGGER.debug(String.format("DECFSZ: Decrements data from register at address 0x%02X in %s", address, bank));
+
+            // Checking for Zero result
+            if (0 == value - 1) {
+
+                // NOP is executed.
+            } else {
+
+                // The next Instruction is being executed.
+            }
+            // Checking if value gets negative after decrementing.
+            if (0 > value - 1 && instruction.getArguments()[0] == 0) {
+
+                executor.setWorkingRegister(0xFF);
+
+            } else if (0 > value - 1) {
+
+                executor.ram.set(bank, address, 0xFF);
+            }
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                executor.setWorkingRegister(value - 1);
+
+            } else {
+
+                executor.ram.set(bank, address, value - 1);
+            }
+
+
+        } else { //Direct addressing.
+
+            // Determine selected bank
+            RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+            // Fetching value
+            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+
+            LOGGER.debug(String.format("DECFSZ: Decrements data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
+
+            // Checking for Zero result
+            if (0 == value - 1) {
+
+            // NOP is executed.
+            } else {
+
+            // The next Instruction is being executed.
+            }
+            // Checking if value gets negative after decrementing.
+            if (0 > value - 1 && instruction.getArguments()[0] == 0) {
+
+                executor.setWorkingRegister(0xFF);
+
+            } else if (0 > value - 1) {
+
+                executor.ram.set(bank, instruction.getArguments()[1], 0xFF);
+            }
+            //Checking for destination.
+            if (instruction.getArguments()[0] == 0) {
+
+                executor.setWorkingRegister(value - 1);
+
+            } else {
+
+                executor.ram.set(bank, instruction.getArguments()[1], value - 1);
+            }
+        }
+    }
+
 }
+
