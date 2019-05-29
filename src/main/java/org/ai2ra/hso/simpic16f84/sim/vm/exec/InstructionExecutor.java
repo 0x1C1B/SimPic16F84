@@ -252,6 +252,7 @@ public final class InstructionExecutor implements ObservableExecution {
                 case DECFSZ: {
 
                     byteAndControlExecutionUnit.executeDECFSZ(instruction);
+                    break;
                 }
                 case INCF: {
 
@@ -261,6 +262,7 @@ public final class InstructionExecutor implements ObservableExecution {
                 case INCFSZ: {
 
                     byteAndControlExecutionUnit.executeINCFSZ(instruction);
+                    break;
                 }
                 case MOVF: {
 
@@ -275,10 +277,12 @@ public final class InstructionExecutor implements ObservableExecution {
                 case RRF: {
 
                     byteAndControlExecutionUnit.executeRRF(instruction);
+                    break;
                 }
                 case RLF: {
 
                     byteAndControlExecutionUnit.executeRLF(instruction);
+                    break;
                 }
                 case NOP:
 
@@ -287,6 +291,7 @@ public final class InstructionExecutor implements ObservableExecution {
                 case BCF: {
 
                     bitExecutionUnit.executeBCF(instruction);
+                    break;
                 }
                 case BSF: {
 

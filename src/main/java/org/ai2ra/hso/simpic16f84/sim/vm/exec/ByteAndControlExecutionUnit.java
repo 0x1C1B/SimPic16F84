@@ -954,23 +954,33 @@ public class ByteAndControlExecutionUnit {
 
                 // The next Instruction is being executed.
             }
-            // Checking if value gets negative after decrementing.
-            if (0 > value - 1 && instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(0xFF);
-
-            } else if (0 > value - 1) {
-
-                executor.ram.set(bank, address, 0xFF);
-            }
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
                 executor.setWorkingRegister(value - 1);
 
+                // Checking if value gets negative after decrementing.
+                if (0 > value - 1) {
+
+                    executor.setWorkingRegister(0xFF);
+
+                } else {
+
+                    executor.setWorkingRegister(value - 1);
+                }
+
             } else {
 
-                executor.ram.set(bank, address, value - 1);
+                // Checking if value gets negative after decrementing.
+                if (0 > value - 1) {
+
+                    executor.ram.set(bank, address, 0xFF);
+
+                } else {
+
+                    executor.ram.set(bank, address, value - 1);
+                }
             }
 
 
@@ -990,25 +1000,35 @@ public class ByteAndControlExecutionUnit {
             // NOP is executed.
             } else {
 
-            // The next Instruction is being executed.
+                // The next Instruction is being executed.
             }
-            // Checking if value gets negative after decrementing.
-            if (0 > value - 1 && instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(0xFF);
-
-            } else if (0 > value - 1) {
-
-                executor.ram.set(bank, instruction.getArguments()[1], 0xFF);
-            }
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
                 executor.setWorkingRegister(value - 1);
 
+                // Checking if value gets negative after decrementing.
+                if (0 > value - 1) {
+
+                    executor.setWorkingRegister(0xFF);
+
+                } else {
+
+                    executor.setWorkingRegister(value - 1);
+                }
+
             } else {
 
-                executor.ram.set(bank, instruction.getArguments()[1], value - 1);
+                // Checking if value gets negative after decrementing.
+                if (0 > value - 1) {
+
+                    executor.ram.set(bank, instruction.getArguments()[1], 0xFF);
+
+                } else {
+
+                    executor.ram.set(bank, instruction.getArguments()[1], value - 1);
+                }
             }
         }
     }
