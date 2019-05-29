@@ -634,6 +634,67 @@ public class SimulatorController implements Initializable {
                         generalRegisters.refresh();
                     }
                 }
+
+                // Mapped I/O ports to simulator's pin state
+
+                if (0x05 == ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    // Map Port A
+
+                    int value = (int) event.getNewValue(); // Value of the SFR
+                    RamMemory.Bank bank = "bank0".equals(event.getPropertyName()) ?
+                            RamMemory.Bank.BANK_0 :
+                            RamMemory.Bank.BANK_1;
+
+                    if (RamMemory.Bank.BANK_0 == bank) {
+
+                        ra0.setSelected(0x01 == (value & 0b0001));
+                        ra1.setSelected(0x01 == (value & 0b0010) >> 1);
+                        ra2.setSelected(0x01 == (value & 0b0100) >> 2);
+                        ra3.setSelected(0x01 == (value & 0b1000) >> 3);
+                        ra4.setSelected(0x01 == (value & 0b1_0000) >> 4);
+
+                    } else {
+
+                        ra0.setDisable(0x00 == (value & 0b0001));
+                        ra1.setDisable(0x00 == (value & 0b0010) >> 1);
+                        ra2.setDisable(0x00 == (value & 0b0100) >> 2);
+                        ra3.setDisable(0x00 == (value & 0b1000) >> 3);
+                        ra4.setDisable(0x00 == (value & 0b1_0000) >> 4);
+                    }
+
+                } else if (0x06 == ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    // Map Port B
+
+                    int value = (int) event.getNewValue(); // Value of the SFR
+                    RamMemory.Bank bank = "bank0".equals(event.getPropertyName()) ?
+                            RamMemory.Bank.BANK_0 :
+                            RamMemory.Bank.BANK_1;
+
+                    if (RamMemory.Bank.BANK_0 == bank) {
+
+                        rb0.setSelected(0x01 == (value & 0b0000_0001));
+                        rb1.setSelected(0x01 == (value & 0b0000_0010) >> 1);
+                        rb2.setSelected(0x01 == (value & 0b0000_0100) >> 2);
+                        rb3.setSelected(0x01 == (value & 0b0000_1000) >> 3);
+                        rb4.setSelected(0x01 == (value & 0b0001_0000) >> 4);
+                        rb5.setSelected(0x01 == (value & 0b0010_0000) >> 5);
+                        rb6.setSelected(0x01 == (value & 0b0100_0000) >> 6);
+                        rb7.setSelected(0x01 == (value & 0b1000_0000) >> 7);
+
+                    } else {
+
+                        rb0.setDisable(0x00 == (value & 0b0000_0001));
+                        rb1.setDisable(0x00 == (value & 0b0000_0010) >> 1);
+                        rb2.setDisable(0x00 == (value & 0b0000_0100) >> 2);
+                        rb3.setDisable(0x00 == (value & 0b0000_1000) >> 3);
+                        rb4.setDisable(0x00 == (value & 0b0001_0000) >> 4);
+                        rb5.setDisable(0x00 == (value & 0b0010_0000) >> 5);
+                        rb6.setDisable(0x00 == (value & 0b0100_0000) >> 6);
+                        rb7.setDisable(0x00 == (value & 0b1000_0000) >> 7);
+                    }
+                }
             }
         }
     }
