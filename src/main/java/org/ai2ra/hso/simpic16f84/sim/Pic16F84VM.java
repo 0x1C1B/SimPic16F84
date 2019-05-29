@@ -278,4 +278,68 @@ public class Pic16F84VM {
 
         return loaded;
     }
+
+    /**
+     * Stimulates a selected pin of Port A. The given values represents the pin state, while
+     * <i>0</i> represents <i>LOW</i> and no equals <i>0</i> represents <i>HIGH</i>.
+     *
+     * @param pin   Selected pin, range between 0 inclusive and 4 inclusive
+     * @param value Value for selected pin, =0 is LOw and !=0 is HIGH
+     * @throws IllegalStateException    Thrown if selected pin is mapped as output
+     * @throws IllegalArgumentException Thrown if selected pin doesn't exist
+     */
+
+    public void stimulatePortA(int pin, int value) throws IllegalArgumentException, IllegalStateException {
+
+        // Check if pin exists
+
+        if (4 < pin || 0 > pin) {
+
+            throw new IllegalArgumentException("Selected pin doesn't exist");
+        }
+
+        // Check if pin is selected as input
+
+        if (0x01 == ((0x01 << pin) & ram.get(RamMemory.SFR.TRISA))) {
+
+            int state = 0 == value ? 0 : 1;
+            ram.set(RamMemory.SFR.PORTA, ram.get(RamMemory.SFR.PORTA) | state << pin);
+
+        } else {
+
+            throw new IllegalStateException("Selected pin is set as output pin");
+        }
+    }
+
+    /**
+     * Stimulates a selected pin of Port B. The given values represents the pin state, while
+     * <i>0</i> represents <i>LOW</i> and no equals <i>0</i> represents <i>HIGH</i>.
+     *
+     * @param pin   Selected pin, range between 0 inclusive and 7 inclusive
+     * @param value Value for selected pin, =0 is LOw and !=0 is HIGH
+     * @throws IllegalStateException    Thrown if selected pin is mapped as output
+     * @throws IllegalArgumentException Thrown if selected pin doesn't exist
+     */
+
+    public void stimulatePortB(int pin, int value) {
+
+        // Check if pin exists
+
+        if (7 < pin || 0 > pin) {
+
+            throw new IllegalArgumentException("Selected pin doesn't exist");
+        }
+
+        // Check if pin is selected as input
+
+        if (0x01 == ((0x01 << pin) & ram.get(RamMemory.SFR.TRISB))) {
+
+            int state = 0 == value ? 0 : 1;
+            ram.set(RamMemory.SFR.PORTB, ram.get(RamMemory.SFR.PORTB) | state << pin);
+
+        } else {
+
+            throw new IllegalStateException("Selected pin is set as output pin");
+        }
+    }
 }
