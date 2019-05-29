@@ -272,6 +272,14 @@ public final class InstructionExecutor implements ObservableExecution {
                     byteAndControlExecutionUnit.executeIORWF(instruction);
                     break;
                 }
+                case RRF: {
+
+                    byteAndControlExecutionUnit.executeRRF(instruction);
+                }
+                case RLF: {
+
+                    byteAndControlExecutionUnit.executeRLF(instruction);
+                }
                 case NOP:
                 default: {
 

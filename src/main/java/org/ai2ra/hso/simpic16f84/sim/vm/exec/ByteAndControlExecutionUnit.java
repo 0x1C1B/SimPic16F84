@@ -1107,6 +1107,170 @@ public class ByteAndControlExecutionUnit {
 				}
 		  }
 	 }
+
+	 /**
+	  * The contents of register ’f’ are rotated
+	  * one bit to the left through the Carry
+	  * Flag. If ’d’ is 0 the result is placed in the
+	  * W register. If ’d’ is 1 the result is placed
+	  * back in register ’f’.
+	  * @param instruction Instruction consisting out of OPC and arguments
+	  */
+	 void executeRLF (Instruction instruction){
+	 	 if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+	 	 	 // Get the lower 7 Bits of FSR if indirect addressing
+			  int address = executor.ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+			  // Determine selected bank
+			  RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+			  // Fetching value
+			  int value = executor.ram.get(bank, address);
+			  LOGGER.debug(String.format("RLF: The contents of the register at 0x%02X in %s are rotated one bit to the left through the Carry Flag.", address, bank));
+			  byte firstByte = (byte)(value & 0xFF);
+			  int carryFlagValue = (firstByte & 0b1000_0000) >> 7;
+
+			  firstByte = (byte) (firstByte & 0b0111_1111);
+			  firstByte = (byte) (firstByte << 1);
+
+			  value = firstByte;
+
+			  // Checking for CarryFlag Value
+			  if(carryFlagValue == 1){
+			  	executor.setCarryFlag();
+			  }else {
+			  	executor.clearCarryFlag();
+			  }
+
+			  //Checking for destination.
+			  if (instruction.getArguments()[0] == 0) {
+
+			  	executor.setWorkingRegister(value);
+
+			  } else {
+
+			  	executor.ram.set(bank, address, value);
+			  }
+
+
+	 	 } else { //Direct addressing.
+
+	 	 	 // Determine selected bank
+			  RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+			  // Fetching value
+
+			  int value =	executor.ram.get(bank, instruction.getArguments()[1]);
+			  LOGGER.debug(String.format("RLF: The contents of the register at 0x%02X in %s are rotated one bit to the left through the Carry Flag.", instruction.getArguments()[1], bank));
+			  byte firstByte = (byte)(value & 0xFF);
+			  int carryFlagValue = (firstByte & 0b1000_0000) >> 7;
+
+			  firstByte = (byte) (firstByte & 0b0111_1111);
+			  firstByte = (byte) (firstByte << 1);
+
+			  value = firstByte;
+
+			  // Checking for CarryFlag Value
+			  if(carryFlagValue == 1){
+			  	executor.setCarryFlag();
+			  }else {
+			  	executor.clearCarryFlag();
+			  }
+
+			  //Checking for destination.
+			  if (instruction.getArguments()[0] == 0) {
+
+			  	executor.setWorkingRegister(value);
+
+			  } else {
+
+			  	executor.ram.set(bank, instruction.getArguments()[1], value);
+			  }
+	 	 }
+	 }
+
+	 /**
+	  * The contents of register ’f’ are rotated
+	  * one bit to the right through the Carry
+	  * Flag. If ’d’ is 0 the result is placed in the
+	  * W register. If ’d’ is 1 the result is placed
+	  * back in register ’f’
+	  * @param instruction Instruction consisting out of OPC and arguments
+	  */
+	 void executeRRF(Instruction instruction) {
+		  if (0 == instruction.getArguments()[1]) { //Indirect addressing.
+
+				// Get the lower 7 Bits of FSR if indirect addressing
+				int address = executor.ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+				// Fetching value
+				int value = executor.ram.get(bank, address);
+				LOGGER.debug(String.format("RRF: The contents of the register at 0x%02X in %s are rotated one bit to the right through the Carry Flag.", address, bank));
+				byte firstByte = (byte)(value & 0xFF);
+				int carryFlagValue = (firstByte & 0b1000_0000) >> 7;
+
+				firstByte = (byte) (firstByte & 0b0111_1111);
+				firstByte = (byte) (firstByte >> 1);
+
+				value = firstByte;
+
+				// Checking for CarryFlag Value
+				if(carryFlagValue == 1){
+					 executor.setCarryFlag();
+				}else {
+					 executor.clearCarryFlag();
+				}
+
+				//Checking for destination.
+				if (instruction.getArguments()[0] == 0) {
+
+					 executor.setWorkingRegister(value);
+
+				} else {
+
+					 executor.ram.set(bank, address, value);
+				}
+
+
+		  } else { //Direct addressing.
+
+				// Determine selected bank
+				RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+				// Fetching value
+
+				int value =	executor.ram.get(bank, instruction.getArguments()[1]);
+				LOGGER.debug(String.format("RRF: The contents of the register at 0x%02X in %s are rotated one bit to the right through the Carry Flag.", instruction.getArguments()[1], bank));
+				byte firstByte = (byte)(value & 0xFF);
+				int carryFlagValue = (firstByte & 0b1000_0000) >> 7;
+
+				firstByte = (byte) (firstByte & 0b0111_1111);
+				firstByte = (byte) (firstByte >> 1);
+
+				value = firstByte;
+
+				// Checking for CarryFlag Value
+				if(carryFlagValue == 1){
+					 executor.setCarryFlag();
+				}else {
+					 executor.clearCarryFlag();
+				}
+
+				//Checking for destination.
+				if (instruction.getArguments()[0] == 0) {
+
+					 executor.setWorkingRegister(value);
+
+				} else {
+
+					 executor.ram.set(bank, instruction.getArguments()[1], value);
+				}
+		  }
+	 }
 }
 
 
