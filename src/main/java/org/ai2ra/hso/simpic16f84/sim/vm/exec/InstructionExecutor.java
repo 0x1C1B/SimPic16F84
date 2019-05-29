@@ -281,6 +281,14 @@ public final class InstructionExecutor implements ObservableExecution {
                     byteAndControlExecutionUnit.executeRLF(instruction);
                 }
                 case NOP:
+
+                 // Bit-oriented instructions:
+
+                case BCF: {
+
+                    bitExecutionUnit.executeBCF(instruction);
+                }
+
                 default: {
 
                     LOGGER.debug("NOP: No operation was executed");
