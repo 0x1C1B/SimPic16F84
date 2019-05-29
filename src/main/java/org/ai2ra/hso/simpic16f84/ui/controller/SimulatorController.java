@@ -146,6 +146,18 @@ public class SimulatorController implements Initializable {
         AnchorPane.setBottomAnchor(lstViewer, 0.0);
         contentPane.getChildren().add(lstViewer);
 
+        initializeLogView();
+        initializeToolbar();
+        initializeRegisters();
+    }
+
+    /**
+     * Configures the logger and it's related components. This includes changing the
+     * log level through the menu bar as well as the log view itself.
+     */
+
+    private void initializeLogView() {
+
         // Redirect log stream to log viewer component
 
         TextAreaAppender.setTextArea(logViewer);
@@ -184,26 +196,13 @@ public class SimulatorController implements Initializable {
                 }
             }
         });
+    }
 
-        // Enable/Disable tools dynamically until its loaded/running
+    /**
+     * Initializes the single <i>bits</i> (Components) of the STATUS register.
+     */
 
-        stopTool.disableProperty().bind(Bindings.or(
-                loadedProperty.not(), runningProperty.not()));
-
-        stopOption.disableProperty().bind(Bindings.or(
-                loadedProperty.not(), runningProperty.not()));
-
-        runTool.disableProperty().bind(Bindings.or(
-                loadedProperty.not(), executingProperty));
-
-        runOption.disableProperty().bind(Bindings.or(
-                loadedProperty.not(), executingProperty));
-
-        nextStepTool.disableProperty().bind(Bindings.or(
-                loadedProperty.not(), executingProperty));
-
-        nextStepOption.disableProperty().bind(Bindings.or(
-                loadedProperty.not(), executingProperty));
+    private void initializeStatusRegister() {
 
         // Setup STATUS register table view
 
@@ -215,6 +214,13 @@ public class SimulatorController implements Initializable {
         zBit.setCellValueFactory(new PropertyValueFactory<>("zeroFlag"));
         dcBit.setCellValueFactory(new PropertyValueFactory<>("digitCarryFlag"));
         cBit.setCellValueFactory(new PropertyValueFactory<>("carryFlag"));
+    }
+
+    /**
+     * Initialize register related components. This includes SFRs as well as GPRs.
+     */
+
+    private void initializeRegisters() {
 
         // Setup Special Function Register table view
 
@@ -275,6 +281,35 @@ public class SimulatorController implements Initializable {
                 delete.setOnAction(event -> getTableView().getItems().remove(item));
             }
         });
+
+        initializeStatusRegister();
+    }
+
+    /**
+     * Configures the single tools inside of the toolbar.
+     */
+
+    private void initializeToolbar() {
+
+        // Enable/Disable tools dynamically until its loaded/running
+
+        stopTool.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), runningProperty.not()));
+
+        stopOption.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), runningProperty.not()));
+
+        runTool.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), executingProperty));
+
+        runOption.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), executingProperty));
+
+        nextStepTool.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), executingProperty));
+
+        nextStepOption.disableProperty().bind(Bindings.or(
+                loadedProperty.not(), executingProperty));
     }
 
     /**
@@ -343,8 +378,6 @@ public class SimulatorController implements Initializable {
             }
         });
 
-        lstReaderService.setOnFailed(new ServiceErrorHandler());
-
         // Service for initiating next execution step
 
         nextStepService = new NextStepService();
@@ -353,8 +386,6 @@ public class SimulatorController implements Initializable {
 
             lstViewer.setIndicator(lstViewer.addressToLineNumber((Integer) event.getSource().getValue()));
         });
-
-        nextStepService.setOnFailed(new ServiceErrorHandler());
 
         // Service for stopping execution flow
 
@@ -365,8 +396,6 @@ public class SimulatorController implements Initializable {
             lstViewer.setIndicator(lstViewer.addressToLineNumber(0x00));
         });
 
-        stopExecutionService.setOnFailed(new ServiceErrorHandler());
-
         // Service for continue execution until breakpoint is reached
 
         runExecutionService = new RunExecutionService();
@@ -375,8 +404,6 @@ public class SimulatorController implements Initializable {
 
             lstViewer.setIndicator(lstViewer.addressToLineNumber(null != address ? address : prevAddress));
         });
-
-        runExecutionService.setOnFailed(new ServiceErrorHandler());
 
         // Bind executing property to services
 

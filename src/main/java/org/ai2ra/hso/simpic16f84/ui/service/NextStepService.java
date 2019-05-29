@@ -16,6 +16,11 @@ public class NextStepService extends Service<Integer> {
 
     private Pic16F84VM simulator;
 
+    public NextStepService() {
+
+        setOnFailed(new ServiceErrorHandler()); // Register default error handler
+    }
+
     public Pic16F84VM getSimulator() {
 
         return simulator;

@@ -18,6 +18,11 @@ public class LstReaderService extends Service<String> {
 
     private File file;
 
+    public LstReaderService() {
+
+        setOnFailed(new ServiceErrorHandler()); // Register default error handler
+    }
+
     public File getFile() {
 
         return file;

@@ -19,6 +19,11 @@ public class RunExecutionService extends Service<Integer> {
     private Pic16F84VM simulator;
     private LstViewer lstViewer;
 
+    public RunExecutionService() {
+
+        setOnFailed(new ServiceErrorHandler()); // Register default error handler
+    }
+
     public Pic16F84VM getSimulator() {
 
         return simulator;

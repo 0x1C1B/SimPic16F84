@@ -15,6 +15,11 @@ public class StopExecutionService extends Service<Void> {
 
     private Pic16F84VM simulator;
 
+    public StopExecutionService() {
+
+        setOnFailed(new ServiceErrorHandler()); // Register default error handler
+    }
+
     public Pic16F84VM getSimulator() {
 
         return simulator;
