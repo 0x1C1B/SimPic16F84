@@ -92,9 +92,10 @@ public class SimulatorController implements Initializable {
 
     @FXML ListView<String> addressStack;
 
-    // Working register components
+    // Special register components
 
     @FXML TextField workingRegister;
+    @FXML TextField instructionRegister;
 
     // I/O Pin representation
 
@@ -284,6 +285,8 @@ public class SimulatorController implements Initializable {
 
         // Initialize working register
         workingRegister.setText(String.format("0x%02X", simulator.getExecutor().getWorkingRegister()));
+        // Initialize instruction register
+        instructionRegister.setText(String.format("0x%04X", simulator.getExecutor().getInstructionRegister()));
 
         initializeStatusRegister();
     }
@@ -679,6 +682,10 @@ public class SimulatorController implements Initializable {
             if (event.getPropertyName().equals("workingRegister")) {
 
                 workingRegister.setText(String.format("0x%02X", (byte) event.getNewValue()));
+
+            } else if (event.getPropertyName().equals("instructionRegister")) {
+
+                instructionRegister.setText(String.format("0x%04X", (short) event.getNewValue()));
             }
         }
     }
