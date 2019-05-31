@@ -321,8 +321,9 @@ public final class InstructionExecutor implements ObservableExecution {
 
         LOGGER.info("Reset registers to power-on state");
 
-        workingRegister = 0x00;
-        programCounter = 0x00;
+        setWorkingRegister((byte) 0x00);
+        setProgramCounter(0x00);
+        setInstructionRegister((short) 0x00);
 
         // Initialize the special function registers
 

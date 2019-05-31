@@ -214,7 +214,7 @@
                                                 <children>
                                                     <Label alignment="CENTER" maxHeight="1.7976931348623157E308"
                                                            maxWidth="1.7976931348623157E308" text="Value:"/>
-                                                    <TextField fx:id="workingRegister" editable="false" text="0x00"
+                                                    <TextField fx:id="workingRegister" editable="false"
                                                                HBox.hgrow="ALWAYS"/>
                                                 </children>
                                             </HBox>

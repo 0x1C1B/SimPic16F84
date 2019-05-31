@@ -210,6 +210,7 @@ public class Pic16F84VM {
 
         loaded = true; // Set state to execution ready
         changes.firePropertyChange("loaded", false, true);
+        executor.reset();
     }
 
     /**

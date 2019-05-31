@@ -227,13 +227,7 @@ public class SimulatorController implements Initializable {
         sfrName.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         // Use custom factory for printing as hex string in prefix format
-        sfrValue.setCellValueFactory(param -> {
-
-            boolean isNegative = 0 > param.getValue().getValue();
-            byte value = (byte) (isNegative ? -1 * param.getValue().getValue() : param.getValue().getValue());
-            String formated = isNegative ? "-" + String.format("0x%02X", value) : String.format("0x%02X", value);
-            return new SimpleStringProperty(formated);
-        });
+        sfrValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", (byte) param.getValue().getValue())));
 
         // Setup General Purpose Register section
 
@@ -259,13 +253,7 @@ public class SimulatorController implements Initializable {
 
         // Use custom factory for printing as hex string in prefix format
         gprAddress.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getAddress())));
-        gprValue.setCellValueFactory(param -> {
-
-            boolean isNegative = 0 > param.getValue().getValue();
-            byte value = (byte) (isNegative ? -1 * param.getValue().getValue() : param.getValue().getValue());
-            String formated = isNegative ? "-" + String.format("0x%02X", value) : String.format("0x%02X", value);
-            return new SimpleStringProperty(formated);
-        });
+        gprValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", (byte) param.getValue().getValue())));
 
         gprOptions.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
         gprOptions.setCellFactory(param -> new TableCell<GeneralPurposeRegister, GeneralPurposeRegister>() {
@@ -293,6 +281,9 @@ public class SimulatorController implements Initializable {
                 delete.setOnAction(event -> getTableView().getItems().remove(item));
             }
         });
+
+        // Initialize working register
+        workingRegister.setText(String.format("0x%02X", simulator.getExecutor().getWorkingRegister()));
 
         initializeStatusRegister();
     }
