@@ -37,6 +37,14 @@ public interface ObservableExecution {
     Integer getProgramCounter();
 
     /**
+     * Allows fetching the current state of the runtime Counter.
+     *
+     * @return Returns the current state
+     */
+
+    Integer getRuntimeCounter();
+
+    /**
      * Adds a change listener <b>only</b> for observing the executor's state. This pattern
      * is specially intended to use for internal registers.
      *

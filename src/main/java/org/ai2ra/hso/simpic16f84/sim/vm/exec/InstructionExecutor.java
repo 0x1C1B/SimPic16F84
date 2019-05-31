@@ -32,6 +32,10 @@ public final class InstructionExecutor implements ObservableExecution {
     private Short instructionRegister;
     /** The instruction pointer that points to the next instruction in program memory. */
     private Integer programCounter;
+    /**
+     * Runtime counter indicates execution time
+     */
+    private Integer runtimeCounter;
 
     /*
     Intentionally package-private to allow execution units direct access.
@@ -309,6 +313,7 @@ public final class InstructionExecutor implements ObservableExecution {
             lock.unlock();
         }
 
+        increaseRuntimeCounter();
         return programCounter;
     }
 
@@ -395,6 +400,40 @@ public final class InstructionExecutor implements ObservableExecution {
     public Byte getWorkingRegister() {
 
         return workingRegister;
+    }
+
+    /**
+     * Sets runtime counter to a given count.
+     *
+     * @param counter The given count
+     */
+
+    void setRuntimeCounter(Integer counter) {
+
+        changes.firePropertyChange("runtimeCounter", runtimeCounter, counter);
+        runtimeCounter = counter;
+    }
+
+    /**
+     * Increments the runtime counter.
+     */
+
+    void increaseRuntimeCounter() {
+
+        changes.firePropertyChange("runtimeCounter", runtimeCounter, new Integer(runtimeCounter + 1));
+        ++runtimeCounter;
+    }
+
+    /**
+     * Allows access to the runtime counter.
+     *
+     * @return Returns the current state of the runtime counter
+     */
+
+    @Override
+    public Integer getRuntimeCounter() {
+
+        return runtimeCounter;
     }
 
     /**
