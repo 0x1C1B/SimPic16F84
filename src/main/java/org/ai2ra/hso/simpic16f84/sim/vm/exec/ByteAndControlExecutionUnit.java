@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * @see InstructionExecutor
  */
 
-public class ByteAndControlExecutionUnit {
+class ByteAndControlExecutionUnit {
 
     private static final Logger LOGGER;
 
@@ -46,7 +46,7 @@ public class ByteAndControlExecutionUnit {
 
             // Determine selected bank
             RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
-            int value = executor.ram.get(bank, address); // Fetch value from given file register
+            byte value = executor.ram.get(bank, address); // Fetch value from given file register
 
             LOGGER.debug(String.format("ADDWF: Adds content at address 0x%02X in %s with working register", address, bank));
 
@@ -63,7 +63,7 @@ public class ByteAndControlExecutionUnit {
 
             // Check for an arithmetic number overflow
 
-            if (255 > value + executor.getWorkingRegister()) {
+            if (127 < value + executor.getWorkingRegister()) {
 
                 executor.setCarryFlag();
 
@@ -87,11 +87,11 @@ public class ByteAndControlExecutionUnit {
 
             if (0 == instruction.getArguments()[0]) {
 
-                executor.setWorkingRegister(value + executor.getWorkingRegister());
+                executor.setWorkingRegister((byte) (value + executor.getWorkingRegister()));
 
             } else {
 
-                executor.ram.set(bank, address, value + executor.getWorkingRegister());
+                executor.ram.set(bank, address, (byte) (value + executor.getWorkingRegister()));
             }
 
         } else { // Direct addressing
@@ -99,7 +99,7 @@ public class ByteAndControlExecutionUnit {
             // Fetch value from given file register using direct addressing
 
             RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
-            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+            byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 
             LOGGER.debug(String.format("ADDWF: Adds content at address 0x%02X in %s with working register", instruction.getArguments()[1], bank));
 
@@ -116,7 +116,7 @@ public class ByteAndControlExecutionUnit {
 
             // Check for an arithmetic number overflow
 
-            if (255 > value + executor.getWorkingRegister()) {
+            if (127 < value + executor.getWorkingRegister()) {
 
                 executor.setCarryFlag();
 
@@ -140,11 +140,11 @@ public class ByteAndControlExecutionUnit {
 
             if (0 == instruction.getArguments()[0]) {
 
-                executor.setWorkingRegister(value + executor.getWorkingRegister());
+                executor.setWorkingRegister((byte) (value + executor.getWorkingRegister()));
 
             } else {
 
-                executor.ram.set(bank, instruction.getArguments()[1], value + executor.getWorkingRegister());
+                executor.ram.set(bank, instruction.getArguments()[1], (byte) (value + executor.getWorkingRegister()));
             }
         }
     }
@@ -173,11 +173,11 @@ public class ByteAndControlExecutionUnit {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value & executor.getWorkingRegister());
+                executor.setWorkingRegister((byte) (value & executor.getWorkingRegister()));
 
             } else {
 
-                executor.ram.set(bank, address, value & executor.getWorkingRegister());
+                executor.ram.set(bank, address, (byte) (value & executor.getWorkingRegister()));
 
             }
 
@@ -202,11 +202,11 @@ public class ByteAndControlExecutionUnit {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value & executor.getWorkingRegister());
+                executor.setWorkingRegister((byte) (value & executor.getWorkingRegister()));
 
             } else {
 
-                executor.ram.set(bank, instruction.getArguments()[1], value & executor.getWorkingRegister());
+                executor.ram.set(bank, instruction.getArguments()[1], (byte) (value & executor.getWorkingRegister()));
             }
 
             //Checking for zero result
@@ -240,18 +240,18 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetch value from given file register
-            int value = executor.ram.get(bank, address);
+            byte value = executor.ram.get(bank, address);
 
             LOGGER.debug(String.format("XORWF: Exclusive disjunction of content at address 0x%02X in %s with working register", address, bank));
 
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value ^ executor.getWorkingRegister());
+                executor.setWorkingRegister((byte) (value ^ executor.getWorkingRegister()));
 
             } else {
 
-                executor.ram.set(bank, address, value ^ executor.getWorkingRegister());
+                executor.ram.set(bank, address, (byte) (value ^ executor.getWorkingRegister()));
 
             }
 
@@ -276,11 +276,11 @@ public class ByteAndControlExecutionUnit {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value ^ executor.getWorkingRegister());
+                executor.setWorkingRegister((byte) (value ^ executor.getWorkingRegister()));
 
             } else {
 
-                executor.ram.set(bank, instruction.getArguments()[1], value ^ executor.getWorkingRegister());
+                executor.ram.set(bank, instruction.getArguments()[1], (byte) (value ^ executor.getWorkingRegister()));
 
             }
 
@@ -314,7 +314,7 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetch value from given file register
-            int value = executor.ram.get(bank, address);
+            byte value = executor.ram.get(bank, address);
 
             LOGGER.debug(String.format("SUBLW: Subtracts content at address 0x%02X in %s from working register", address, bank));
 
@@ -351,11 +351,11 @@ public class ByteAndControlExecutionUnit {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(executor.getWorkingRegister() - value);
+                executor.setWorkingRegister((byte) (executor.getWorkingRegister() - value));
 
             } else {
 
-                executor.ram.set(bank, address, executor.getWorkingRegister() - value);
+                executor.ram.set(bank, address, (byte) (executor.getWorkingRegister() - value));
             }
 
         } else { //Direct addressing.
@@ -364,7 +364,7 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetch value from given file register
-            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+            byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 
             LOGGER.debug(String.format("SUBLW: Subtracts content at address 0x%02X in %s from working register", instruction.getArguments()[1], bank));
 
@@ -399,11 +399,11 @@ public class ByteAndControlExecutionUnit {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(executor.getWorkingRegister() - value);
+                executor.setWorkingRegister((byte) (executor.getWorkingRegister() - value));
 
             } else {
 
-                executor.ram.set(bank, instruction.getArguments()[1], executor.getWorkingRegister() - value);
+                executor.ram.set(bank, instruction.getArguments()[1], (byte) (executor.getWorkingRegister() - value));
             }
         }
     }
@@ -416,18 +416,16 @@ public class ByteAndControlExecutionUnit {
 
         LOGGER.debug("CLRW: Clears the working register");
 
-        executor.setWorkingRegister(0);
+        executor.setWorkingRegister((byte) 0x00);
         executor.setZeroFlag();
     }
 
     /**
      * Returns from subroutine. Address of next instruction is poped from stack
      * memory.
-     *
-     * @param instruction Instruction consisting out of OPC and arguments
      */
 
-    void executeRETURN(Instruction instruction) {
+    void executeRETURN() {
 
         /*
         Restores address of next instruction from stack memory
@@ -494,7 +492,7 @@ public class ByteAndControlExecutionUnit {
             LOGGER.debug(String.format("CLRF: Clears data from register at address 0x%02X in %s", address, bank));
 
             // Moving data from W register to 'f' register
-            executor.ram.set(bank, address, 0);
+            executor.ram.set(bank, address, (byte) 0x00);
 
             // Setting Zero Flag
             executor.setZeroFlag();
@@ -508,7 +506,7 @@ public class ByteAndControlExecutionUnit {
             LOGGER.debug(String.format("CLRF: Clears data from register at address 0x%02X in %s", instruction.getArguments()[0], bank));
 
             // Moving data from W register to 'f' register
-            executor.ram.set(bank, instruction.getArguments()[0], 0);
+            executor.ram.set(bank, instruction.getArguments()[0], (byte) 0x00);
 
             // Setting Zero Flag
             executor.setZeroFlag();
@@ -534,7 +532,7 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, address);
+            byte value = executor.ram.get(bank, address);
 
 
             // Checking for Zero result
@@ -551,11 +549,11 @@ public class ByteAndControlExecutionUnit {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
                 // "Erasing" the upper bits due to the usage of int.
-                executor.setWorkingRegister((~value) & 0b1111_1111);
+                executor.setWorkingRegister((byte) ((~value) & 0b1111_1111));
 
             } else {
                 // "Erasing" the upper bits due to the usage of int.
-                executor.ram.set(bank, address, ((~value) & 0b1111_1111));
+                executor.ram.set(bank, address, (byte) ((~value) & 0b1111_1111));
             }
 
 
@@ -565,7 +563,7 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+            byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 
             // Checking for Zero result
             if (0 == ~value) {
@@ -581,11 +579,11 @@ public class ByteAndControlExecutionUnit {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
                 // "Erasing" the upper bits due to the usage of int.
-                executor.setWorkingRegister((~value) & 0b1111_1111);
+                executor.setWorkingRegister((byte) ((~value) & 0b1111_1111));
 
             } else {
                 // "Erasing" the upper bits due to the usage of int.
-                executor.ram.set(bank, instruction.getArguments()[1], ((~value) & 0b1111_1111));
+                executor.ram.set(bank, instruction.getArguments()[1], (byte) ((~value) & 0b1111_1111));
             }
         }
     }
@@ -609,8 +607,7 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, address);
-
+            byte value = executor.ram.get(bank, address);
 
             LOGGER.debug(String.format("DECF: Decrements data from register at address 0x%02X in %s", address, bank));
 
@@ -622,25 +619,16 @@ public class ByteAndControlExecutionUnit {
 
                 executor.clearZeroFlag();
             }
-            // Checking if value gets negative after decrementing.
-            if (0 > value - 1 && instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(0xFF);
-
-            } else if (0 > value - 1) {
-
-                executor.ram.set(bank, address, 0xFF);
-            }
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value - 1);
+                executor.setWorkingRegister((byte) (value - 1));
 
             } else {
 
-                executor.ram.set(bank, address, value - 1);
+                executor.ram.set(bank, address, (byte) (value - 1));
             }
-
 
         } else { //Direct addressing.
 
@@ -648,7 +636,7 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+            byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 
             LOGGER.debug(String.format("DECF: Decrements data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
 
@@ -660,23 +648,15 @@ public class ByteAndControlExecutionUnit {
 
                 executor.clearZeroFlag();
             }
-            // Checking if value gets negative after decrementing.
-            if (0 > value - 1 && instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(0xFF);
-
-            } else if (0 > value - 1) {
-
-                executor.ram.set(bank, instruction.getArguments()[1], 0xFF);
-            }
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value - 1);
+                executor.setWorkingRegister((byte) (value - 1));
 
             } else {
 
-                executor.ram.set(bank, instruction.getArguments()[1], value - 1);
+                executor.ram.set(bank, instruction.getArguments()[1], (byte) (value - 1));
             }
         }
     }
@@ -700,38 +680,27 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, address);
-
+            byte value = executor.ram.get(bank, address);
 
             LOGGER.debug(String.format("INCF: Increments data from register at address 0x%02X in %s", address, bank));
 
             // Checking for Zero result
-            if (0 == value + 1) {
+            if (0 == value - 1) {
 
                 executor.setZeroFlag();
             } else {
 
                 executor.clearZeroFlag();
             }
-            // Checking if value gets negative after decrementing.
-            if (255 < value + 1 && instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(0x00);
-                executor.setZeroFlag();
-
-            } else if (255 < value + 1) {
-
-                executor.ram.set(bank, address, 0x00);
-                executor.setZeroFlag();
-            }
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value + 1);
+                executor.setWorkingRegister((byte) (value + 1));
 
             } else {
 
-                executor.ram.set(bank, address, value + 1);
+                executor.ram.set(bank, address, (byte) (value + 1));
             }
 
 
@@ -741,37 +710,27 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+            byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 
             LOGGER.debug(String.format("INCF: Increments data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
 
             // Checking for Zero result
-            if (0 == value + 1) {
+            if (0 == value - 1) {
 
                 executor.setZeroFlag();
             } else {
 
                 executor.clearZeroFlag();
             }
-            // Checking if value gets negative after decrementing.
-            if (255 < value + 1 && instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(0x00);
-                executor.setZeroFlag();
-
-            } else if (255 < value + 1) {
-
-                executor.ram.set(bank, instruction.getArguments()[1], 0x00);
-                executor.setZeroFlag();
-            }
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value + 1);
+                executor.setWorkingRegister((byte) (value + 1));
 
             } else {
 
-                executor.ram.set(bank, instruction.getArguments()[1], value + 1);
+                executor.ram.set(bank, instruction.getArguments()[1], (byte) (value + 1));
             }
         }
     }
@@ -798,7 +757,7 @@ public class ByteAndControlExecutionUnit {
 
             LOGGER.debug(String.format("MOVF: Moves data from register at address 0x%02X in %s to Working register or itself", address, bank));
 
-            int value = executor.ram.get(bank, address);
+            byte value = executor.ram.get(bank, address);
 
             // Checking for Zero Flag
             if (0 == value) {
@@ -827,7 +786,7 @@ public class ByteAndControlExecutionUnit {
 
             LOGGER.debug(String.format("MOVF: Moves data from register at address 0x%02X in %s to Working register or itself", instruction.getArguments()[1], bank));
 
-            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+            byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 
             // Checking for Zero Flag
             if (0 == value) {
@@ -870,14 +829,12 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, address);
+            byte value = executor.ram.get(bank, address);
 
-            byte firstByte = (byte) (value & 0xFF);
+            byte firstBits = (byte) ((value & 0x0F) << 4);
+            byte lastBits = (byte) ((value & 0xF0) >> 4);
 
-            byte firstBits = (byte) ((firstByte & 0x0F) << 4);
-            byte lastBits = (byte) ((firstByte & 0xF0) >> 4);
-
-            int returnValue = (firstBits + lastBits);
+            byte returnValue = (byte) (firstBits + lastBits);
             LOGGER.debug(String.format("IORWF: Inclusive disjunction of content at address 0x%02X in %s with working register", address, bank));
 
             //Checking for destination.
@@ -897,14 +854,12 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+            byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 
-            byte firstByte = (byte) (value & 0xFF);
+            byte firstBits = (byte) ((value & 0x0F) << 4);
+            byte lastBits = (byte) ((value & 0xF0) >> 4);
 
-            byte firstBits = (byte) ((firstByte & 0x0F) << 4);
-            byte lastBits = (byte) ((firstByte & 0xF0) >> 4);
-
-            int returnValue = (firstBits + lastBits);
+            byte returnValue = (byte) (firstBits + lastBits);
 
             LOGGER.debug(String.format("IORWF: Inclusive disjunction of content at address 0x%02X in %s with working register", instruction.getArguments()[1], bank));
 
@@ -941,18 +896,17 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, address);
-
+            byte value = executor.ram.get(bank, address);
 
             LOGGER.debug(String.format("DECFSZ: Decrements data from register at address 0x%02X in %s", address, bank));
 
             // Checking for Zero result
             if (0 == value - 1) {
 
-                /**
-                 * Skip the next operation, in general a jump operation as part of loop.
-                 * The hardware would execute a NOP instead of the actual next instruction.
-                 * This software implementation just skips the next instruction.
+                /*
+                Skip the next operation, in general a jump operation as part of loop.
+                The hardware would execute a NOP instead of the actual next instruction.
+                This software implementation just skips the next instruction.
                  */
 
                 executor.setProgramCounter(executor.getProgramCounter() + 1);
@@ -961,29 +915,11 @@ public class ByteAndControlExecutionUnit {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value - 1);
-
-                // Checking if value gets negative after decrementing.
-                if (0 > value - 1) {
-
-                    executor.setWorkingRegister(0xFF);
-
-                } else {
-
-                    executor.setWorkingRegister(value - 1);
-                }
+                executor.setWorkingRegister((byte) (value - 1));
 
             } else {
 
-                // Checking if value gets negative after decrementing.
-                if (0 > value - 1) {
-
-                    executor.ram.set(bank, address, 0xFF);
-
-                } else {
-
-                    executor.ram.set(bank, address, value - 1);
-                }
+                executor.ram.set(bank, address, (byte) (value - 1));
             }
 
 
@@ -993,17 +929,17 @@ public class ByteAndControlExecutionUnit {
             RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
             // Fetching value
-            int value = executor.ram.get(bank, instruction.getArguments()[1]);
+            byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 
             LOGGER.debug(String.format("DECFSZ: Decrements data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
 
             // Checking for Zero result
             if (0 == value - 1) {
 
-                /**
-                 * Skip the next operation, in general a jump operation as part of loop.
-                 * The hardware would execute a NOP instead of the actual next instruction.
-                 * This software implementation just skips the next instruction.
+                /*
+                Skip the next operation, in general a jump operation as part of loop.
+                The hardware would execute a NOP instead of the actual next instruction.
+                This software implementation just skips the next instruction.
                  */
 
                 executor.setProgramCounter(executor.getProgramCounter() + 1);
@@ -1012,29 +948,11 @@ public class ByteAndControlExecutionUnit {
             //Checking for destination.
             if (instruction.getArguments()[0] == 0) {
 
-                executor.setWorkingRegister(value - 1);
-
-                // Checking if value gets negative after decrementing.
-                if (0 > value - 1) {
-
-                    executor.setWorkingRegister(0xFF);
-
-                } else {
-
-                    executor.setWorkingRegister(value - 1);
-                }
+                executor.setWorkingRegister((byte) (value - 1));
 
             } else {
 
-                // Checking if value gets negative after decrementing.
-                if (0 > value - 1) {
-
-                    executor.ram.set(bank, instruction.getArguments()[1], 0xFF);
-
-                } else {
-
-                    executor.ram.set(bank, instruction.getArguments()[1], value - 1);
-                }
+                executor.ram.set(bank, instruction.getArguments()[1], (byte) (value - 1));
             }
         }
     }
@@ -1058,39 +976,32 @@ public class ByteAndControlExecutionUnit {
 				RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
 				// Fetching value
-				int value = executor.ram.get(bank, address);
+              byte value = executor.ram.get(bank, address);
 
 
 				LOGGER.debug(String.format("INCFSZ: Increments data from register at address 0x%02X in %s", address, bank));
 
-				// Checking for Zero result
-				if (0 == value + 1) {
+              // Checking for Zero result
+              if (0 == value - 1) {
 
-					 // NOP is executed.
-				} else {
+                    /*
+                    Skip the next operation, in general a jump operation as part of loop.
+                    The hardware would execute a NOP instead of the actual next instruction.
+                    This software implementation just skips the next instruction.
+                     */
 
-					 // The next Instruction is being executed.
-				}
-				// Checking if value gets negative after decrementing.
-				if (255 < value + 1 && instruction.getArguments()[0] == 0) {
+                  executor.setProgramCounter(executor.getProgramCounter() + 1);
+              }
 
-					 executor.setWorkingRegister(0x00);
-					 executor.setZeroFlag();
+              //Checking for destination.
+              if (instruction.getArguments()[0] == 0) {
 
-				} else if (255 < value + 1) {
+                  executor.setWorkingRegister((byte) (value + 1));
 
-					 executor.ram.set(bank, address, 0x00);
-					 executor.setZeroFlag();
-				}
-				//Checking for destination.
-				if (instruction.getArguments()[0] == 0) {
+              } else {
 
-					 executor.setWorkingRegister(value + 1);
-
-				} else {
-
-					 executor.ram.set(bank, address, value + 1);
-				}
+                  executor.ram.set(bank, address, (byte) (value + 1));
+              }
 
 
 		  } else { //Direct addressing.
@@ -1099,38 +1010,31 @@ public class ByteAndControlExecutionUnit {
 				RamMemory.Bank bank = 0 == executor.getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
 				// Fetching value
-				int value = executor.ram.get(bank, instruction.getArguments()[1]);
+              byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 
 				LOGGER.debug(String.format("INCFSZ: Increments data from register at address 0x%02X in %s", instruction.getArguments()[1], bank));
 
-				// Checking for Zero result
-				if (0 == value + 1) {
+              // Checking for Zero result
+              if (0 == value - 1) {
 
-					 // NOP is executed.
-				} else {
+                    /*
+                    Skip the next operation, in general a jump operation as part of loop.
+                    The hardware would execute a NOP instead of the actual next instruction.
+                    This software implementation just skips the next instruction.
+                    */
 
-					 // The next Instruction is being executed.
-				}
-				// Checking if value gets negative after decrementing.
-				if (255 < value + 1 && instruction.getArguments()[0] == 0) {
+                  executor.setProgramCounter(executor.getProgramCounter() + 1);
+              }
 
-					 executor.setWorkingRegister(0x00);
-					 executor.setZeroFlag();
+              //Checking for destination.
+              if (instruction.getArguments()[0] == 0) {
 
-				} else if (255 < value + 1) {
+                  executor.setWorkingRegister((byte) (value + 1));
 
-					 executor.ram.set(bank, instruction.getArguments()[1], 0x00);
-					 executor.setZeroFlag();
-				}
-				//Checking for destination.
-				if (instruction.getArguments()[0] == 0) {
+              } else {
 
-					 executor.setWorkingRegister(value + 1);
-
-				} else {
-
-					 executor.ram.set(bank, instruction.getArguments()[1], value + 1);
-				}
+                  executor.ram.set(bank, instruction.getArguments()[1], (byte) (value + 1));
+              }
 		  }
 	 }
 
@@ -1152,15 +1056,12 @@ public class ByteAndControlExecutionUnit {
 			  RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
 			  // Fetching value
-			  int value = executor.ram.get(bank, address);
+             byte value = executor.ram.get(bank, address);
 			  LOGGER.debug(String.format("RLF: The contents of the register at 0x%02X in %s are rotated one bit to the left through the Carry Flag.", address, bank));
-			  byte firstByte = (byte)(value & 0xFF);
-			  int carryFlagValue = (firstByte & 0b1000_0000) >> 7;
+             int carryFlagValue = (value & 0b1000_0000) >> 7;
 
-			  firstByte = (byte) (firstByte & 0b0111_1111);
-			  firstByte = (byte) (firstByte << 1);
-
-			  value = firstByte;
+             value = (byte) (value & 0b0111_1111);
+             value = (byte) (value << 1);
 
 			  // Checking for CarryFlag Value
 			  if(carryFlagValue == 1){
@@ -1187,15 +1088,12 @@ public class ByteAndControlExecutionUnit {
 
 			  // Fetching value
 
-			  int value =	executor.ram.get(bank, instruction.getArguments()[1]);
+             byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 			  LOGGER.debug(String.format("RLF: The contents of the register at 0x%02X in %s are rotated one bit to the left through the Carry Flag.", instruction.getArguments()[1], bank));
-			  byte firstByte = (byte)(value & 0xFF);
-			  int carryFlagValue = (firstByte & 0b1000_0000) >> 7;
+             int carryFlagValue = (value & 0b1000_0000) >> 7;
 
-			  firstByte = (byte) (firstByte & 0b0111_1111);
-			  firstByte = (byte) (firstByte << 1);
-
-			  value = firstByte;
+             value = (byte) (value & 0b0111_1111);
+             value = (byte) (value << 1);
 
 			  // Checking for CarryFlag Value
 			  if(carryFlagValue == 1){
@@ -1234,15 +1132,12 @@ public class ByteAndControlExecutionUnit {
 				RamMemory.Bank bank = 0 == executor.getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
 
 				// Fetching value
-				int value = executor.ram.get(bank, address);
+              byte value = executor.ram.get(bank, address);
 				LOGGER.debug(String.format("RRF: The contents of the register at 0x%02X in %s are rotated one bit to the right through the Carry Flag.", address, bank));
-				byte firstByte = (byte)(value & 0xFF);
-				int carryFlagValue = (firstByte & 0b1000_0000) >> 7;
+              int carryFlagValue = (value & 0b1000_0000) >> 7;
 
-				firstByte = (byte) (firstByte & 0b0111_1111);
-				firstByte = (byte) (firstByte >> 1);
-
-				value = firstByte;
+              value = (byte) (value & 0b0111_1111);
+              value = (byte) (value >> 1);
 
 				// Checking for CarryFlag Value
 				if(carryFlagValue == 1){
@@ -1269,15 +1164,12 @@ public class ByteAndControlExecutionUnit {
 
 				// Fetching value
 
-				int value =	executor.ram.get(bank, instruction.getArguments()[1]);
+              byte value = executor.ram.get(bank, instruction.getArguments()[1]);
 				LOGGER.debug(String.format("RRF: The contents of the register at 0x%02X in %s are rotated one bit to the right through the Carry Flag.", instruction.getArguments()[1], bank));
-				byte firstByte = (byte)(value & 0xFF);
-				int carryFlagValue = (firstByte & 0b1000_0000) >> 7;
+              int carryFlagValue = (value & 0b1000_0000) >> 7;
 
-				firstByte = (byte) (firstByte & 0b0111_1111);
-				firstByte = (byte) (firstByte >> 1);
-
-				value = firstByte;
+              value = (byte) (value & 0b0111_1111);
+              value = (byte) (value >> 1);
 
 				// Checking for CarryFlag Value
 				if(carryFlagValue == 1){

@@ -17,7 +17,7 @@ public interface ObservableExecution {
      * @return Returns the current content of the working register
      */
 
-    Integer getWorkingRegister();
+    Byte getWorkingRegister();
 
     /**
      * The instruction register contains the next executable instruction before it's
@@ -26,7 +26,7 @@ public interface ObservableExecution {
      * @return Returns the content of the insrtuction register
      */
 
-    Integer getInstructionRegister();
+    Short getInstructionRegister();
 
     /**
      * Allows read-only access to the program counter (instruction pointer).

@@ -27,9 +27,9 @@ public final class InstructionExecutor implements ObservableExecution {
     /**
      * Working register used as accumulator.
      */
-    private Integer workingRegister;
+    private Byte workingRegister;
     /** Contains the next instruction before it's execution. */
-    private Integer instructionRegister;
+    private Short instructionRegister;
     /** The instruction pointer that points to the next instruction in program memory. */
     private Integer programCounter;
 
@@ -37,10 +37,10 @@ public final class InstructionExecutor implements ObservableExecution {
     Intentionally package-private to allow execution units direct access.
      */
 
-    ProgramMemory<Integer> programMemory;
-    RamMemory<Integer> ram;
+    ProgramMemory<Short> programMemory;
+    RamMemory<Byte> ram;
     StackMemory<Integer> stack;
-    EepromMemory<Integer> eeprom;
+    EepromMemory<Byte> eeprom;
 
     /**
      * Part of ALU that is responsible for literal operations.
@@ -78,8 +78,8 @@ public final class InstructionExecutor implements ObservableExecution {
      * @param eeprom The EEPROM for persisting data beyond restarts
      */
 
-    public InstructionExecutor(ProgramMemory<Integer> programMemory, RamMemory<Integer> ram,
-                               StackMemory<Integer> stack, EepromMemory<Integer> eeprom) {
+    public InstructionExecutor(ProgramMemory<Short> programMemory, RamMemory<Byte> ram,
+                               StackMemory<Integer> stack, EepromMemory<Byte> eeprom) {
         this.programMemory = programMemory;
         this.ram = ram;
         this.stack = stack;
@@ -93,9 +93,9 @@ public final class InstructionExecutor implements ObservableExecution {
         lock = new ReentrantLock();
         changes = new PropertyChangeSupport(this);
 
-        setInstructionRegister(0);
-        setProgramCounter(0);
-        setWorkingRegister(0);
+        setInstructionRegister((short) 0x0000);
+        setProgramCounter(0x00);
+        setWorkingRegister((byte) 0x00);
     }
 
     /**
@@ -227,7 +227,7 @@ public final class InstructionExecutor implements ObservableExecution {
                 }
                 case RETURN: {
 
-                    byteAndControlExecutionUnit.executeRETURN(instruction);
+                    byteAndControlExecutionUnit.executeRETURN();
                     break;
                 }
                 case MOVWF: {
@@ -290,29 +290,6 @@ public final class InstructionExecutor implements ObservableExecution {
                     byteAndControlExecutionUnit.executeNOP();
                     break;
                 }
-
-                 // Bit-oriented instructions:
-
-                case BCF: {
-
-                    bitExecutionUnit.executeBCF(instruction);
-                    break;
-                }
-                case BSF: {
-
-                    bitExecutionUnit.executeBSF(instruction);
-                    break;
-                }
-                case BTFSC: {
-
-                    bitExecutionUnit.executeBTFSC(instruction);
-                    break;
-                }
-                case BTFSS: {
-
-                    bitExecutionUnit.executeBTFSS(instruction);
-                    break;
-                }
                 default: {
 
                     throw new IllegalStateException("Unsupported instruction code");
@@ -349,22 +326,22 @@ public final class InstructionExecutor implements ObservableExecution {
 
         // Initialize the special function registers
 
-        ram.set(RamMemory.SFR.INDF, 0x00);
-        ram.set(RamMemory.SFR.TMR0, 0x00);
-        ram.set(RamMemory.SFR.PCL, 0x00);
-        ram.set(RamMemory.SFR.STATUS, 0b0001_1100);
-        ram.set(RamMemory.SFR.FSR, 0x000);
-        ram.set(RamMemory.SFR.PORTA, 0x00);
-        ram.set(RamMemory.SFR.PORTB, 0x00);
-        ram.set(RamMemory.SFR.EEDATA, 0x00);
-        ram.set(RamMemory.SFR.EEADR, 0x00);
-        ram.set(RamMemory.SFR.PCLATH, 0x00);
-        ram.set(RamMemory.SFR.INTCON, 0x00);
-        ram.set(RamMemory.SFR.OPTION, 0b1111_1111);
-        ram.set(RamMemory.SFR.TRISA, 0b0001_1111);
-        ram.set(RamMemory.SFR.TRISB, 0b1111_1111);
-        ram.set(RamMemory.SFR.EECON1, 0x00);
-        ram.set(RamMemory.SFR.EECON2, 0x00);
+        ram.set(RamMemory.SFR.INDF, (byte) 0x00);
+        ram.set(RamMemory.SFR.TMR0, (byte) 0x00);
+        ram.set(RamMemory.SFR.PCL, (byte) 0x00);
+        ram.set(RamMemory.SFR.STATUS, (byte) 0b0001_1100);
+        ram.set(RamMemory.SFR.FSR, (byte) 0x000);
+        ram.set(RamMemory.SFR.PORTA, (byte) 0x00);
+        ram.set(RamMemory.SFR.PORTB, (byte) 0x00);
+        ram.set(RamMemory.SFR.EEDATA, (byte) 0x00);
+        ram.set(RamMemory.SFR.EEADR, (byte) 0x00);
+        ram.set(RamMemory.SFR.PCLATH, (byte) 0x00);
+        ram.set(RamMemory.SFR.INTCON, (byte) 0x00);
+        ram.set(RamMemory.SFR.OPTION, (byte) 0b1111_1111);
+        ram.set(RamMemory.SFR.TRISA, (byte) 0b0001_1111);
+        ram.set(RamMemory.SFR.TRISB, (byte) 0b1111_1111);
+        ram.set(RamMemory.SFR.EECON1, (byte) 0x00);
+        ram.set(RamMemory.SFR.EECON2, (byte) 0x00);
     }
 
     /**
@@ -401,7 +378,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * @param value The value that should be written to working register
      */
 
-    void setWorkingRegister(Integer value) {
+    void setWorkingRegister(Byte value) {
 
         changes.firePropertyChange("workingRegister", workingRegister, value);
         workingRegister = value;
@@ -414,7 +391,7 @@ public final class InstructionExecutor implements ObservableExecution {
      */
 
     @Override
-    public Integer getWorkingRegister() {
+    public Byte getWorkingRegister() {
 
         return workingRegister;
     }
@@ -451,7 +428,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * @param value The value that should be written to instruction register
      */
 
-    private void setInstructionRegister(Integer value) {
+    private void setInstructionRegister(Short value) {
 
         changes.firePropertyChange("instructionRegister", instructionRegister, value);
         instructionRegister = value;
@@ -464,7 +441,7 @@ public final class InstructionExecutor implements ObservableExecution {
      */
 
     @Override
-    public Integer getInstructionRegister() {
+    public Short getInstructionRegister() {
 
         return instructionRegister;
     }
@@ -476,7 +453,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void setDigitCarryFlag() {
 
         LOGGER.info("Set 'Digit Carry' (DC) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) | 0b00000010));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) | 0b00000010));
     }
 
     /**
@@ -486,7 +463,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void clearDigitCarryFlag() {
 
         LOGGER.info("Clear 'Digit Carry' (DC) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111101));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) & 0b11111101));
     }
 
     /**
@@ -496,7 +473,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void setCarryFlag() {
 
         LOGGER.info("Set 'Carry' (C) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) | 0b00000001));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) | 0b00000001));
     }
 
     /**
@@ -506,7 +483,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void clearCarryFlag() {
 
         LOGGER.info("Clear 'Carry' (C) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111110));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) & 0b11111110));
     }
 
     /**
@@ -516,7 +493,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void setZeroFlag() {
 
         LOGGER.info("Set 'Zero' (Z) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) | 0b00000100));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) | 0b00000100));
     }
 
     /**
@@ -526,7 +503,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void clearZeroFlag() {
 
         LOGGER.info("Clear 'Zero' (Z) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111011));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) & 0b11111011));
     }
 
     /**

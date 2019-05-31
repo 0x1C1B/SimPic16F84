@@ -65,7 +65,7 @@ class LiteralExecutionUnit {
             executor.clearCarryFlag();
         }
 
-        executor.setWorkingRegister(instruction.getArguments()[0] + executor.getWorkingRegister());
+        executor.setWorkingRegister((byte) (instruction.getArguments()[0] + executor.getWorkingRegister()));
 
         // Check for zero result
 
@@ -114,7 +114,7 @@ class LiteralExecutionUnit {
             executor.clearCarryFlag();
         }
 
-        executor.setWorkingRegister(instruction.getArguments()[0] - executor.getWorkingRegister());
+        executor.setWorkingRegister((byte) (instruction.getArguments()[0] - executor.getWorkingRegister()));
 
         // Check for zero result
 
@@ -139,7 +139,7 @@ class LiteralExecutionUnit {
 
         LOGGER.debug(String.format("ANDLW: Conjuncts literal 0x%02X with working register", instruction.getArguments()[0]));
 
-        executor.setWorkingRegister(instruction.getArguments()[0] & executor.getWorkingRegister());
+        executor.setWorkingRegister((byte) (instruction.getArguments()[0] & executor.getWorkingRegister()));
 
         //Checking for a Zero result after the AND operation.
 
@@ -164,7 +164,7 @@ class LiteralExecutionUnit {
 
         LOGGER.debug(String.format("MOVLW: Moves literal 0x%02X into working register", instruction.getArguments()[0]));
 
-        executor.setWorkingRegister(instruction.getArguments()[0]);
+        executor.setWorkingRegister((byte) instruction.getArguments()[0]);
     }
 
     /**
@@ -178,7 +178,7 @@ class LiteralExecutionUnit {
 
         LOGGER.debug(String.format("IORLW: Inclusive disjunction of literal 0x%02X with working register", instruction.getArguments()[0]));
 
-        executor.setWorkingRegister(instruction.getArguments()[0] | executor.getWorkingRegister());
+        executor.setWorkingRegister((byte) (instruction.getArguments()[0] | executor.getWorkingRegister()));
 
         //checking for a zero result after the OR operation.
 
@@ -203,7 +203,7 @@ class LiteralExecutionUnit {
 
         LOGGER.debug(String.format("XORLW: Exclusive disjunction of literal 0x%02X with working register", instruction.getArguments()[0]));
 
-        executor.setWorkingRegister(instruction.getArguments()[0] ^ executor.getWorkingRegister());
+        executor.setWorkingRegister((byte) (instruction.getArguments()[0] ^ executor.getWorkingRegister()));
 
         //checking for a zero result after the OR operation.
 
@@ -231,7 +231,7 @@ class LiteralExecutionUnit {
          */
 
         executor.setProgramCounter(executor.stack.pop());
-        executor.setWorkingRegister(instruction.getArguments()[0]); // Stores return value
+        executor.setWorkingRegister((byte) instruction.getArguments()[0]); // Stores return value
 
         LOGGER.debug(String.format("RETLW: Return from subroutine to 0x%04X with value 0x%02X", executor.getProgramCounter(), instruction.getArguments()[0]));
 

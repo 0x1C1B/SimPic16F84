@@ -241,7 +241,13 @@ public class SimulatorController implements Initializable {
         sfrName.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         // Use custom factory for printing as hex string in prefix format
-        sfrValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getValue())));
+        sfrValue.setCellValueFactory(param -> {
+
+            boolean isNegative = 0 > param.getValue().getValue();
+            byte value = (byte) (isNegative ? -1 * param.getValue().getValue() : param.getValue().getValue());
+            String formated = isNegative ? "-" + String.format("0x%02X", value) : String.format("0x%02X", value);
+            return new SimpleStringProperty(formated);
+        });
 
         // Setup General Purpose Register section
 
@@ -267,7 +273,13 @@ public class SimulatorController implements Initializable {
 
         // Use custom factory for printing as hex string in prefix format
         gprAddress.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getAddress())));
-        gprValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getValue())));
+        gprValue.setCellValueFactory(param -> {
+
+            boolean isNegative = 0 > param.getValue().getValue();
+            byte value = (byte) (isNegative ? -1 * param.getValue().getValue() : param.getValue().getValue());
+            String formated = isNegative ? "-" + String.format("0x%02X", value) : String.format("0x%02X", value);
+            return new SimpleStringProperty(formated);
+        });
 
         gprOptions.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
         gprOptions.setCellFactory(param -> new TableCell<GeneralPurposeRegister, GeneralPurposeRegister>() {
@@ -469,7 +481,7 @@ public class SimulatorController implements Initializable {
     private void onObserveRegisterAction(ActionEvent event) {
 
         int address = addressField.getValue();
-        int value = null == simulator.getRam().get(address) ? 0 : simulator.getRam().get(address);
+        byte value = null == simulator.getRam().get(address) ? 0 : simulator.getRam().get(address);
 
         // Check if entry already exists
 
@@ -510,7 +522,7 @@ public class SimulatorController implements Initializable {
 
                 if (0x03 == ((IndexedPropertyChangeEvent) event).getIndex()) {
 
-                    int value = (int) event.getNewValue(); // Value of STATUS register
+                    byte value = (byte) event.getNewValue(); // Value of STATUS register
                     StatusRegister status = new StatusRegister();
 
                     // Disassemble STATUS register value in single bits
@@ -533,7 +545,7 @@ public class SimulatorController implements Initializable {
                 } else if (0x0C > ((IndexedPropertyChangeEvent) event).getIndex()) {
 
                     int address = ((IndexedPropertyChangeEvent) event).getIndex();
-                    int value = (int) event.getNewValue(); // Value of the SFR
+                    byte value = (byte) event.getNewValue(); // Value of the SFR
                     RamMemory.Bank bank = "bank0".equals(event.getPropertyName()) ?
                             RamMemory.Bank.BANK_0 :
                             RamMemory.Bank.BANK_1;
@@ -581,7 +593,7 @@ public class SimulatorController implements Initializable {
 
                         // Only one match should exist, just uses the first one
 
-                        filtered.get(0).setValue((int) event.getNewValue());
+                        filtered.get(0).setValue((byte) event.getNewValue());
                         generalRegisters.refresh();
                     }
                 }
@@ -626,7 +638,7 @@ public class SimulatorController implements Initializable {
 
             if (event.getPropertyName().equals("workingRegister")) {
 
-                workingRegister.setText(String.format("0x%02X", (int) event.getNewValue()));
+                workingRegister.setText(String.format("0x%02X", (byte) event.getNewValue()));
             }
         }
     }

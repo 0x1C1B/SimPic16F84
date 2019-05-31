@@ -39,12 +39,12 @@ import java.io.IOException;
 
 public class Pic16F84VM {
 
-    private ProgramMemory<Integer> programMemory;
-    private RamMemory<Integer> ram;
+    private ProgramMemory<Short> programMemory;
+    private RamMemory<Byte> ram;
     private StackMemory<Integer> stack;
-    private EepromMemory<Integer> eeprom;
+    private EepromMemory<Byte> eeprom;
 
-    private LstParser parser;
+    private LstParser<Short> parser;
     private InstructionExecutor executor;
     private PropertyChangeSupport changes;
 
@@ -87,7 +87,7 @@ public class Pic16F84VM {
      * @see ObservableMemory
      */
 
-    public ObservableMemory<Integer> getProgramMemory() {
+    public ObservableMemory<Short> getProgramMemory() {
 
         return programMemory;
     }
@@ -107,7 +107,7 @@ public class Pic16F84VM {
      * @see ObservableMemory
      */
 
-    public ObservableMemory<Integer> getRam() {
+    public ObservableMemory<Byte> getRam() {
 
         return ram;
     }
@@ -145,7 +145,7 @@ public class Pic16F84VM {
      * @see ObservableMemory
      */
 
-    public ObservableMemory<Integer> getEeprom() {
+    public ObservableMemory<Byte> getEeprom() {
 
         return eeprom;
     }
@@ -199,7 +199,7 @@ public class Pic16F84VM {
 
         stop(); // Stops current execution flow if runtime environment is already running
 
-        int[] instructions = parser.parse(file); // Extract machine instructions
+        Short[] instructions = parser.parse(file); // Extract machine instructions
 
         // Load extracted machine instructions into program memory
 
