@@ -96,6 +96,7 @@ public class SimulatorController implements Initializable {
 
     @FXML TextField workingRegister;
     @FXML TextField instructionRegister;
+    @FXML Label runtimeCounter;
 
     // I/O Pin representation
 
@@ -287,6 +288,8 @@ public class SimulatorController implements Initializable {
         workingRegister.setText(String.format("0x%02X", simulator.getExecutor().getWorkingRegister()));
         // Initialize instruction register
         instructionRegister.setText(String.format("0x%04X", simulator.getExecutor().getInstructionRegister()));
+        // Initialize the runtime counter
+        runtimeCounter.setText(String.format("0x%08X", simulator.getExecutor().getRuntimeCounter()));
 
         initializeStatusRegister();
     }
@@ -679,14 +682,21 @@ public class SimulatorController implements Initializable {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
 
-            if (event.getPropertyName().equals("workingRegister")) {
+            Platform.runLater(() -> {
 
-                workingRegister.setText(String.format("0x%02X", (byte) event.getNewValue()));
+                if (event.getPropertyName().equals("workingRegister")) {
 
-            } else if (event.getPropertyName().equals("instructionRegister")) {
+                    workingRegister.setText(String.format("0x%02X", (byte) event.getNewValue()));
 
-                instructionRegister.setText(String.format("0x%04X", (short) event.getNewValue()));
-            }
+                } else if (event.getPropertyName().equals("instructionRegister")) {
+
+                    instructionRegister.setText(String.format("0x%04X", (short) event.getNewValue()));
+
+                } else if (event.getPropertyName().equals("runtimeCounter")) {
+
+                    runtimeCounter.setText(String.format("0x%08X", (int) event.getNewValue()));
+                }
+            });
         }
     }
 }

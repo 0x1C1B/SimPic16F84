@@ -482,11 +482,25 @@
       </SplitPane>
       <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
          <children>
-            <Label maxHeight="1.7976931348623157E308" maxWidth="-1.0" text="Status" textFill="#9f9f9f" HBox.hgrow="ALWAYS">
-               <font>
-                  <Font size="11.0" />
-               </font>
-            </Label>
+             <HBox spacing="5.0">
+                 <children>
+                     <Label maxHeight="1.7976931348623157E308" maxWidth="-1.0" text="RC:" textFill="#9f9f9f"
+                            HBox.hgrow="ALWAYS">
+                         <font>
+                             <Font size="11.0"/>
+                         </font>
+                     </Label>
+                     <Label fx:id="runtimeCounter" layoutX="10.0" layoutY="10.0" maxHeight="1.7976931348623157E308"
+                            maxWidth="-1.0" text="-" textFill="#9f9f9f">
+                         <font>
+                             <Font size="11.0"/>
+                         </font>
+                         <tooltip>
+                             <Tooltip text="Runtime Counter"/>
+                         </tooltip>
+                     </Label>
+                 </children>
+             </HBox>
             <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
             <Label maxWidth="-1.0" text="Status" textFill="#9f9f9f" HBox.hgrow="NEVER">
                <font>

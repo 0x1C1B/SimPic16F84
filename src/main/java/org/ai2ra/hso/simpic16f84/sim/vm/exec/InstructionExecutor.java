@@ -100,6 +100,7 @@ public final class InstructionExecutor implements ObservableExecution {
         setInstructionRegister((short) 0x0000);
         setProgramCounter(0x00);
         setWorkingRegister((byte) 0x00);
+        setRuntimeCounter(0x00);
     }
 
     /**
@@ -329,6 +330,7 @@ public final class InstructionExecutor implements ObservableExecution {
         setWorkingRegister((byte) 0x00);
         setProgramCounter(0x00);
         setInstructionRegister((short) 0x00);
+        setRuntimeCounter(0x00);
 
         // Initialize the special function registers
 
