@@ -26,8 +26,6 @@ public class StackMemoryTest {
     @Test public void popTest() {
 
         stack.push(11);
-
-        stack.addPropertyChangeListener(event -> assertEquals((int) event.getNewValue(), 0));
         assertEquals((int) stack.pop(), 11);
     }
 

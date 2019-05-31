@@ -12,6 +12,17 @@
     <name>SimPic16F84</name>
     <description>A simple software simulation of the Pic16F84 µC</description>
 
+    <developers>
+        <developer>
+            <name>0x1C1B</name>
+            <url>https://www.github.com/0x1C1B</url>
+        </developer>
+        <developer>
+            <name>Freddy1096</name>
+            <url>https://www.github.com/Freddy1096</url>
+        </developer>
+    </developers>
+
     <dependencies>
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
@@ -49,6 +60,69 @@
                 <configuration>
 	                    <source>1.8</source>
 	                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <excludeGroupIds>junit,org.hamcrest</excludeGroupIds>
+                            <outputDirectory>${project.build.directory}/build/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>org.ai2ra.hso.simpic16f84.Pic16F84Simulator</mainClass>
+                        </manifest>
+                    </archive>
+                    <outputDirectory>${project.build.directory}/build</outputDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <executable>javapackager</executable>
+                    <arguments>
+                        <argument>-deploy</argument>
+                        <argument>-native</argument>
+                        <argument>-outdir</argument>
+                        <argument>${project.build.directory}</argument>
+                        <argument>-outfile</argument>
+                        <argument>SimPic16F84</argument>
+                        <argument>-srcdir</argument>
+                        <argument>${project.build.directory}/build</argument>
+                        <argument>-appclass</argument>
+                        <argument>org.ai2ra.hso.simpic16f84.Pic16F84Simulator</argument>
+                        <argument>-name</argument>
+                        <argument>SimPic16F84</argument>
+                        <argument>-title</argument>
+                        <argument>SimPic16F84</argument>
+                        <argument>-Bicon=${project.basedir}/favicon.ico</argument>
+                        <argument>-vendor</argument>
+                        <argument>Hochschule Offenburg</argument>
+                        <argument>-BsystemWide=true</argument>
+                        <argument>-BshortcutHint=true</argument>
+                    </arguments>
                 </configuration>
             </plugin>
         </plugins>

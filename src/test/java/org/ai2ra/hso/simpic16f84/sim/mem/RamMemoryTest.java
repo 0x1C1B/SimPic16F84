@@ -15,17 +15,6 @@ public class RamMemoryTest {
         ram = new RamMemory<>();
     }
 
-    @Test public void propertyChangeTest() {
-
-        ram.addPropertyChangeListener(event -> {
-
-            assertEquals(event.getPropertyName(), "bank0[5]");
-            assertEquals((byte) event.getNewValue(), (byte) 15);
-        });
-
-        ram.set(RamMemory.Bank.BANK_0, 5, (byte) 15);
-    }
-
     @Test public void writeTest() {
 
         ram.set(RamMemory.Bank.BANK_0, 22, (byte) 33);
