@@ -45,13 +45,4 @@ public class EepromMemoryTest {
 
     }
 
-    @Test
-    public void testReset() {
-
-        testee.reset();
-
-        assertEquals("Memory did not reset properly", null, testee.get(0));
-
-    }
-
 }

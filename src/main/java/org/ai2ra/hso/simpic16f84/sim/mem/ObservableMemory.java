@@ -27,14 +27,4 @@ public interface ObservableMemory<T> {
      */
 
     T get(int address) throws MemoryIndexOutOfBoundsException;
-
-    /**
-     * Used for fetching the whole internal memory in form of an array.
-     * <b>Warning:</b> For preventing manipulation and/or gaining read-only access,
-     * a deep copy of the memory should returned.
-     *
-     * @return The internal memory represented in form of an array
-     */
-
-    T[] fetch();
 }
