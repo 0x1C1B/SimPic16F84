@@ -96,7 +96,12 @@ public class SimulatorController implements Initializable {
 
     @FXML TextField workingRegister;
     @FXML TextField instructionRegister;
+
+    // Runtime counter related
+
     @FXML Label runtimeCounter;
+    @FXML Slider frequency;
+    @FXML Label frequencyDisplay;
 
     // I/O Pin representation
 
@@ -151,6 +156,7 @@ public class SimulatorController implements Initializable {
         initializeLogView();
         initializeToolbar();
         initializeRegisters();
+        initializeRuntimeCounter();
     }
 
     /**
@@ -198,6 +204,24 @@ public class SimulatorController implements Initializable {
                 }
             }
         });
+    }
+
+    /**
+     * Initialize the runtime counter and related parts like the execution frequency
+     * with components.
+     */
+
+    private void initializeRuntimeCounter() {
+
+        frequency.valueProperty().addListener((observable, oldFrequency, frequency) -> {
+
+            frequencyDisplay.setText(String.format("%.3fMHz", frequency.doubleValue()));
+        });
+
+        // Initialize the runtime counter
+        runtimeCounter.setText(String.format("0x%08X", simulator.getExecutor().getRuntimeCounter()));
+        // Initialize the frequency display
+        frequencyDisplay.setText(String.format("%.3fMHz", frequency.getValue()));
     }
 
     /**
@@ -288,8 +312,6 @@ public class SimulatorController implements Initializable {
         workingRegister.setText(String.format("0x%02X", simulator.getExecutor().getWorkingRegister()));
         // Initialize instruction register
         instructionRegister.setText(String.format("0x%04X", simulator.getExecutor().getInstructionRegister()));
-        // Initialize the runtime counter
-        runtimeCounter.setText(String.format("0x%08X", simulator.getExecutor().getRuntimeCounter()));
 
         initializeStatusRegister();
     }

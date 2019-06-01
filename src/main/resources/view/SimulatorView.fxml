@@ -13,6 +13,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
@@ -502,10 +503,28 @@
                  </children>
              </HBox>
             <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
-            <Label maxWidth="-1.0" text="Status" textFill="#9f9f9f" HBox.hgrow="NEVER">
-               <font>
-                  <Font size="11.0" />
-               </font></Label>
+             <HBox spacing="5.0">
+                 <children>
+                     <Label maxWidth="-1.0" text="Frequency:" textFill="#9f9f9f" HBox.hgrow="NEVER">
+                         <font>
+                             <Font size="11.0"/>
+                         </font>
+                     </Label>
+                     <Slider fx:id="frequency" max="20.0" maxHeight="1.7976931348623157E308" min="0.032" value="4.0">
+                         <tooltip>
+                             <Tooltip text="Set frequency from 32kHz to 20MHz"/>
+                         </tooltip>
+                     </Slider>
+                     <Label fx:id="frequencyDisplay" text="-" textFill="#9f9f9f">
+                         <font>
+                             <Font size="11.0"/>
+                         </font>
+                         <tooltip>
+                             <Tooltip text="Current operation frequency"/>
+                         </tooltip>
+                     </Label>
+                 </children>
+             </HBox>
          </children>
          <padding>
             <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
