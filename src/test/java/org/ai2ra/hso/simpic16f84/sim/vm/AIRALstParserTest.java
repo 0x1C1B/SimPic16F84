@@ -9,14 +9,14 @@ import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CustomLstParserTest {
+public class AIRALstParserTest {
 
     private LstParser<Short> parser;
 
 	@Before
 	public void setUp() throws Exception {
 
-		parser = new CustomLstParser();
+        parser = new AIRALstParser();
 	}
 
 	@Test
