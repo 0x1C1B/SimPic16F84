@@ -20,7 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @see InstructionDecoder
  */
 
-public final class InstructionExecutor implements ObservableExecution {
+public class InstructionExecutor implements ObservableExecution {
 
     private static final Logger LOGGER;
 
