@@ -32,6 +32,14 @@ public class InstructionExecutor implements ObservableExecution {
     private Short instructionRegister;
     /** The instruction pointer that points to the next instruction in program memory. */
     private Integer programCounter;
+    /**
+     * Runtime counter indicates execution time.
+     */
+    private Double runtimeCounter;
+    /**
+     * Current quartz frequency, indirectly the execution speed
+     */
+    private Double frequency;
 
     /*
     Intentionally package-private to allow execution units direct access.
@@ -96,6 +104,8 @@ public class InstructionExecutor implements ObservableExecution {
         setInstructionRegister((short) 0x0000);
         setProgramCounter(0x00);
         setWorkingRegister((byte) 0x00);
+        setRuntimeCounter(0x00);
+        setFrequency(4_000_000.0 /* 4MHz */);
     }
 
     /**
@@ -152,36 +162,43 @@ public class InstructionExecutor implements ObservableExecution {
                 case ADDLW: {
 
                     literalExecutionUnit.executeADDLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case ANDLW: {
 
                     literalExecutionUnit.executeANDLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case MOVLW: {
 
                     literalExecutionUnit.executeMOVLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case SUBLW: {
 
                     literalExecutionUnit.executeSUBLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case IORLW: {
 
                     literalExecutionUnit.executeIORLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case XORLW: {
 
                     literalExecutionUnit.executeXORLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RETLW: {
 
                     literalExecutionUnit.executeRETLW(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
 
@@ -190,11 +207,13 @@ public class InstructionExecutor implements ObservableExecution {
                 case CALL: {
 
                     jumpExecutionUnit.executeCALL(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case GOTO: {
 
                     jumpExecutionUnit.executeGOTO(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
 
@@ -203,91 +222,109 @@ public class InstructionExecutor implements ObservableExecution {
                 case ADDWF: {
 
                     byteAndControlExecutionUnit.executeADDWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case CLRW: {
 
                     byteAndControlExecutionUnit.executeCLRW();
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case ANDWF: {
 
                     byteAndControlExecutionUnit.executeANDWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case XORWF: {
 
                     byteAndControlExecutionUnit.executeXORWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case SUBWF: {
 
                     byteAndControlExecutionUnit.executeSUBWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RETURN: {
 
                     byteAndControlExecutionUnit.executeRETURN();
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case MOVWF: {
 
                     byteAndControlExecutionUnit.executeMOVWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case CLRF: {
 
                     byteAndControlExecutionUnit.executeCLRF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case COMF: {
 
                     byteAndControlExecutionUnit.executeCOMF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case DECF: {
 
                     byteAndControlExecutionUnit.executeDECF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case DECFSZ: {
 
                     byteAndControlExecutionUnit.executeDECFSZ(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case INCF: {
 
                     byteAndControlExecutionUnit.executeINCF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case INCFSZ: {
 
                     byteAndControlExecutionUnit.executeINCFSZ(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case MOVF: {
 
                     byteAndControlExecutionUnit.executeMOVF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case IORWF: {
 
                     byteAndControlExecutionUnit.executeIORWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RRF: {
 
                     byteAndControlExecutionUnit.executeRRF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RLF: {
 
                     byteAndControlExecutionUnit.executeRLF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case NOP: {
 
                     byteAndControlExecutionUnit.executeNOP();
+                    updateRuntimeCounter(1);
                     break;
                 }
                 default: {
@@ -324,6 +361,7 @@ public class InstructionExecutor implements ObservableExecution {
         setWorkingRegister((byte) 0x00);
         setProgramCounter(0x00);
         setInstructionRegister((short) 0x00);
+        setRuntimeCounter(0x00);
 
         // Initialize the special function registers
 
@@ -395,6 +433,76 @@ public class InstructionExecutor implements ObservableExecution {
     public Byte getWorkingRegister() {
 
         return workingRegister;
+    }
+
+    /**
+     * Sets runtime counter to a given count.
+     *
+     * @param counter The given count
+     */
+
+    void setRuntimeCounter(double counter) {
+
+        changes.firePropertyChange("runtimeCounter", runtimeCounter, counter);
+        runtimeCounter = counter;
+    }
+
+    /**
+     * Increases the runtime counter dependent to the quartz frequency.
+     *
+     * @param cycles The number of cycles that were used for executing the last instruction
+     */
+
+    void updateRuntimeCounter(int cycles) {
+
+        double timePerCycle = 4000000.0 / frequency;
+        double oldRuntimeCounter = runtimeCounter;
+
+        runtimeCounter = runtimeCounter + (timePerCycle * cycles);
+        changes.firePropertyChange("runtimeCounter", oldRuntimeCounter, runtimeCounter);
+    }
+
+    /**
+     * Allows access to the runtime counter in micro seconds.
+     *
+     * @return Returns the current state of the runtime counter
+     */
+
+    @Override
+    public Double getRuntimeCounter() {
+
+        return runtimeCounter;
+    }
+
+    /**
+     * Determines the current quartz frequency, implicitly the current execution speed.
+     *
+     * @return Returns the current quartz frequency in Hz
+     */
+
+    @Override
+    public Double getFrequency() {
+
+        return frequency;
+    }
+
+    /**
+     * Allows changing the quartz frequency. Valid values are all values between 32kHz
+     * and 20MHz.
+     *
+     * @param frequency The new execution frequency in Hz
+     * @throws IllegalArgumentException Thrown if invalid frequency is provided
+     */
+
+    @Override
+    public void setFrequency(Double frequency) throws IllegalArgumentException {
+
+        if (32_000 > frequency || 20_000_000 < frequency) {
+
+            throw new IllegalArgumentException("Frequency is only valid between 32kHz and 20MHz");
+        }
+
+        this.frequency = frequency;
     }
 
     /**

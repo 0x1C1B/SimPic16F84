@@ -97,6 +97,12 @@ public class SimulatorController implements Initializable {
     @FXML TextField workingRegister;
     @FXML TextField instructionRegister;
 
+    // Runtime counter related
+
+    @FXML Label runtimeCounter;
+    @FXML Slider frequency;
+    @FXML Label frequencyDisplay;
+
     // I/O Pin representation
 
     @FXML CheckBox ra0;
@@ -150,6 +156,7 @@ public class SimulatorController implements Initializable {
         initializeLogView();
         initializeToolbar();
         initializeRegisters();
+        initializeRuntimeCounter();
     }
 
     /**
@@ -197,6 +204,26 @@ public class SimulatorController implements Initializable {
                 }
             }
         });
+    }
+
+    /**
+     * Initialize the runtime counter and related parts like the execution frequency
+     * with components.
+     */
+
+    private void initializeRuntimeCounter() {
+
+        frequency.valueProperty().addListener((observable, oldFrequency, frequency) -> {
+
+            frequencyDisplay.setText(String.format("%.3fMHz", frequency.doubleValue()));
+            // Cast from MHz to hz befor changing the frequency
+            simulator.getExecutor().setFrequency(frequency.doubleValue() * 1000 * 1000);
+        });
+
+        // Initialize the runtime counter
+        runtimeCounter.setText(String.format("%.4fμs", simulator.getExecutor().getRuntimeCounter()));
+        // Initialize the frequency display
+        frequencyDisplay.setText(String.format("%.3fMHz", frequency.getValue()));
     }
 
     /**
@@ -679,14 +706,21 @@ public class SimulatorController implements Initializable {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
 
-            if (event.getPropertyName().equals("workingRegister")) {
+            Platform.runLater(() -> {
 
-                workingRegister.setText(String.format("0x%02X", (byte) event.getNewValue()));
+                if (event.getPropertyName().equals("workingRegister")) {
 
-            } else if (event.getPropertyName().equals("instructionRegister")) {
+                    workingRegister.setText(String.format("0x%02X", (byte) event.getNewValue()));
 
-                instructionRegister.setText(String.format("0x%04X", (short) event.getNewValue()));
-            }
+                } else if (event.getPropertyName().equals("instructionRegister")) {
+
+                    instructionRegister.setText(String.format("0x%04X", (short) event.getNewValue()));
+
+                } else if (event.getPropertyName().equals("runtimeCounter")) {
+
+                    runtimeCounter.setText(String.format("%.4fμs", (double) event.getNewValue()));
+                }
+            });
         }
     }
 }
