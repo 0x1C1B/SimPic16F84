@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * @author Freddy1096
  */
 
-public class CustomLstParser implements LstParser<Short> {
+public class AIRALstParser implements LstParser<Short> {
 
     /**
      * Parses the machine instructions from a given LST file. Important to note is, that

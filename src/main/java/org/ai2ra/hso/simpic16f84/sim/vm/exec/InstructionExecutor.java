@@ -571,4 +571,154 @@ public final class InstructionExecutor implements ObservableExecution {
 
         return (ram.get(RamMemory.SFR.STATUS) & 0b1000_0000) >> 7;
     }
+
+    /**
+     * Utility method used for checking an overflow/underflow. If result is lower
+     * than <i>-128</i> or bigger than <i>127</i>, the carry flag is set.
+     *
+     * @param result Result of the calculated expression
+     */
+
+    void checkCarryFlag(int result) {
+
+        if (Byte.MIN_VALUE > result || Byte.MAX_VALUE < result) {
+
+            setCarryFlag();
+
+        } else {
+
+            clearCarryFlag();
+        }
+    }
+
+    /**
+     * Helper method for checking if the result is zero. Flag is set if the expression's
+     * result is equal to zero.
+     *
+     * @param result Result of the calculated expression
+     */
+
+    void checkZeroFlag(int result) {
+
+        if (0 == result) {
+
+            setZeroFlag();
+
+        } else {
+
+            clearZeroFlag();
+        }
+    }
+
+    /**
+     * Used for checking the digit carry flag. An expression related statement is evaluated, if
+     * it's true the digit carry flag is set, otherwise not.
+     *
+     * @param result Result of the calculated expression
+     */
+
+    void checkDigitCarryFlag(boolean result) {
+
+        if (result) {
+
+            setDigitCarryFlag();
+
+        } else {
+
+            clearDigitCarryFlag();
+        }
+    }
+
+    /**
+     * Determines if indirect addressingg is used or not.
+     *
+     * @param instruction The actual instruction
+     * @return Returns true if indirect addressing is used, otherwise false
+     */
+
+    boolean usesIndirectAddressing(Instruction instruction) {
+
+        /*
+        Two kind of instructions with file address exists, one with additional destination
+        bit and one without.
+         */
+
+        if (1 == instruction.getArguments().length) { // Without additional destination bit
+
+            return 0 == instruction.getArguments()[0];
+
+        } else if (2 == instruction.getArguments().length) { // Destination bit exists
+
+            return 0 == instruction.getArguments()[1];
+        }
+
+        throw new IllegalArgumentException("Instruction doesn't have a file register address as argument");
+    }
+
+    /**
+     * Determines the addressed file register. It supports direct and indirect addressing with
+     * or without additional destination bit.
+     *
+     * @param instruction The instruction for extracting the file register address
+     * @return Returns the determined file register address
+     * @throws IllegalArgumentException Thrown if given instruction doesn't have a file address as argument
+     */
+
+    int getFileAddress(Instruction instruction) throws IllegalArgumentException {
+
+        /*
+        Two kind of instructions with file address exists, one with additional destination
+        bit and one without.
+         */
+
+        if (1 == instruction.getArguments().length) { // Without additional destination bit
+
+            if (0 == instruction.getArguments()[0]) { // Indirect addressing
+
+                return ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            } else { // Direct addressing
+
+                return instruction.getArguments()[0];
+            }
+
+        } else if (2 == instruction.getArguments().length) { // Destination bit exists
+
+            if (0 == instruction.getArguments()[1]) { // Indirect addressing
+
+                return ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            } else { // Direct addressing
+
+                return instruction.getArguments()[1];
+            }
+        }
+
+        throw new IllegalArgumentException("Instruction doesn't have a file register address as argument");
+    }
+
+    /**
+     * Determines current select bank. It support direct and indirect addressing. For
+     * succeeding it's required, that a file register address is provided as
+     * instruction argument.
+     *
+     * @param instruction The actual instruction
+     * @return Return the currently selected bank
+     */
+
+    RamMemory.Bank getSelectedBank(Instruction instruction) {
+
+        /*
+        Indirect addressing uses the IRP bit while direct addressing uses the RP0 bit.
+         */
+
+        if (usesIndirectAddressing(instruction)) {
+
+            return 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+        } else {
+
+            return 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package org.ai2ra.hso.simpic16f84.sim;
 
 import org.ai2ra.hso.simpic16f84.sim.mem.*;
-import org.ai2ra.hso.simpic16f84.sim.vm.CustomLstParser;
+import org.ai2ra.hso.simpic16f84.sim.vm.AIRALstParser;
 import org.ai2ra.hso.simpic16f84.sim.vm.exec.InstructionExecutor;
 import org.ai2ra.hso.simpic16f84.sim.vm.LstParser;
 import org.ai2ra.hso.simpic16f84.sim.vm.exec.ObservableExecution;
@@ -68,7 +68,7 @@ public class Pic16F84VM {
         this.stack = new StackMemory<>(8);
         this.eeprom = new EepromMemory<>(64);
 
-        this.parser = new CustomLstParser();
+        this.parser = new AIRALstParser();
         this.executor = new InstructionExecutor(programMemory, ram, stack, eeprom);
         this.changes = new PropertyChangeSupport(this);
     }

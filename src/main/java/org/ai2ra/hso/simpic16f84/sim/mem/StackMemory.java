@@ -87,29 +87,6 @@ public class StackMemory<T> implements ObservableMemory<T> {
     }
 
     /**
-     * Returns a copy of the stack memory's content. <b>Warning:</b> For large stacks this
-     * method could lead to performance and/or memory issues, because it creates a deep
-     * copy of it.
-     *
-     * @return Returns the copy of the current stack's memory
-     */
-
-    @Override
-    public T[] fetch() {
-
-        lock.readLock().lock();
-
-        try {
-
-            return Arrays.copyOf(memory, memory.length);
-
-        } finally {
-
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
      * Pushes a new element to the top of stack. If stack is already full an exception
      * is thrown. On change a property change event for the <code>memory</code> property
      * is fired.
