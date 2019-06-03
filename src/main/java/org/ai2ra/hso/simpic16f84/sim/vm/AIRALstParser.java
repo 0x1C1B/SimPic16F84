@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * @author Freddy1096
  */
 
-public class CustomLstParser implements LstParser {
+public class AIRALstParser implements LstParser<Short> {
 
     /**
      * Parses the machine instructions from a given LST file. Important to note is, that
@@ -29,7 +29,7 @@ public class CustomLstParser implements LstParser {
      */
 
 	@Override
-	public int[] parse(File file) throws IOException {
+    public Short[] parse(File file) throws IOException {
 		
 		FileReader input = new FileReader(file);
 		BufferedReader inputFile = new BufferedReader(input);
@@ -51,15 +51,14 @@ public class CustomLstParser implements LstParser {
 		
 		/* Array that will output the machine code 
 		 */
-		int[] output = new int[converter.size()];
+        Short[] output = new Short[converter.size()];
 		
 		/* Loop that decodes the Strings of the Arraylist into an int and saves it into the output Array.
 		 * The input string is decoded from Hex to int.
 		 * The index of the output Array corresponds to the index of the machine code.
 		*/
 		for (int i = 0; i < converter.size(); i++) {
-			int insert = Integer.decode("0x" + converter.get(i));
-			output[i] = insert;
+            output[i] = Short.decode("0x" + converter.get(i));
 		}
 		
 		return output;

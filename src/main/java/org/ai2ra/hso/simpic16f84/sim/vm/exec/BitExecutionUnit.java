@@ -1,5 +1,7 @@
 package org.ai2ra.hso.simpic16f84.sim.vm.exec;
 
+import org.ai2ra.hso.simpic16f84.sim.mem.RamMemory;
+import org.ai2ra.hso.simpic16f84.sim.vm.Instruction;
 import org.apache.log4j.Logger;
 
 /**
@@ -12,7 +14,8 @@ import org.apache.log4j.Logger;
  * @see InstructionExecutor
  */
 
-public class BitExecutionUnit {
+class BitExecutionUnit
+{
 
     private static final Logger LOGGER;
 
@@ -23,7 +26,8 @@ public class BitExecutionUnit {
         LOGGER = Logger.getLogger(InstructionExecutor.class);
     }
 
-    BitExecutionUnit(InstructionExecutor executor) {
+    BitExecutionUnit(InstructionExecutor executor)
+    {
 
         this.executor = executor;
     }

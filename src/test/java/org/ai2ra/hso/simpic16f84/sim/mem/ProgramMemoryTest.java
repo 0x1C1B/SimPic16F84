@@ -45,13 +45,4 @@ public class ProgramMemoryTest {
         assertEquals("A wrong number was returned", 6, (short)testee.get(30));
 
     }
-
-    @Test
-    public void testReset() {
-
-        testee.reset();
-
-        assertEquals("Memory did not reset properly", null, testee.get(0));
-
-    }
 }

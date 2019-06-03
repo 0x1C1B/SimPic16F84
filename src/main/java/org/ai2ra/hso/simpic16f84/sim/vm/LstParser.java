@@ -8,9 +8,10 @@ import java.io.IOException;
  * in form of integers.
  *
  * @author Freddy1096
+ * @param <T> Type of instruction, implicitly width of a single instruction
  */
 
-public interface LstParser {
+public interface LstParser<T> {
 
     /**
      * Parses the machine instructions from a given LST file. Important to note is, that
@@ -23,5 +24,5 @@ public interface LstParser {
      * @throws NumberFormatException Thrown if the LST file is malformed, instruction couldn't be parsed
      */
 
-    int[] parse(File file) throws IOException;
+    T[] parse(File file) throws IOException;
 }
