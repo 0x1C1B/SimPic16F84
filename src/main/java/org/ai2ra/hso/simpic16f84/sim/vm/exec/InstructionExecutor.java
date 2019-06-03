@@ -162,36 +162,43 @@ public final class InstructionExecutor implements ObservableExecution {
                 case ADDLW: {
 
                     literalExecutionUnit.executeADDLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case ANDLW: {
 
                     literalExecutionUnit.executeANDLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case MOVLW: {
 
                     literalExecutionUnit.executeMOVLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case SUBLW: {
 
                     literalExecutionUnit.executeSUBLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case IORLW: {
 
                     literalExecutionUnit.executeIORLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case XORLW: {
 
                     literalExecutionUnit.executeXORLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RETLW: {
 
                     literalExecutionUnit.executeRETLW(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
 
@@ -200,11 +207,13 @@ public final class InstructionExecutor implements ObservableExecution {
                 case CALL: {
 
                     jumpExecutionUnit.executeCALL(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case GOTO: {
 
                     jumpExecutionUnit.executeGOTO(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
 
@@ -213,91 +222,109 @@ public final class InstructionExecutor implements ObservableExecution {
                 case ADDWF: {
 
                     byteAndControlExecutionUnit.executeADDWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case CLRW: {
 
                     byteAndControlExecutionUnit.executeCLRW();
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case ANDWF: {
 
                     byteAndControlExecutionUnit.executeANDWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case XORWF: {
 
                     byteAndControlExecutionUnit.executeXORWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case SUBWF: {
 
                     byteAndControlExecutionUnit.executeSUBWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RETURN: {
 
                     byteAndControlExecutionUnit.executeRETURN();
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case MOVWF: {
 
                     byteAndControlExecutionUnit.executeMOVWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case CLRF: {
 
                     byteAndControlExecutionUnit.executeCLRF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case COMF: {
 
                     byteAndControlExecutionUnit.executeCOMF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case DECF: {
 
                     byteAndControlExecutionUnit.executeDECF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case DECFSZ: {
 
                     byteAndControlExecutionUnit.executeDECFSZ(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case INCF: {
 
                     byteAndControlExecutionUnit.executeINCF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case INCFSZ: {
 
                     byteAndControlExecutionUnit.executeINCFSZ(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case MOVF: {
 
                     byteAndControlExecutionUnit.executeMOVF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case IORWF: {
 
                     byteAndControlExecutionUnit.executeIORWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RRF: {
 
                     byteAndControlExecutionUnit.executeRRF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RLF: {
 
                     byteAndControlExecutionUnit.executeRLF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case NOP: {
 
                     byteAndControlExecutionUnit.executeNOP();
+                    updateRuntimeCounter(1);
                     break;
                 }
                 default: {
@@ -319,7 +346,6 @@ public final class InstructionExecutor implements ObservableExecution {
             lock.unlock();
         }
 
-        updateRuntimeCounter(1); // For now with one cycle per instruction
         return programCounter;
     }
 
