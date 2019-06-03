@@ -33,9 +33,13 @@ public final class InstructionExecutor implements ObservableExecution {
     /** The instruction pointer that points to the next instruction in program memory. */
     private Integer programCounter;
     /**
-     * Runtime counter indicates execution time
+     * Runtime counter indicates execution time.
      */
-    private Integer runtimeCounter;
+    private Double runtimeCounter;
+    /**
+     * Current quartz frequency, indirectly the execution speed
+     */
+    private Double frequency;
 
     /*
     Intentionally package-private to allow execution units direct access.
@@ -101,6 +105,7 @@ public final class InstructionExecutor implements ObservableExecution {
         setProgramCounter(0x00);
         setWorkingRegister((byte) 0x00);
         setRuntimeCounter(0x00);
+        setFrequency(4_000_000.0 /* 4MHz */);
     }
 
     /**
@@ -314,7 +319,7 @@ public final class InstructionExecutor implements ObservableExecution {
             lock.unlock();
         }
 
-        increaseRuntimeCounter();
+        updateRuntimeCounter(1); // For now with one cycle per instruction
         return programCounter;
     }
 
@@ -410,32 +415,68 @@ public final class InstructionExecutor implements ObservableExecution {
      * @param counter The given count
      */
 
-    void setRuntimeCounter(Integer counter) {
+    void setRuntimeCounter(double counter) {
 
         changes.firePropertyChange("runtimeCounter", runtimeCounter, counter);
         runtimeCounter = counter;
     }
 
     /**
-     * Increments the runtime counter.
+     * Increases the runtime counter dependent to the quartz frequency.
+     *
+     * @param cycles The number of cycles that were used for executing the last instruction
      */
 
-    void increaseRuntimeCounter() {
+    void updateRuntimeCounter(int cycles) {
 
-        changes.firePropertyChange("runtimeCounter", runtimeCounter, new Integer(runtimeCounter + 1));
-        ++runtimeCounter;
+        double timePerCycle = 4000000.0 / frequency;
+        double oldRuntimeCounter = runtimeCounter;
+
+        runtimeCounter = runtimeCounter + (timePerCycle * cycles);
+        changes.firePropertyChange("runtimeCounter", oldRuntimeCounter, runtimeCounter);
     }
 
     /**
-     * Allows access to the runtime counter.
+     * Allows access to the runtime counter in micro seconds.
      *
      * @return Returns the current state of the runtime counter
      */
 
     @Override
-    public Integer getRuntimeCounter() {
+    public Double getRuntimeCounter() {
 
         return runtimeCounter;
+    }
+
+    /**
+     * Determines the current quartz frequency, implicitly the current execution speed.
+     *
+     * @return Returns the current quartz frequency in Hz
+     */
+
+    @Override
+    public Double getFrequency() {
+
+        return frequency;
+    }
+
+    /**
+     * Allows changing the quartz frequency. Valid values are all values between 32kHz
+     * and 20MHz.
+     *
+     * @param frequency The new execution frequency in Hz
+     * @throws IllegalArgumentException Thrown if invalid frequency is provided
+     */
+
+    @Override
+    public void setFrequency(Double frequency) throws IllegalArgumentException {
+
+        if (32_000 > frequency || 20_000_000 < frequency) {
+
+            throw new IllegalArgumentException("Frequency is only valid between 32kHz and 20MHz");
+        }
+
+        this.frequency = frequency;
     }
 
     /**

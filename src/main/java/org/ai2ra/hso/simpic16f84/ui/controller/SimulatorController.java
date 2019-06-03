@@ -216,10 +216,12 @@ public class SimulatorController implements Initializable {
         frequency.valueProperty().addListener((observable, oldFrequency, frequency) -> {
 
             frequencyDisplay.setText(String.format("%.3fMHz", frequency.doubleValue()));
+            // Cast from MHz to hz befor changing the frequency
+            simulator.getExecutor().setFrequency(frequency.doubleValue() * 1000 * 1000);
         });
 
         // Initialize the runtime counter
-        runtimeCounter.setText(String.format("0x%08X", simulator.getExecutor().getRuntimeCounter()));
+        runtimeCounter.setText(String.format("%.4fμs", simulator.getExecutor().getRuntimeCounter()));
         // Initialize the frequency display
         frequencyDisplay.setText(String.format("%.3fMHz", frequency.getValue()));
     }
@@ -716,7 +718,7 @@ public class SimulatorController implements Initializable {
 
                 } else if (event.getPropertyName().equals("runtimeCounter")) {
 
-                    runtimeCounter.setText(String.format("0x%08X", (int) event.getNewValue()));
+                    runtimeCounter.setText(String.format("%.4fμs", (double) event.getNewValue()));
                 }
             });
         }

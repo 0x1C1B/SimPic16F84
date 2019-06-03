@@ -37,12 +37,30 @@ public interface ObservableExecution {
     Integer getProgramCounter();
 
     /**
-     * Allows fetching the current state of the runtime Counter.
+     * Allows fetching the current state of the runtime counter in micro seconds.
      *
      * @return Returns the current state
      */
 
-    Integer getRuntimeCounter();
+    Double getRuntimeCounter();
+
+    /**
+     * Determines the current quartz frequency, implicitly the current execution speed.
+     *
+     * @return Returns the current quartz frequency
+     */
+
+    Double getFrequency();
+
+    /**
+     * First and only setter inside a non-invasive observer interface. This allows
+     * influencing the execution speed by changing the frequency.
+     *
+     * @param frequency The new execution frequency
+     * @throws IllegalArgumentException Thrown if invalid frequency is provided
+     */
+
+    void setFrequency(Double frequency) throws IllegalArgumentException;
 
     /**
      * Adds a change listener <b>only</b> for observing the executor's state. This pattern
