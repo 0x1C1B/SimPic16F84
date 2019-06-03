@@ -137,7 +137,6 @@ class LiteralExecutionUnit {
 
         executor.checkZeroFlag(result);
         executor.setWorkingRegister((byte) result);
-        executor.setWorkingRegister((byte) result);
     }
 
     /**
