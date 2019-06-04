@@ -371,21 +371,19 @@ class ByteAndControlExecutionUnit {
         LOGGER.debug(String.format("IORWF: Inclusive disjunction of content at address 0x%02X in %s with working register", address, bank));
 
         byte value = executor.ram.get(bank, address); // Fetch value from given file register
-        byte firstBits = (byte) ((value & 0x0F) << 4);
-        byte lastBits = (byte) ((value & 0xF0) >> 4);
-        int result = firstBits + lastBits;
 
-        executor.checkZeroFlag(result);
+
+        executor.checkZeroFlag(executor.getWorkingRegister() | value);
 
         // Check for selected destination
 
         if (0 == instruction.getArguments()[0]) {
 
-            executor.setWorkingRegister((byte) result);
+            executor.setWorkingRegister((byte) (executor.getWorkingRegister() | value));
 
         } else {
 
-            executor.ram.set(bank, address, (byte) result);
+            executor.ram.set(bank, address, (byte) (executor.getWorkingRegister() | value));
         }
     }
 
