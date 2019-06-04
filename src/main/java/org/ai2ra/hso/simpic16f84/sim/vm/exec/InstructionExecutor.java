@@ -654,7 +654,7 @@ public class InstructionExecutor implements ObservableExecution {
 
     void checkCarryFlag(int result) {
 
-        if (Byte.MIN_VALUE > result || Byte.MAX_VALUE < result) {
+        if (0xFF < result) {
 
             setCarryFlag();
 
