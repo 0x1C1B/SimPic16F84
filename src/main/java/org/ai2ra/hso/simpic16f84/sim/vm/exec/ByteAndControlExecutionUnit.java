@@ -575,6 +575,37 @@ class ByteAndControlExecutionUnit {
 
         LOGGER.debug("NOP: No operation was executed"); // No operation is executed
     }
+
+    /**
+     * Exchanges the upper and lower nibbles of the selected file register.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    void executeSWAPF(Instruction instruction) {
+
+        int address = executor.getFileAddress(instruction);
+        RamMemory.Bank bank = executor.getSelectedBank(instruction);
+
+        LOGGER.debug(String.format("SWAPF: Exchanges the upper and lower nibbles of register at 0x%02X in %s.", address, bank));
+
+        byte value = executor.ram.get(bank, address); // Fetch value from given file register
+
+        byte lowerNibbles = (byte) ((value & 0x0F) << 4);
+        byte upperNibbles = (byte) ((value & 0x0F) >> 4);
+        byte result = (byte) (lowerNibbles | upperNibbles);
+
+        // Check for selected destination
+
+        if (0 == instruction.getArguments()[0]) {
+
+            executor.setWorkingRegister(result);
+
+        } else {
+
+            executor.ram.set(bank, address, result);
+        }
+    }
 }
 
 

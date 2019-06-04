@@ -327,6 +327,12 @@ public class InstructionExecutor implements ObservableExecution {
                     updateRuntimeCounter(1);
                     break;
                 }
+                case SWAPF: {
+
+                    byteAndControlExecutionUnit.executeSWAPF(instruction);
+                    updateRuntimeCounter(1);
+                    break;
+                }
                 default: {
 
                     throw new IllegalStateException("Unsupported instruction code");
