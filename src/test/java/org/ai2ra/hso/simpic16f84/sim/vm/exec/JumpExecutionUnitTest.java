@@ -39,4 +39,15 @@ public class JumpExecutionUnitTest {
         verify(executor.stack).push(0x010);
         verify(executor).setProgramCounter(0x0805);
     }
+
+    @Test
+    public void executeGOTO() {
+
+        when(executor.getProgramCounter()).thenReturn(0x10);
+        when(executor.ram.get(RamMemory.SFR.PCLATH)).thenReturn((byte) 0b0000_1000);
+
+        executionUnit.executeGOTO(new Instruction(Instruction.OperationCode.GOTO, 0x05));
+
+        verify(executor).setProgramCounter(0x0805);
+    }
 }
