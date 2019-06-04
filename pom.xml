@@ -6,7 +6,7 @@
 
     <groupId>org.ai2ra.hso</groupId>
     <artifactId>simpic16f84</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-alpha</version>
     <packaging>jar</packaging>
 
     <name>SimPic16F84</name>
@@ -122,6 +122,7 @@
                         <argument>Hochschule Offenburg</argument>
                         <argument>-BsystemWide=true</argument>
                         <argument>-BshortcutHint=true</argument>
+                        <argument>-BappVersion=0.0.1-alpha</argument>
                     </arguments>
                 </configuration>
             </plugin>
