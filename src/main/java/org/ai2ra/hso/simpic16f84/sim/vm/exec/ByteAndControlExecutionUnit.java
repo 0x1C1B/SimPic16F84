@@ -592,7 +592,7 @@ class ByteAndControlExecutionUnit {
         byte value = executor.ram.get(bank, address); // Fetch value from given file register
 
         byte lowerNibbles = (byte) ((value & 0x0F) << 4);
-        byte upperNibbles = (byte) ((value & 0x0F) >> 4);
+        byte upperNibbles = (byte) ((value & 0xF0) >> 4);
         byte result = (byte) (lowerNibbles | upperNibbles);
 
         // Check for selected destination
