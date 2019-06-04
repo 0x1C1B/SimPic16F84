@@ -92,9 +92,16 @@ public class SimulatorController implements Initializable {
 
     @FXML ListView<String> addressStack;
 
-    // Working register components
+    // Special register components
 
     @FXML TextField workingRegister;
+    @FXML TextField instructionRegister;
+
+    // Runtime counter related
+
+    @FXML Label runtimeCounter;
+    @FXML Slider frequency;
+    @FXML Label frequencyDisplay;
 
     // I/O Pin representation
 
@@ -149,6 +156,7 @@ public class SimulatorController implements Initializable {
         initializeLogView();
         initializeToolbar();
         initializeRegisters();
+        initializeRuntimeCounter();
     }
 
     /**
@@ -199,6 +207,26 @@ public class SimulatorController implements Initializable {
     }
 
     /**
+     * Initialize the runtime counter and related parts like the execution frequency
+     * with components.
+     */
+
+    private void initializeRuntimeCounter() {
+
+        frequency.valueProperty().addListener((observable, oldFrequency, frequency) -> {
+
+            frequencyDisplay.setText(String.format("%.3fMHz", frequency.doubleValue()));
+            // Cast from MHz to hz befor changing the frequency
+            simulator.getExecutor().setFrequency(frequency.doubleValue() * 1000 * 1000);
+        });
+
+        // Initialize the runtime counter
+        runtimeCounter.setText(String.format("%.4fμs", simulator.getExecutor().getRuntimeCounter()));
+        // Initialize the frequency display
+        frequencyDisplay.setText(String.format("%.3fMHz", frequency.getValue()));
+    }
+
+    /**
      * Initializes the single <i>bits</i> (Components) of the STATUS register.
      */
 
@@ -227,7 +255,7 @@ public class SimulatorController implements Initializable {
         sfrName.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         // Use custom factory for printing as hex string in prefix format
-        sfrValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getValue())));
+        sfrValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", (byte) param.getValue().getValue())));
 
         // Setup General Purpose Register section
 
@@ -253,7 +281,7 @@ public class SimulatorController implements Initializable {
 
         // Use custom factory for printing as hex string in prefix format
         gprAddress.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getAddress())));
-        gprValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue().getValue())));
+        gprValue.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", (byte) param.getValue().getValue())));
 
         gprOptions.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
         gprOptions.setCellFactory(param -> new TableCell<GeneralPurposeRegister, GeneralPurposeRegister>() {
@@ -281,6 +309,11 @@ public class SimulatorController implements Initializable {
                 delete.setOnAction(event -> getTableView().getItems().remove(item));
             }
         });
+
+        // Initialize working register
+        workingRegister.setText(String.format("0x%02X", simulator.getExecutor().getWorkingRegister()));
+        // Initialize instruction register
+        instructionRegister.setText(String.format("0x%04X", simulator.getExecutor().getInstructionRegister()));
 
         initializeStatusRegister();
     }
@@ -518,7 +551,7 @@ public class SimulatorController implements Initializable {
     private void onObserveRegisterAction(ActionEvent event) {
 
         int address = addressField.getValue();
-        int value = null == simulator.getRam().get(address) ? 0 : simulator.getRam().get(address);
+        byte value = null == simulator.getRam().get(address) ? 0 : simulator.getRam().get(address);
 
         // Check if entry already exists
 
@@ -559,7 +592,7 @@ public class SimulatorController implements Initializable {
 
                 if (0x03 == ((IndexedPropertyChangeEvent) event).getIndex()) {
 
-                    int value = (int) event.getNewValue(); // Value of STATUS register
+                    byte value = (byte) event.getNewValue(); // Value of STATUS register
                     StatusRegister status = new StatusRegister();
 
                     // Disassemble STATUS register value in single bits
@@ -582,7 +615,7 @@ public class SimulatorController implements Initializable {
                 } else if (0x0C > ((IndexedPropertyChangeEvent) event).getIndex()) {
 
                     int address = ((IndexedPropertyChangeEvent) event).getIndex();
-                    int value = (int) event.getNewValue(); // Value of the SFR
+                    byte value = (byte) event.getNewValue(); // Value of the SFR
                     RamMemory.Bank bank = "bank0".equals(event.getPropertyName()) ?
                             RamMemory.Bank.BANK_0 :
                             RamMemory.Bank.BANK_1;
@@ -630,7 +663,7 @@ public class SimulatorController implements Initializable {
 
                         // Only one match should exist, just uses the first one
 
-                        filtered.get(0).setValue((int) event.getNewValue());
+                        filtered.get(0).setValue((byte) event.getNewValue());
                         generalRegisters.refresh();
                     }
                 }
@@ -734,10 +767,21 @@ public class SimulatorController implements Initializable {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
 
-            if (event.getPropertyName().equals("workingRegister")) {
+            Platform.runLater(() -> {
 
-                workingRegister.setText(String.format("0x%02X", (int) event.getNewValue()));
-            }
+                if (event.getPropertyName().equals("workingRegister")) {
+
+                    workingRegister.setText(String.format("0x%02X", (byte) event.getNewValue()));
+
+                } else if (event.getPropertyName().equals("instructionRegister")) {
+
+                    instructionRegister.setText(String.format("0x%04X", (short) event.getNewValue()));
+
+                } else if (event.getPropertyName().equals("runtimeCounter")) {
+
+                    runtimeCounter.setText(String.format("%.4fμs", (double) event.getNewValue()));
+                }
+            });
         }
     }
 }

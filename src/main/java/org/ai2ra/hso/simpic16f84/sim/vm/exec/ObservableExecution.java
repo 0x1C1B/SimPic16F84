@@ -17,7 +17,7 @@ public interface ObservableExecution {
      * @return Returns the current content of the working register
      */
 
-    Integer getWorkingRegister();
+    Byte getWorkingRegister();
 
     /**
      * The instruction register contains the next executable instruction before it's
@@ -26,7 +26,7 @@ public interface ObservableExecution {
      * @return Returns the content of the insrtuction register
      */
 
-    Integer getInstructionRegister();
+    Short getInstructionRegister();
 
     /**
      * Allows read-only access to the program counter (instruction pointer).
@@ -35,6 +35,32 @@ public interface ObservableExecution {
      */
 
     Integer getProgramCounter();
+
+    /**
+     * Allows fetching the current state of the runtime counter in micro seconds.
+     *
+     * @return Returns the current state
+     */
+
+    Double getRuntimeCounter();
+
+    /**
+     * Determines the current quartz frequency, implicitly the current execution speed.
+     *
+     * @return Returns the current quartz frequency
+     */
+
+    Double getFrequency();
+
+    /**
+     * First and only setter inside a non-invasive observer interface. This allows
+     * influencing the execution speed by changing the frequency.
+     *
+     * @param frequency The new execution frequency
+     * @throws IllegalArgumentException Thrown if invalid frequency is provided
+     */
+
+    void setFrequency(Double frequency) throws IllegalArgumentException;
 
     /**
      * Adds a change listener <b>only</b> for observing the executor's state. This pattern

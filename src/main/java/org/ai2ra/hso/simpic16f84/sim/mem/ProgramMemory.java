@@ -20,6 +20,7 @@ public class ProgramMemory <T> implements ObservableMemory<T> {
     private PropertyChangeSupport changes;
     private ReadWriteLock lock;
 
+    @SuppressWarnings("unchecked")
     public ProgramMemory(int size) {
 
         this.memory = (T[]) new Object[size];
@@ -82,26 +83,6 @@ public class ProgramMemory <T> implements ObservableMemory<T> {
         }
     }
 
-    @Override
-    public T[] fetch() {
-        lock.readLock().lock();
-
-        try {
-
-            if (memory.length == 0) {
-
-                throw new MemoryIndexOutOfBoundsException();
-
-            }
-            return Arrays.copyOf(memory, memory.length);
-
-        }finally {
-
-            lock.readLock().unlock();
-
-        }
-    }
-
     public void set(T toSet, int address) {
 
         lock.writeLock().lock();
@@ -119,29 +100,6 @@ public class ProgramMemory <T> implements ObservableMemory<T> {
                         address, beforeSet, toSet);
             }
 
-        }finally {
-
-            lock.writeLock().unlock();
-
-        }
-    }
-
-    /**
-     * Resets the memory block by initializing all cells with <code>null</code>.
-     * Important to note is, that because it uses objects, in case of the int type
-     * the wrapper class {@link Integer}, all cells are initialized
-     * with <code>null</code> <b>not</b> 0.
-     */
-
-    public void reset(){
-
-        lock.writeLock().lock();
-
-        try {
-
-            T[] copy = fetch();
-            Arrays.fill(memory, null);
-            changes.firePropertyChange("memory", copy, memory);
         }finally {
 
             lock.writeLock().unlock();

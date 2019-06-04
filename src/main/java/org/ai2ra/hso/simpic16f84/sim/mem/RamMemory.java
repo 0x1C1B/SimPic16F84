@@ -180,22 +180,6 @@ public class RamMemory<T> implements ObservableMemory<T> {
         }
     }
 
-    /**
-     * Used for fetching the memory as connected structure. Bank0 and bank1 are merged to an
-     * single array. This also means that the mapped memory locations, meaning the
-     * general purpose registers (GPR), are existing twice.
-     *
-     * @return The combined memory consisting out of bank0 and bank1
-     */
-
-    @Override
-    public T[] fetch() {
-
-        T[] memory = Arrays.copyOf(bank0, bank0.length + bank1.length);
-        System.arraycopy(bank1, 0, memory, bank0.length, bank1.length);
-        return memory;
-    }
-
     public T get(Bank bank, int address) {
 
         lock.readLock().lock();

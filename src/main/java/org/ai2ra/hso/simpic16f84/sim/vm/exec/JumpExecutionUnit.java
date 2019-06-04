@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * @see InstructionExecutor
  */
 
-public class JumpExecutionUnit {
+class JumpExecutionUnit {
 
     private static final Logger LOGGER;
 

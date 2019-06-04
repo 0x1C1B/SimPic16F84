@@ -9,14 +9,14 @@ import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CustomLstParserTest {
+public class AIRALstParserTest {
 
-	private LstParser parser;
+    private LstParser<Short> parser;
 
 	@Before
 	public void setUp() throws Exception {
 
-		parser = new CustomLstParser();
+        parser = new AIRALstParser();
 	}
 
 	@Test
@@ -24,8 +24,8 @@ public class CustomLstParserTest {
 
 		Path path = Paths.get(getClass().getResource("/LstFiles/TPicSim1.LST").toURI());
 
-		int[] instructions = parser.parse(path.toFile());
-		assertArrayEquals(instructions, new int[] {0x3011, 0x3930, 0x380D, 0x3C3D, 0x3A20, 0x3E25, 0x2806});
+        Short[] instructions = parser.parse(path.toFile());
+        assertArrayEquals(instructions, new Short[]{0x3011, 0x3930, 0x380D, 0x3C3D, 0x3A20, 0x3E25, 0x2806});
 	}
 
 	@Test
@@ -33,8 +33,8 @@ public class CustomLstParserTest {
 
 		Path path = Paths.get(getClass().getResource("/LstFiles/TPicSim2.LST").toURI());
 
-		int[] instructions = parser.parse(path.toFile());
-		assertArrayEquals(instructions, new int[] {0x3011, 0x2006, 0x0000, 0x2008, 0x0000, 0x2800, 0x3E25, 0x0008, 0x3477, 0x2809});
+        Short[] instructions = parser.parse(path.toFile());
+        assertArrayEquals(instructions, new Short[]{0x3011, 0x2006, 0x0000, 0x2008, 0x0000, 0x2800, 0x3E25, 0x0008, 0x3477, 0x2809});
 	}
 
 

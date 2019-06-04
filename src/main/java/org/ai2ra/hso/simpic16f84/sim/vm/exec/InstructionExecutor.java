@@ -27,20 +27,28 @@ public final class InstructionExecutor implements ObservableExecution {
     /**
      * Working register used as accumulator.
      */
-    private Integer workingRegister;
+    private Byte workingRegister;
     /** Contains the next instruction before it's execution. */
-    private Integer instructionRegister;
+    private Short instructionRegister;
     /** The instruction pointer that points to the next instruction in program memory. */
     private Integer programCounter;
+    /**
+     * Runtime counter indicates execution time.
+     */
+    private Double runtimeCounter;
+    /**
+     * Current quartz frequency, indirectly the execution speed
+     */
+    private Double frequency;
 
     /*
     Intentionally package-private to allow execution units direct access.
      */
 
-    ProgramMemory<Integer> programMemory;
-    RamMemory<Integer> ram;
+    ProgramMemory<Short> programMemory;
+    RamMemory<Byte> ram;
     StackMemory<Integer> stack;
-    EepromMemory<Integer> eeprom;
+    EepromMemory<Byte> eeprom;
 
     /**
      * Part of ALU that is responsible for literal operations.
@@ -78,8 +86,8 @@ public final class InstructionExecutor implements ObservableExecution {
      * @param eeprom The EEPROM for persisting data beyond restarts
      */
 
-    public InstructionExecutor(ProgramMemory<Integer> programMemory, RamMemory<Integer> ram,
-                               StackMemory<Integer> stack, EepromMemory<Integer> eeprom) {
+    public InstructionExecutor(ProgramMemory<Short> programMemory, RamMemory<Byte> ram,
+                               StackMemory<Integer> stack, EepromMemory<Byte> eeprom) {
         this.programMemory = programMemory;
         this.ram = ram;
         this.stack = stack;
@@ -93,9 +101,11 @@ public final class InstructionExecutor implements ObservableExecution {
         lock = new ReentrantLock();
         changes = new PropertyChangeSupport(this);
 
-        setInstructionRegister(0);
-        setProgramCounter(0);
-        setWorkingRegister(0);
+        setInstructionRegister((short) 0x0000);
+        setProgramCounter(0x00);
+        setWorkingRegister((byte) 0x00);
+        setRuntimeCounter(0x00);
+        setFrequency(4_000_000.0 /* 4MHz */);
     }
 
     /**
@@ -123,9 +133,10 @@ public final class InstructionExecutor implements ObservableExecution {
      *
      * @return Returns the address of the next instruction
      * @see InstructionDecoder
+     * @throws IllegalStateException Thrown if requested operation is not supported
      */
 
-    public int execute() {
+    public int execute() throws IllegalStateException {
 
         lock.lock();
 
@@ -151,36 +162,43 @@ public final class InstructionExecutor implements ObservableExecution {
                 case ADDLW: {
 
                     literalExecutionUnit.executeADDLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case ANDLW: {
 
                     literalExecutionUnit.executeANDLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case MOVLW: {
 
                     literalExecutionUnit.executeMOVLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case SUBLW: {
 
                     literalExecutionUnit.executeSUBLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case IORLW: {
 
                     literalExecutionUnit.executeIORLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case XORLW: {
 
                     literalExecutionUnit.executeXORLW(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RETLW: {
 
                     literalExecutionUnit.executeRETLW(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
 
@@ -189,11 +207,13 @@ public final class InstructionExecutor implements ObservableExecution {
                 case CALL: {
 
                     jumpExecutionUnit.executeCALL(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case GOTO: {
 
                     jumpExecutionUnit.executeGOTO(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
 
@@ -202,73 +222,114 @@ public final class InstructionExecutor implements ObservableExecution {
                 case ADDWF: {
 
                     byteAndControlExecutionUnit.executeADDWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case CLRW: {
 
                     byteAndControlExecutionUnit.executeCLRW();
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case ANDWF: {
 
                     byteAndControlExecutionUnit.executeANDWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case XORWF: {
 
                     byteAndControlExecutionUnit.executeXORWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case SUBWF: {
 
                     byteAndControlExecutionUnit.executeSUBWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case RETURN: {
 
-                    byteAndControlExecutionUnit.executeRETURN(instruction);
+                    byteAndControlExecutionUnit.executeRETURN();
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case MOVWF: {
 
                     byteAndControlExecutionUnit.executeMOVWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case CLRF: {
 
                     byteAndControlExecutionUnit.executeCLRF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case COMF: {
 
                     byteAndControlExecutionUnit.executeCOMF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case DECF: {
 
                     byteAndControlExecutionUnit.executeDECF(instruction);
+                    updateRuntimeCounter(1);
+                    break;
+                }
+                case DECFSZ: {
+
+                    byteAndControlExecutionUnit.executeDECFSZ(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case INCF: {
 
                     byteAndControlExecutionUnit.executeINCF(instruction);
+                    updateRuntimeCounter(1);
+                    break;
+                }
+                case INCFSZ: {
+
+                    byteAndControlExecutionUnit.executeINCFSZ(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 case MOVF: {
 
                     byteAndControlExecutionUnit.executeMOVF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
                 case IORWF: {
 
                     byteAndControlExecutionUnit.executeIORWF(instruction);
+                    updateRuntimeCounter(1);
                     break;
                 }
-                case NOP:
+                case RRF: {
+
+                    byteAndControlExecutionUnit.executeRRF(instruction);
+                    updateRuntimeCounter(1);
+                    break;
+                }
+                case RLF: {
+
+                    byteAndControlExecutionUnit.executeRLF(instruction);
+                    updateRuntimeCounter(1);
+                    break;
+                }
+                case NOP: {
+
+                    byteAndControlExecutionUnit.executeNOP();
+                    updateRuntimeCounter(1);
+                    break;
+                }
                 default: {
 
-                    LOGGER.debug("NOP: No operation was executed");
-                    break; // No operation executed
+                    throw new IllegalStateException("Unsupported instruction code");
                 }
             }
 
@@ -297,27 +358,29 @@ public final class InstructionExecutor implements ObservableExecution {
 
         LOGGER.info("Reset registers to power-on state");
 
-        workingRegister = 0x00;
-        programCounter = 0x00;
+        setWorkingRegister((byte) 0x00);
+        setProgramCounter(0x00);
+        setInstructionRegister((short) 0x00);
+        setRuntimeCounter(0x00);
 
         // Initialize the special function registers
 
-        ram.set(RamMemory.SFR.INDF, 0x00);
-        ram.set(RamMemory.SFR.TMR0, 0x00);
-        ram.set(RamMemory.SFR.PCL, 0x00);
-        ram.set(RamMemory.SFR.STATUS, 0b0001_1100);
-        ram.set(RamMemory.SFR.FSR, 0x000);
-        ram.set(RamMemory.SFR.PORTA, 0x00);
-        ram.set(RamMemory.SFR.PORTB, 0x00);
-        ram.set(RamMemory.SFR.EEDATA, 0x00);
-        ram.set(RamMemory.SFR.EEADR, 0x00);
-        ram.set(RamMemory.SFR.PCLATH, 0x00);
-        ram.set(RamMemory.SFR.INTCON, 0x00);
-        ram.set(RamMemory.SFR.OPTION, 0b1111_1111);
-        ram.set(RamMemory.SFR.TRISA, 0b0001_1111);
-        ram.set(RamMemory.SFR.TRISB, 0b1111_1111);
-        ram.set(RamMemory.SFR.EECON1, 0x00);
-        ram.set(RamMemory.SFR.EECON2, 0x00);
+        ram.set(RamMemory.SFR.INDF, (byte) 0x00);
+        ram.set(RamMemory.SFR.TMR0, (byte) 0x00);
+        ram.set(RamMemory.SFR.PCL, (byte) 0x00);
+        ram.set(RamMemory.SFR.STATUS, (byte) 0b0001_1100);
+        ram.set(RamMemory.SFR.FSR, (byte) 0x000);
+        ram.set(RamMemory.SFR.PORTA, (byte) 0x00);
+        ram.set(RamMemory.SFR.PORTB, (byte) 0x00);
+        ram.set(RamMemory.SFR.EEDATA, (byte) 0x00);
+        ram.set(RamMemory.SFR.EEADR, (byte) 0x00);
+        ram.set(RamMemory.SFR.PCLATH, (byte) 0x00);
+        ram.set(RamMemory.SFR.INTCON, (byte) 0x00);
+        ram.set(RamMemory.SFR.OPTION, (byte) 0b1111_1111);
+        ram.set(RamMemory.SFR.TRISA, (byte) 0b0001_1111);
+        ram.set(RamMemory.SFR.TRISB, (byte) 0b1111_1111);
+        ram.set(RamMemory.SFR.EECON1, (byte) 0x00);
+        ram.set(RamMemory.SFR.EECON2, (byte) 0x00);
     }
 
     /**
@@ -354,7 +417,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * @param value The value that should be written to working register
      */
 
-    void setWorkingRegister(Integer value) {
+    void setWorkingRegister(Byte value) {
 
         changes.firePropertyChange("workingRegister", workingRegister, value);
         workingRegister = value;
@@ -367,9 +430,79 @@ public final class InstructionExecutor implements ObservableExecution {
      */
 
     @Override
-    public Integer getWorkingRegister() {
+    public Byte getWorkingRegister() {
 
         return workingRegister;
+    }
+
+    /**
+     * Sets runtime counter to a given count.
+     *
+     * @param counter The given count
+     */
+
+    void setRuntimeCounter(double counter) {
+
+        changes.firePropertyChange("runtimeCounter", runtimeCounter, counter);
+        runtimeCounter = counter;
+    }
+
+    /**
+     * Increases the runtime counter dependent to the quartz frequency.
+     *
+     * @param cycles The number of cycles that were used for executing the last instruction
+     */
+
+    void updateRuntimeCounter(int cycles) {
+
+        double timePerCycle = 4000000.0 / frequency;
+        double oldRuntimeCounter = runtimeCounter;
+
+        runtimeCounter = runtimeCounter + (timePerCycle * cycles);
+        changes.firePropertyChange("runtimeCounter", oldRuntimeCounter, runtimeCounter);
+    }
+
+    /**
+     * Allows access to the runtime counter in micro seconds.
+     *
+     * @return Returns the current state of the runtime counter
+     */
+
+    @Override
+    public Double getRuntimeCounter() {
+
+        return runtimeCounter;
+    }
+
+    /**
+     * Determines the current quartz frequency, implicitly the current execution speed.
+     *
+     * @return Returns the current quartz frequency in Hz
+     */
+
+    @Override
+    public Double getFrequency() {
+
+        return frequency;
+    }
+
+    /**
+     * Allows changing the quartz frequency. Valid values are all values between 32kHz
+     * and 20MHz.
+     *
+     * @param frequency The new execution frequency in Hz
+     * @throws IllegalArgumentException Thrown if invalid frequency is provided
+     */
+
+    @Override
+    public void setFrequency(Double frequency) throws IllegalArgumentException {
+
+        if (32_000 > frequency || 20_000_000 < frequency) {
+
+            throw new IllegalArgumentException("Frequency is only valid between 32kHz and 20MHz");
+        }
+
+        this.frequency = frequency;
     }
 
     /**
@@ -404,7 +537,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * @param value The value that should be written to instruction register
      */
 
-    private void setInstructionRegister(Integer value) {
+    private void setInstructionRegister(Short value) {
 
         changes.firePropertyChange("instructionRegister", instructionRegister, value);
         instructionRegister = value;
@@ -417,7 +550,7 @@ public final class InstructionExecutor implements ObservableExecution {
      */
 
     @Override
-    public Integer getInstructionRegister() {
+    public Short getInstructionRegister() {
 
         return instructionRegister;
     }
@@ -429,7 +562,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void setDigitCarryFlag() {
 
         LOGGER.info("Set 'Digit Carry' (DC) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) | 0b00000010));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) | 0b00000010));
     }
 
     /**
@@ -439,7 +572,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void clearDigitCarryFlag() {
 
         LOGGER.info("Clear 'Digit Carry' (DC) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111101));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) & 0b11111101));
     }
 
     /**
@@ -449,7 +582,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void setCarryFlag() {
 
         LOGGER.info("Set 'Carry' (C) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) | 0b00000001));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) | 0b00000001));
     }
 
     /**
@@ -459,7 +592,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void clearCarryFlag() {
 
         LOGGER.info("Clear 'Carry' (C) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111110));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) & 0b11111110));
     }
 
     /**
@@ -469,7 +602,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void setZeroFlag() {
 
         LOGGER.info("Set 'Zero' (Z) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) | 0b00000100));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) | 0b00000100));
     }
 
     /**
@@ -479,7 +612,7 @@ public final class InstructionExecutor implements ObservableExecution {
     void clearZeroFlag() {
 
         LOGGER.info("Clear 'Zero' (Z) flag inside of STATUS register");
-        ram.set(RamMemory.SFR.STATUS, (ram.get(RamMemory.SFR.STATUS) & 0b11111011));
+        ram.set(RamMemory.SFR.STATUS, (byte) (ram.get(RamMemory.SFR.STATUS) & 0b11111011));
     }
 
     /**
@@ -504,5 +637,155 @@ public final class InstructionExecutor implements ObservableExecution {
     int getIRPBit() {
 
         return (ram.get(RamMemory.SFR.STATUS) & 0b1000_0000) >> 7;
+    }
+
+    /**
+     * Utility method used for checking an overflow/underflow. If result is lower
+     * than <i>-128</i> or bigger than <i>127</i>, the carry flag is set.
+     *
+     * @param result Result of the calculated expression
+     */
+
+    void checkCarryFlag(int result) {
+
+        if (Byte.MIN_VALUE > result || Byte.MAX_VALUE < result) {
+
+            setCarryFlag();
+
+        } else {
+
+            clearCarryFlag();
+        }
+    }
+
+    /**
+     * Helper method for checking if the result is zero. Flag is set if the expression's
+     * result is equal to zero.
+     *
+     * @param result Result of the calculated expression
+     */
+
+    void checkZeroFlag(int result) {
+
+        if (0 == result) {
+
+            setZeroFlag();
+
+        } else {
+
+            clearZeroFlag();
+        }
+    }
+
+    /**
+     * Used for checking the digit carry flag. An expression related statement is evaluated, if
+     * it's true the digit carry flag is set, otherwise not.
+     *
+     * @param result Result of the calculated expression
+     */
+
+    void checkDigitCarryFlag(boolean result) {
+
+        if (result) {
+
+            setDigitCarryFlag();
+
+        } else {
+
+            clearDigitCarryFlag();
+        }
+    }
+
+    /**
+     * Determines if indirect addressingg is used or not.
+     *
+     * @param instruction The actual instruction
+     * @return Returns true if indirect addressing is used, otherwise false
+     */
+
+    boolean usesIndirectAddressing(Instruction instruction) {
+
+        /*
+        Two kind of instructions with file address exists, one with additional destination
+        bit and one without.
+         */
+
+        if (1 == instruction.getArguments().length) { // Without additional destination bit
+
+            return 0 == instruction.getArguments()[0];
+
+        } else if (2 == instruction.getArguments().length) { // Destination bit exists
+
+            return 0 == instruction.getArguments()[1];
+        }
+
+        throw new IllegalArgumentException("Instruction doesn't have a file register address as argument");
+    }
+
+    /**
+     * Determines the addressed file register. It supports direct and indirect addressing with
+     * or without additional destination bit.
+     *
+     * @param instruction The instruction for extracting the file register address
+     * @return Returns the determined file register address
+     * @throws IllegalArgumentException Thrown if given instruction doesn't have a file address as argument
+     */
+
+    int getFileAddress(Instruction instruction) throws IllegalArgumentException {
+
+        /*
+        Two kind of instructions with file address exists, one with additional destination
+        bit and one without.
+         */
+
+        if (1 == instruction.getArguments().length) { // Without additional destination bit
+
+            if (0 == instruction.getArguments()[0]) { // Indirect addressing
+
+                return ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            } else { // Direct addressing
+
+                return instruction.getArguments()[0];
+            }
+
+        } else if (2 == instruction.getArguments().length) { // Destination bit exists
+
+            if (0 == instruction.getArguments()[1]) { // Indirect addressing
+
+                return ram.get(RamMemory.SFR.FSR) & 0b0111_1111;
+
+            } else { // Direct addressing
+
+                return instruction.getArguments()[1];
+            }
+        }
+
+        throw new IllegalArgumentException("Instruction doesn't have a file register address as argument");
+    }
+
+    /**
+     * Determines current select bank. It support direct and indirect addressing. For
+     * succeeding it's required, that a file register address is provided as
+     * instruction argument.
+     *
+     * @param instruction The actual instruction
+     * @return Return the currently selected bank
+     */
+
+    RamMemory.Bank getSelectedBank(Instruction instruction) {
+
+        /*
+        Indirect addressing uses the IRP bit while direct addressing uses the RP0 bit.
+         */
+
+        if (usesIndirectAddressing(instruction)) {
+
+            return 0 == getIRPBit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+
+        } else {
+
+            return 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
+        }
     }
 }

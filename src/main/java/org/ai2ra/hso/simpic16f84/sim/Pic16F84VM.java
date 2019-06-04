@@ -1,7 +1,7 @@
 package org.ai2ra.hso.simpic16f84.sim;
 
 import org.ai2ra.hso.simpic16f84.sim.mem.*;
-import org.ai2ra.hso.simpic16f84.sim.vm.CustomLstParser;
+import org.ai2ra.hso.simpic16f84.sim.vm.AIRALstParser;
 import org.ai2ra.hso.simpic16f84.sim.vm.exec.InstructionExecutor;
 import org.ai2ra.hso.simpic16f84.sim.vm.LstParser;
 import org.ai2ra.hso.simpic16f84.sim.vm.exec.ObservableExecution;
@@ -39,12 +39,12 @@ import java.io.IOException;
 
 public class Pic16F84VM {
 
-    private ProgramMemory<Integer> programMemory;
-    private RamMemory<Integer> ram;
+    private ProgramMemory<Short> programMemory;
+    private RamMemory<Byte> ram;
     private StackMemory<Integer> stack;
-    private EepromMemory<Integer> eeprom;
+    private EepromMemory<Byte> eeprom;
 
-    private LstParser parser;
+    private LstParser<Short> parser;
     private InstructionExecutor executor;
     private PropertyChangeSupport changes;
 
@@ -68,7 +68,7 @@ public class Pic16F84VM {
         this.stack = new StackMemory<>(8);
         this.eeprom = new EepromMemory<>(64);
 
-        this.parser = new CustomLstParser();
+        this.parser = new AIRALstParser();
         this.executor = new InstructionExecutor(programMemory, ram, stack, eeprom);
         this.changes = new PropertyChangeSupport(this);
     }
@@ -87,7 +87,7 @@ public class Pic16F84VM {
      * @see ObservableMemory
      */
 
-    public ObservableMemory<Integer> getProgramMemory() {
+    public ObservableMemory<Short> getProgramMemory() {
 
         return programMemory;
     }
@@ -107,7 +107,7 @@ public class Pic16F84VM {
      * @see ObservableMemory
      */
 
-    public ObservableMemory<Integer> getRam() {
+    public ObservableMemory<Byte> getRam() {
 
         return ram;
     }
@@ -145,7 +145,7 @@ public class Pic16F84VM {
      * @see ObservableMemory
      */
 
-    public ObservableMemory<Integer> getEeprom() {
+    public ObservableMemory<Byte> getEeprom() {
 
         return eeprom;
     }
@@ -199,7 +199,7 @@ public class Pic16F84VM {
 
         stop(); // Stops current execution flow if runtime environment is already running
 
-        int[] instructions = parser.parse(file); // Extract machine instructions
+        Short[] instructions = parser.parse(file); // Extract machine instructions
 
         // Load extracted machine instructions into program memory
 
@@ -210,6 +210,7 @@ public class Pic16F84VM {
 
         loaded = true; // Set state to execution ready
         changes.firePropertyChange("loaded", false, true);
+        executor.reset();
     }
 
     /**
