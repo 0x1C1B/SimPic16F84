@@ -157,6 +157,7 @@ public class SimulatorController implements Initializable {
         initializeToolbar();
         initializeRegisters();
         initializeRuntimeCounter();
+        initializePorts();
     }
 
     /**
@@ -242,6 +243,30 @@ public class SimulatorController implements Initializable {
         zBit.setCellValueFactory(new PropertyValueFactory<>("zeroFlag"));
         dcBit.setCellValueFactory(new PropertyValueFactory<>("digitCarryFlag"));
         cBit.setCellValueFactory(new PropertyValueFactory<>("carryFlag"));
+    }
+
+    /**
+     * Initialize the single pins of Port A as well as Port B.
+     */
+
+    private void initializePorts() {
+
+        // Set pins by default as output means disabled
+
+        ra0.setDisable(true);
+        ra1.setDisable(true);
+        ra2.setDisable(true);
+        ra3.setDisable(true);
+        ra4.setDisable(true);
+
+        rb0.setDisable(true);
+        rb1.setDisable(true);
+        rb2.setDisable(true);
+        rb3.setDisable(true);
+        rb4.setDisable(true);
+        rb5.setDisable(true);
+        rb6.setDisable(true);
+        rb7.setDisable(true);
     }
 
     /**
@@ -572,6 +597,77 @@ public class SimulatorController implements Initializable {
         }
     }
 
+    @FXML
+    private void onStimulatePortA(ActionEvent event) {
+
+        if (event.getSource() instanceof CheckBox) {
+
+            CheckBox checkBox = (CheckBox) event.getSource();
+
+            if (checkBox == ra0) {
+
+                simulator.stimulatePortA(0, checkBox.isSelected());
+
+            } else if (checkBox == ra1) {
+
+                simulator.stimulatePortA(1, checkBox.isSelected());
+
+            } else if (checkBox == ra2) {
+
+                simulator.stimulatePortA(2, checkBox.isSelected());
+
+            } else if (checkBox == ra3) {
+
+                simulator.stimulatePortA(3, checkBox.isSelected());
+
+            } else if (checkBox == ra4) {
+
+                simulator.stimulatePortA(4, checkBox.isSelected());
+            }
+        }
+    }
+
+    @FXML
+    private void onStimulatePortB(ActionEvent event) {
+
+        if (event.getSource() instanceof CheckBox) {
+
+            CheckBox checkBox = (CheckBox) event.getSource();
+
+            if (checkBox == rb0) {
+
+                simulator.stimulatePortB(0, checkBox.isSelected());
+
+            } else if (checkBox == rb1) {
+
+                simulator.stimulatePortB(1, checkBox.isSelected());
+
+            } else if (checkBox == rb2) {
+
+                simulator.stimulatePortB(2, checkBox.isSelected());
+
+            } else if (checkBox == rb3) {
+
+                simulator.stimulatePortB(3, checkBox.isSelected());
+            } else if (checkBox == rb4) {
+
+                simulator.stimulatePortB(4, checkBox.isSelected());
+
+            } else if (checkBox == rb5) {
+
+                simulator.stimulatePortB(5, checkBox.isSelected());
+
+            } else if (checkBox == rb6) {
+
+                simulator.stimulatePortB(6, checkBox.isSelected());
+
+            } else if (checkBox == rb7) {
+
+                simulator.stimulatePortB(7, checkBox.isSelected());
+            }
+        }
+    }
+
     /**
      * Responsible for handling memory changes inside of the RAM memory
      * structure. This class updates the user interface when changes are
@@ -665,6 +761,67 @@ public class SimulatorController implements Initializable {
 
                         filtered.get(0).setValue((byte) event.getNewValue());
                         generalRegisters.refresh();
+                    }
+                }
+
+                // Mapped I/O ports to simulator's pin state
+
+                if (0x05 == ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    // Map Port A
+
+                    byte value = (byte) event.getNewValue(); // Value of the SFR
+                    RamMemory.Bank bank = "bank0".equals(event.getPropertyName()) ?
+                            RamMemory.Bank.BANK_0 :
+                            RamMemory.Bank.BANK_1;
+
+                    if (RamMemory.Bank.BANK_0 == bank) {
+
+                        ra0.setSelected(0x01 == (value & 0b0001));
+                        ra1.setSelected(0x01 == (value & 0b0010) >> 1);
+                        ra2.setSelected(0x01 == (value & 0b0100) >> 2);
+                        ra3.setSelected(0x01 == (value & 0b1000) >> 3);
+                        ra4.setSelected(0x01 == (value & 0b1_0000) >> 4);
+
+                    } else {
+
+                        ra0.setDisable(0x00 == (value & 0b0001));
+                        ra1.setDisable(0x00 == (value & 0b0010) >> 1);
+                        ra2.setDisable(0x00 == (value & 0b0100) >> 2);
+                        ra3.setDisable(0x00 == (value & 0b1000) >> 3);
+                        ra4.setDisable(0x00 == (value & 0b1_0000) >> 4);
+                    }
+
+                } else if (0x06 == ((IndexedPropertyChangeEvent) event).getIndex()) {
+
+                    // Map Port B
+
+                    byte value = (byte) event.getNewValue(); // Value of the SFR
+                    RamMemory.Bank bank = "bank0".equals(event.getPropertyName()) ?
+                            RamMemory.Bank.BANK_0 :
+                            RamMemory.Bank.BANK_1;
+
+                    if (RamMemory.Bank.BANK_0 == bank) {
+
+                        rb0.setSelected(0x01 == (value & 0b0000_0001));
+                        rb1.setSelected(0x01 == (value & 0b0000_0010) >> 1);
+                        rb2.setSelected(0x01 == (value & 0b0000_0100) >> 2);
+                        rb3.setSelected(0x01 == (value & 0b0000_1000) >> 3);
+                        rb4.setSelected(0x01 == (value & 0b0001_0000) >> 4);
+                        rb5.setSelected(0x01 == (value & 0b0010_0000) >> 5);
+                        rb6.setSelected(0x01 == (value & 0b0100_0000) >> 6);
+                        rb7.setSelected(0x01 == (value & 0b1000_0000) >> 7);
+
+                    } else {
+
+                        rb0.setDisable(0x00 == (value & 0b0000_0001));
+                        rb1.setDisable(0x00 == (value & 0b0000_0010) >> 1);
+                        rb2.setDisable(0x00 == (value & 0b0000_0100) >> 2);
+                        rb3.setDisable(0x00 == (value & 0b0000_1000) >> 3);
+                        rb4.setDisable(0x00 == (value & 0b0001_0000) >> 4);
+                        rb5.setDisable(0x00 == (value & 0b0010_0000) >> 5);
+                        rb6.setDisable(0x00 == (value & 0b0100_0000) >> 6);
+                        rb7.setDisable(0x00 == (value & 0b1000_0000) >> 7);
                     }
                 }
             }

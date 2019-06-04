@@ -320,15 +320,20 @@
                                                                     vgrow="SOMETIMES"/>
                                                 </rowConstraints>
                                                 <children>
-                                                    <CheckBox fx:id="ra0" mnemonicParsing="false" text="RA0"
+                                                    <CheckBox fx:id="ra0" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortA" text="RA0"
                                                               GridPane.halignment="LEFT"/>
-                                                    <CheckBox fx:id="ra1" mnemonicParsing="false" text="RA1"
+                                                    <CheckBox fx:id="ra1" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortA" text="RA1"
                                                               GridPane.columnIndex="1" GridPane.halignment="LEFT"/>
-                                                    <CheckBox fx:id="ra2" mnemonicParsing="false" text="RA2"
+                                                    <CheckBox fx:id="ra2" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortA" text="RA2"
                                                               GridPane.columnIndex="2" GridPane.halignment="LEFT"/>
-                                                    <CheckBox fx:id="ra3" mnemonicParsing="false" text="RA3"
+                                                    <CheckBox fx:id="ra3" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortA" text="RA3"
                                                               GridPane.halignment="LEFT" GridPane.rowIndex="1"/>
-                                                    <CheckBox fx:id="ra4" mnemonicParsing="false" text="RA4/T0CKI"
+                                                    <CheckBox fx:id="ra4" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortA" text="RA4/T0CKI"
                                                               GridPane.columnIndex="1" GridPane.halignment="LEFT"
                                                               GridPane.rowIndex="1"/>
                                                 </children>
@@ -361,20 +366,28 @@
                                                                     vgrow="SOMETIMES"/>
                                                 </rowConstraints>
                                                 <children>
-                                                    <CheckBox fx:id="rb0" mnemonicParsing="false" text="RB0/INT"/>
-                                                    <CheckBox fx:id="rb1" mnemonicParsing="false" text="RB1"
+                                                    <CheckBox fx:id="rb0" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortB" text="RB0/INT"/>
+                                                    <CheckBox fx:id="rb1" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortB" text="RB1"
                                                               GridPane.columnIndex="1"/>
-                                                    <CheckBox fx:id="rb2" mnemonicParsing="false" text="RB2"
+                                                    <CheckBox fx:id="rb2" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortB" text="RB2"
                                                               GridPane.columnIndex="2"/>
-                                                    <CheckBox fx:id="rb3" mnemonicParsing="false" text="RB3"
+                                                    <CheckBox fx:id="rb3" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortB" text="RB3"
                                                               GridPane.rowIndex="1"/>
-                                                    <CheckBox fx:id="rb4" mnemonicParsing="false" text="RB4"
+                                                    <CheckBox fx:id="rb4" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortB" text="RB4"
                                                               GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                                                    <CheckBox fx:id="rb5" mnemonicParsing="false" text="RB5"
+                                                    <CheckBox fx:id="rb5" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortB" text="RB5"
                                                               GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                                                    <CheckBox fx:id="rb6" mnemonicParsing="false" text="RB6"
+                                                    <CheckBox fx:id="rb6" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortB" text="RB6"
                                                               GridPane.rowIndex="2"/>
-                                                    <CheckBox fx:id="rb7" mnemonicParsing="false" text="RB7"
+                                                    <CheckBox fx:id="rb7" mnemonicParsing="false"
+                                                              onAction="#onStimulatePortB" text="RB7"
                                                               GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                                                 </children>
                                             </GridPane>
