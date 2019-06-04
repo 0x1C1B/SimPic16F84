@@ -44,8 +44,13 @@ class ByteAndControlExecutionUnit {
 
         LOGGER.debug(String.format("ADDWF: Adds content at address 0x%02X in %s with working register", address, bank));
 
+        /*
+        Arithmetic operation is processed with unsigned integers for allow
+        checking the carry flag. The byte type cast later will make it signed again.
+         */
+
         byte value = executor.ram.get(bank, address); // Fetch value from given file register
-        int result = value + executor.getWorkingRegister();
+        int result = (0xFF & value) + (0xFF & executor.getWorkingRegister());
 
         executor.checkDigitCarryFlag(0xF < (value & 0xF) + (executor.getWorkingRegister() & 0xF));
         executor.checkCarryFlag(result);
@@ -142,8 +147,13 @@ class ByteAndControlExecutionUnit {
 
         LOGGER.debug(String.format("SUBLW: Subtracts content at address 0x%02X in %s from working register", address, bank));
 
+        /*
+        Arithmetic operation is processed with unsigned integers for allow
+        checking the carry flag. The byte type cast later will make it signed again.
+         */
+
         byte value = executor.ram.get(bank, address); // Fetch value from given file register
-        int result = value - executor.getWorkingRegister();
+        int result = (0xFF & value) + (0xFF & (~executor.getWorkingRegister() + 1));
 
         executor.checkDigitCarryFlag(0xF < (value & 0xF) + ((~executor.getWorkingRegister() + 1) & 0xF));
         executor.checkCarryFlag(result);

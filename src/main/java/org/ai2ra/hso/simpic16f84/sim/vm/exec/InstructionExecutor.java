@@ -646,10 +646,12 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
-     * Utility method used for checking an overflow/underflow. If result is lower
-     * than <i>-128</i> or bigger than <i>127</i>, the carry flag is set.
+     * Utility method used for checking an overflow/underflow. If result is bigger than
+     * 0xFF an overflow is occurred and the carry flag is set. <b>Please note:</b> This
+     * kind of validation does only work for unsigned integers, this mean the result
+     * parameter has to be an unsigned integer.
      *
-     * @param result Result of the calculated expression
+     * @param result Result of the calculated expression as unsigned integer
      */
 
     void checkCarryFlag(int result) {

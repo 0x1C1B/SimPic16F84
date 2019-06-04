@@ -45,7 +45,12 @@ class LiteralExecutionUnit {
 
         executor.checkDigitCarryFlag(0xF < (instruction.getArguments()[0] & 0xF) + (executor.getWorkingRegister() & 0xF));
 
-        int result = instruction.getArguments()[0] + executor.getWorkingRegister();
+        /*
+        Arithmetic operation is processed with unsigned integers for allow
+        checking the carry flag. The byte type cast later will make it signed again.
+         */
+
+        int result = (0xFF & instruction.getArguments()[0]) + (0xFF & executor.getWorkingRegister());
 
         executor.checkCarryFlag(result);
         executor.checkZeroFlag(result);
@@ -67,7 +72,12 @@ class LiteralExecutionUnit {
 
         executor.checkDigitCarryFlag(0xF < (instruction.getArguments()[0] & 0xF) + ((~executor.getWorkingRegister() + 1) & 0xF));
 
-        int result = instruction.getArguments()[0] - executor.getWorkingRegister();
+        /*
+        Arithmetic operation is processed with unsigned integers for allow
+        checking the carry flag. The byte type cast later will make it signed again.
+         */
+
+        int result = (0xFF & instruction.getArguments()[0]) + (0xFF & (~executor.getWorkingRegister() + 1));
 
         executor.checkCarryFlag(result);
         executor.checkZeroFlag(result);
