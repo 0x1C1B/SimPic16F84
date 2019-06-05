@@ -629,6 +629,25 @@ class ByteAndControlExecutionUnit {
             executor.ram.set(bank, address, result);
         }
     }
+
+    /**
+     * Returns from a interrupt service routine to the next regular instruction.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    void executeRETFIE(Instruction instruction) {
+
+        // Disables the Global Interrupt Enable (GIE) bit before leaving the ISR
+
+        executor.ram.set(RamMemory.SFR.INTCON, (byte) (executor.ram.get(RamMemory.SFR.INTCON) | 0b1000_0000));
+
+        // Restores address of next instruction from stack memory
+
+        executor.setProgramCounter(executor.stack.pop());
+
+        LOGGER.debug(String.format("RETFIE: Return from Interrupt Service Handler to 0x%04X", executor.getProgramCounter()));
+    }
 }
 
 

@@ -333,6 +333,12 @@ public class InstructionExecutor implements ObservableExecution {
                     updateRuntimeCounter(1);
                     break;
                 }
+                case RETFIE: {
+
+                    byteAndControlExecutionUnit.executeRETFIE(instruction);
+                    updateRuntimeCounter(2);
+                    break;
+                }
 
                 // Bit operations
 
