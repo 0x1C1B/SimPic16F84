@@ -500,14 +500,22 @@ class ByteAndControlExecutionUnit {
          LOGGER.debug(String.format("RLF: The contents of the register at 0x%02X in %s are rotated one bit to the left through the Carry Flag.", address, bank));
 
          byte value = executor.ram.get(bank, address); // Fetch value from given file register
-
-         int carryFlagValue = (value & 0b1000_0000) >> 7;
+         int newCarryFlag = (value & 0b1000_0000) >> 7;
 
          value = (byte) (value & 0b0111_1111);
          value = (byte) (value << 1);
 
-         // Checking for CarryFlag Value
-         if (0x01 == carryFlagValue) {
+         if (executor.isCarryFlag()) {
+
+             value |= 0x01; // Carry flag is set value one is used as first bit
+
+         } else {
+
+             value &= (~0x01); // Carry flag isn't set value zero is used as first bit
+         }
+
+         // Apply new carry flag value
+         if (0x01 == newCarryFlag) {
 
              executor.setCarryFlag();
 
@@ -546,14 +554,21 @@ class ByteAndControlExecutionUnit {
          LOGGER.debug(String.format("RRF: The contents of the register at 0x%02X in %s are rotated one bit to the right through the Carry Flag.", address, bank));
 
          byte value = executor.ram.get(bank, address); // Fetch value from given file register
+         int newCarryFlag = value & 0b0000_0001;
 
-         int carryFlagValue = (value & 0b1000_0000) >> 7;
+         value = (byte) (value >> 1);
 
-         value = (byte) (value & 0b0111_1111);
-         value = (byte) (value << 1);
+         if (executor.isCarryFlag()) {
 
-         // Checking for CarryFlag Value
-         if (0x01 == carryFlagValue) {
+             value |= 0x01 << 7; // Carry flag is set value one is used as first bit
+
+         } else {
+
+             value &= ~(0x01 << 7); // Carry flag isn't set value zero is used as first bit
+         }
+
+         // Apply new carry flag value
+         if (0x01 == newCarryFlag) {
 
              executor.setCarryFlag();
 

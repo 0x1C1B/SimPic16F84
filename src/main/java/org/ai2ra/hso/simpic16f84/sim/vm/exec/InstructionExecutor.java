@@ -602,6 +602,17 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
+     * Determines if the carry flag is set.
+     *
+     * @return Returns true if carry flag is set, otherwise false
+     */
+
+    boolean isCarryFlag() {
+
+        return (ram.get(RamMemory.SFR.STATUS) & 0b0000_0001) != 0;
+    }
+
+    /**
      * Sets the zero flag inside of status register {@link RamMemory RAM}.
      */
 
