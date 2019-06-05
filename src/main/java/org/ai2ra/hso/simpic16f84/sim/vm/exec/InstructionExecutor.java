@@ -15,6 +15,31 @@ import java.util.concurrent.locks.ReentrantLock;
  * instructions specified with their OPC. Thereby it's the core of the execution flow
  * and controllable using the {@link InstructionExecutor#execute()} method.
  *
+ * <p>
+ *     Since latest improvements the concrete instruction implementations are outsourced
+ *     to separate ALUs/executor units. This class just redirect the execution task and
+ *     provide useful utilities for it's sub modules (executors).
+ * </p>
+ *
+ * Some internally used properties like counters are originally stored/implemented inside this
+ * class:
+ *
+ * <ul>
+ *     <li>Working Register (Accumulator)</li>
+ *     <li>Instruction Register (IR)</li>
+ *     <li>Program Counter (PC)</li>
+ *     <li>Runtime Counter (RC)</li>
+ *     <li>Frequency (Quartz Frequency)</li>
+ * </ul>
+ *
+ * For general usage this are the important methods from the outside:
+ *
+ * <pre>{@code
+ * InstructionExecutor executor = new InstructionExecutor(...);
+ * executor.execute(); // Executes next instruction
+ * executor.reset(); // Resets to power-on state
+ * }</pre>
+ *
  * @author Freddy1096
  * @author 0x1C1B
  * @see InstructionDecoder
@@ -24,6 +49,8 @@ public class InstructionExecutor implements ObservableExecution {
 
     private static final Logger LOGGER;
 
+    // Additional registers and counters
+
     /**
      * Working register used as accumulator.
      */
@@ -32,39 +59,27 @@ public class InstructionExecutor implements ObservableExecution {
     private Short instructionRegister;
     /** The instruction pointer that points to the next instruction in program memory. */
     private Integer programCounter;
-    /**
-     * Runtime counter indicates execution time.
-     */
+    /** Runtime counter indicates execution time. */
     private Double runtimeCounter;
-    /**
-     * Current quartz frequency, indirectly the execution speed
-     */
+    /** Current quartz frequency, indirectly the execution speed. */
     private Double frequency;
 
-    /*
-    Intentionally package-private to allow execution units direct access.
-     */
+    // Memory RAM + FLASH + EEPROM (intentionally package-private)
 
     private ProgramMemory<Short> programMemory;
     private EepromMemory<Byte> eeprom;
     RamMemory<Byte> ram;
     StackMemory<Integer> stack;
 
-    /**
-     * Part of ALU that is responsible for literal operations.
-     */
+    // Arithmetic and Logic Unit (ALU)
+
+    /** Part of ALU that is responsible for literal operations. */
     private LiteralExecutionUnit literalExecutionUnit;
-    /**
-     * Part of ALU that is responsible for jump operations.
-     */
+    /** Part of ALU that is responsible for jump operations. */
     private JumpExecutionUnit jumpExecutionUnit;
-    /**
-     * Part of ALU that is responsible for byte/control operations.
-     */
+    /** Part of ALU that is responsible for byte/control operations. */
     private ByteAndControlExecutionUnit byteAndControlExecutionUnit;
-    /**
-     * Part of ALU that is responsible for bit operations.
-     */
+    /** Part of ALU that is responsible for bit operations. */
     private BitExecutionUnit bitExecutionUnit;
 
     /** Used for synchronizing the execution flow. */
@@ -78,7 +93,8 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
-     * Constructs a new execution unit by injecting required memory dependencies.
+     * Constructs a new execution unit by injecting required memory dependencies. Following this,
+     * all related resources are reset to the power-on state.
      *
      * @param programMemory The program memory which contains the executable program
      * @param ram The RAM consisting out of SFR's and GPR's
@@ -88,6 +104,7 @@ public class InstructionExecutor implements ObservableExecution {
 
     public InstructionExecutor(ProgramMemory<Short> programMemory, RamMemory<Byte> ram,
                                StackMemory<Integer> stack, EepromMemory<Byte> eeprom) {
+
         this.programMemory = programMemory;
         this.ram = ram;
         this.stack = stack;
@@ -101,11 +118,7 @@ public class InstructionExecutor implements ObservableExecution {
         lock = new ReentrantLock();
         changes = new PropertyChangeSupport(this);
 
-        setInstructionRegister((short) 0x0000);
-        setProgramCounter(0x00);
-        setWorkingRegister((byte) 0x00);
-        setRuntimeCounter(0x00);
-        setFrequency(4_000_000.0 /* 4MHz */);
+        this.reset(); // Reset instruction executor to power-on state
     }
 
     /**
@@ -144,9 +157,7 @@ public class InstructionExecutor implements ObservableExecution {
 
             LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
 
-            /*
-            Setters are used to notify observers automatically.
-             */
+            // Setters are used to notify observers automatically.
 
             setInstructionRegister(programMemory.get(programCounter));
             setProgramCounter(programCounter + 1);
@@ -358,17 +369,22 @@ public class InstructionExecutor implements ObservableExecution {
 
     /**
      * Resets status of RAM and working register to the power-on state. The power-on
-     * state is defined inside of the data sheet.
+     * state is defined inside of the data sheet. Moreover additional registers and
+     * counters are reset (W, IR, PC, RC).
      */
 
     public void reset() {
 
-        LOGGER.info("Reset registers to power-on state");
+        LOGGER.info("Reset registers and memory to power-on state");
 
         setWorkingRegister((byte) 0x00);
         setProgramCounter(0x00);
         setInstructionRegister((short) 0x00);
+
+        // Initialize runtime counter
+
         setRuntimeCounter(0x00);
+        setFrequency(4_000_000.0 /* 4MHz */);
 
         // Initialize the special function registers
 
@@ -392,7 +408,7 @@ public class InstructionExecutor implements ObservableExecution {
 
     /**
      * Adds a change listener <b>only</b> for observing the executor's state. This pattern
-     * is specially intended to use for the working register.
+     * is specially intended to use for the additional registers and counters.
      *
      * @param listener The listener that should be registered
      */
@@ -414,8 +430,6 @@ public class InstructionExecutor implements ObservableExecution {
 
         changes.removePropertyChangeListener(listener);
     }
-
-    // Utility methods
 
     /**
      * Used for changing content of working register. Moreover this method allows
