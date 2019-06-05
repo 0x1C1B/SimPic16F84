@@ -44,8 +44,13 @@ class ByteAndControlExecutionUnit {
 
         LOGGER.debug(String.format("ADDWF: Adds content at address 0x%02X in %s with working register", address, bank));
 
+        /*
+        Arithmetic operation is processed with unsigned integers for allow
+        checking the carry flag. The byte type cast later will make it signed again.
+         */
+
         byte value = executor.ram.get(bank, address); // Fetch value from given file register
-        int result = value + executor.getWorkingRegister();
+        int result = (0xFF & value) + (0xFF & executor.getWorkingRegister());
 
         executor.checkDigitCarryFlag(0xF < (value & 0xF) + (executor.getWorkingRegister() & 0xF));
         executor.checkCarryFlag(result);
@@ -142,8 +147,13 @@ class ByteAndControlExecutionUnit {
 
         LOGGER.debug(String.format("SUBLW: Subtracts content at address 0x%02X in %s from working register", address, bank));
 
+        /*
+        Arithmetic operation is processed with unsigned integers for allow
+        checking the carry flag. The byte type cast later will make it signed again.
+         */
+
         byte value = executor.ram.get(bank, address); // Fetch value from given file register
-        int result = value - executor.getWorkingRegister();
+        int result = (0xFF & value) + (0xFF & (~executor.getWorkingRegister() + 1));
 
         executor.checkDigitCarryFlag(0xF < (value & 0xF) + ((~executor.getWorkingRegister() + 1) & 0xF));
         executor.checkCarryFlag(result);
@@ -371,21 +381,19 @@ class ByteAndControlExecutionUnit {
         LOGGER.debug(String.format("IORWF: Inclusive disjunction of content at address 0x%02X in %s with working register", address, bank));
 
         byte value = executor.ram.get(bank, address); // Fetch value from given file register
-        byte firstBits = (byte) ((value & 0x0F) << 4);
-        byte lastBits = (byte) ((value & 0xF0) >> 4);
-        int result = firstBits + lastBits;
 
-        executor.checkZeroFlag(result);
+
+        executor.checkZeroFlag(executor.getWorkingRegister() | value);
 
         // Check for selected destination
 
         if (0 == instruction.getArguments()[0]) {
 
-            executor.setWorkingRegister((byte) result);
+            executor.setWorkingRegister((byte) (executor.getWorkingRegister() | value));
 
         } else {
 
-            executor.ram.set(bank, address, (byte) result);
+            executor.ram.set(bank, address, (byte) (executor.getWorkingRegister() | value));
         }
     }
 
@@ -492,14 +500,22 @@ class ByteAndControlExecutionUnit {
          LOGGER.debug(String.format("RLF: The contents of the register at 0x%02X in %s are rotated one bit to the left through the Carry Flag.", address, bank));
 
          byte value = executor.ram.get(bank, address); // Fetch value from given file register
-
-         int carryFlagValue = (value & 0b1000_0000) >> 7;
+         int newCarryFlag = (value & 0b1000_0000) >> 7;
 
          value = (byte) (value & 0b0111_1111);
          value = (byte) (value << 1);
 
-         // Checking for CarryFlag Value
-         if (0x01 == carryFlagValue) {
+         if (executor.isCarryFlag()) {
+
+             value |= 0x01; // Carry flag is set value one is used as first bit
+
+         } else {
+
+             value &= (~0x01); // Carry flag isn't set value zero is used as first bit
+         }
+
+         // Apply new carry flag value
+         if (0x01 == newCarryFlag) {
 
              executor.setCarryFlag();
 
@@ -538,14 +554,21 @@ class ByteAndControlExecutionUnit {
          LOGGER.debug(String.format("RRF: The contents of the register at 0x%02X in %s are rotated one bit to the right through the Carry Flag.", address, bank));
 
          byte value = executor.ram.get(bank, address); // Fetch value from given file register
+         int newCarryFlag = value & 0b0000_0001;
 
-         int carryFlagValue = (value & 0b1000_0000) >> 7;
+         value = (byte) (value >> 1);
 
-         value = (byte) (value & 0b0111_1111);
-         value = (byte) (value << 1);
+         if (executor.isCarryFlag()) {
 
-         // Checking for CarryFlag Value
-         if (0x01 == carryFlagValue) {
+             value |= 0x01 << 7; // Carry flag is set value one is used as first bit
+
+         } else {
+
+             value &= ~(0x01 << 7); // Carry flag isn't set value zero is used as first bit
+         }
+
+         // Apply new carry flag value
+         if (0x01 == newCarryFlag) {
 
              executor.setCarryFlag();
 
@@ -574,6 +597,37 @@ class ByteAndControlExecutionUnit {
     void executeNOP() {
 
         LOGGER.debug("NOP: No operation was executed"); // No operation is executed
+    }
+
+    /**
+     * Exchanges the upper and lower nibbles of the selected file register.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments
+     */
+
+    void executeSWAPF(Instruction instruction) {
+
+        int address = executor.getFileAddress(instruction);
+        RamMemory.Bank bank = executor.getSelectedBank(instruction);
+
+        LOGGER.debug(String.format("SWAPF: Exchanges the upper and lower nibbles of register at 0x%02X in %s.", address, bank));
+
+        byte value = executor.ram.get(bank, address); // Fetch value from given file register
+
+        byte lowerNibbles = (byte) ((value & 0x0F) << 4);
+        byte upperNibbles = (byte) ((value & 0xF0) >> 4);
+        byte result = (byte) (lowerNibbles | upperNibbles);
+
+        // Check for selected destination
+
+        if (0 == instruction.getArguments()[0]) {
+
+            executor.setWorkingRegister(result);
+
+        } else {
+
+            executor.ram.set(bank, address, result);
+        }
     }
 }
 

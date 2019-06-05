@@ -15,14 +15,41 @@ import java.util.concurrent.locks.ReentrantLock;
  * instructions specified with their OPC. Thereby it's the core of the execution flow
  * and controllable using the {@link InstructionExecutor#execute()} method.
  *
+ * <p>
+ *     Since latest improvements the concrete instruction implementations are outsourced
+ *     to separate ALUs/executor units. This class just redirect the execution task and
+ *     provide useful utilities for it's sub modules (executors).
+ * </p>
+ *
+ * Some internally used properties like counters are originally stored/implemented inside this
+ * class:
+ *
+ * <ul>
+ *     <li>Working Register (Accumulator)</li>
+ *     <li>Instruction Register (IR)</li>
+ *     <li>Program Counter (PC)</li>
+ *     <li>Runtime Counter (RC)</li>
+ *     <li>Frequency (Quartz Frequency)</li>
+ * </ul>
+ *
+ * For general usage this are the important methods from the outside:
+ *
+ * <pre>{@code
+ * InstructionExecutor executor = new InstructionExecutor(...);
+ * executor.execute(); // Executes next instruction
+ * executor.reset(); // Resets to power-on state
+ * }</pre>
+ *
  * @author Freddy1096
  * @author 0x1C1B
  * @see InstructionDecoder
  */
 
-public final class InstructionExecutor implements ObservableExecution {
+public class InstructionExecutor implements ObservableExecution {
 
     private static final Logger LOGGER;
+
+    // Additional registers and counters
 
     /**
      * Working register used as accumulator.
@@ -32,39 +59,27 @@ public final class InstructionExecutor implements ObservableExecution {
     private Short instructionRegister;
     /** The instruction pointer that points to the next instruction in program memory. */
     private Integer programCounter;
-    /**
-     * Runtime counter indicates execution time.
-     */
+    /** Runtime counter indicates execution time. */
     private Double runtimeCounter;
-    /**
-     * Current quartz frequency, indirectly the execution speed
-     */
+    /** Current quartz frequency, indirectly the execution speed. */
     private Double frequency;
 
-    /*
-    Intentionally package-private to allow execution units direct access.
-     */
+    // Memory RAM + FLASH + EEPROM (intentionally package-private)
 
-    ProgramMemory<Short> programMemory;
+    private ProgramMemory<Short> programMemory;
+    private EepromMemory<Byte> eeprom;
     RamMemory<Byte> ram;
     StackMemory<Integer> stack;
-    EepromMemory<Byte> eeprom;
 
-    /**
-     * Part of ALU that is responsible for literal operations.
-     */
+    // Arithmetic and Logic Unit (ALU)
+
+    /** Part of ALU that is responsible for literal operations. */
     private LiteralExecutionUnit literalExecutionUnit;
-    /**
-     * Part of ALU that is responsible for jump operations.
-     */
+    /** Part of ALU that is responsible for jump operations. */
     private JumpExecutionUnit jumpExecutionUnit;
-    /**
-     * Part of ALU that is responsible for byte/control operations.
-     */
+    /** Part of ALU that is responsible for byte/control operations. */
     private ByteAndControlExecutionUnit byteAndControlExecutionUnit;
-    /**
-     * Part of ALU that is responsible for bit operations.
-     */
+    /** Part of ALU that is responsible for bit operations. */
     private BitExecutionUnit bitExecutionUnit;
 
     /** Used for synchronizing the execution flow. */
@@ -78,7 +93,8 @@ public final class InstructionExecutor implements ObservableExecution {
     }
 
     /**
-     * Constructs a new execution unit by injecting required memory dependencies.
+     * Constructs a new execution unit by injecting required memory dependencies. Following this,
+     * all related resources are reset to the power-on state.
      *
      * @param programMemory The program memory which contains the executable program
      * @param ram The RAM consisting out of SFR's and GPR's
@@ -88,6 +104,7 @@ public final class InstructionExecutor implements ObservableExecution {
 
     public InstructionExecutor(ProgramMemory<Short> programMemory, RamMemory<Byte> ram,
                                StackMemory<Integer> stack, EepromMemory<Byte> eeprom) {
+
         this.programMemory = programMemory;
         this.ram = ram;
         this.stack = stack;
@@ -101,11 +118,7 @@ public final class InstructionExecutor implements ObservableExecution {
         lock = new ReentrantLock();
         changes = new PropertyChangeSupport(this);
 
-        setInstructionRegister((short) 0x0000);
-        setProgramCounter(0x00);
-        setWorkingRegister((byte) 0x00);
-        setRuntimeCounter(0x00);
-        setFrequency(4_000_000.0 /* 4MHz */);
+        this.reset(); // Reset instruction executor to power-on state
     }
 
     /**
@@ -114,6 +127,9 @@ public final class InstructionExecutor implements ObservableExecution {
      * execution cycle includes the following:
      *
      * <ol>
+     *     <li>
+     *         Check for possible occurred interrupts. If occurred the ISR is called first.
+     *     </li>
      *     <li>
      *         Load next instruction, indicated by the {@link InstructionExecutor#programCounter}
      *         into {@link InstructionExecutor#instructionRegister}
@@ -142,11 +158,11 @@ public final class InstructionExecutor implements ObservableExecution {
 
         try {
 
+            handleInterrupts(); // Check and handle occurred interrupts
+
             LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
 
-            /*
-            Setters are used to notify observers automatically.
-             */
+            // Setters are used to notify observers automatically.
 
             setInstructionRegister(programMemory.get(programCounter));
             setProgramCounter(programCounter + 1);
@@ -327,6 +343,12 @@ public final class InstructionExecutor implements ObservableExecution {
                     updateRuntimeCounter(1);
                     break;
                 }
+                case SWAPF: {
+
+                    byteAndControlExecutionUnit.executeSWAPF(instruction);
+                    updateRuntimeCounter(1);
+                    break;
+                }
                 default: {
 
                     throw new IllegalStateException("Unsupported instruction code");
@@ -346,22 +368,28 @@ public final class InstructionExecutor implements ObservableExecution {
             lock.unlock();
         }
 
+        updateTimer();
         return programCounter;
     }
 
     /**
      * Resets status of RAM and working register to the power-on state. The power-on
-     * state is defined inside of the data sheet.
+     * state is defined inside of the data sheet. Moreover additional registers and
+     * counters are reset (W, IR, PC, RC).
      */
 
     public void reset() {
 
-        LOGGER.info("Reset registers to power-on state");
+        LOGGER.info("Reset registers and memory to power-on state");
 
         setWorkingRegister((byte) 0x00);
         setProgramCounter(0x00);
         setInstructionRegister((short) 0x00);
+
+        // Initialize runtime counter
+
         setRuntimeCounter(0x00);
+        setFrequency(4_000_000.0 /* 4MHz */);
 
         // Initialize the special function registers
 
@@ -385,7 +413,7 @@ public final class InstructionExecutor implements ObservableExecution {
 
     /**
      * Adds a change listener <b>only</b> for observing the executor's state. This pattern
-     * is specially intended to use for the working register.
+     * is specially intended to use for the additional registers and counters.
      *
      * @param listener The listener that should be registered
      */
@@ -407,8 +435,6 @@ public final class InstructionExecutor implements ObservableExecution {
 
         changes.removePropertyChangeListener(listener);
     }
-
-    // Utility methods
 
     /**
      * Used for changing content of working register. Moreover this method allows
@@ -441,7 +467,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * @param counter The given count
      */
 
-    void setRuntimeCounter(double counter) {
+    private void setRuntimeCounter(double counter) {
 
         changes.firePropertyChange("runtimeCounter", runtimeCounter, counter);
         runtimeCounter = counter;
@@ -453,7 +479,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * @param cycles The number of cycles that were used for executing the last instruction
      */
 
-    void updateRuntimeCounter(int cycles) {
+    private void updateRuntimeCounter(int cycles) {
 
         double timePerCycle = 4000000.0 / frequency;
         double oldRuntimeCounter = runtimeCounter;
@@ -559,6 +585,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * Sets the digit carry flag inside of status register {@link RamMemory RAM}.
      */
 
+    @SuppressWarnings("WeakerAccess")
     void setDigitCarryFlag() {
 
         LOGGER.info("Set 'Digit Carry' (DC) flag inside of STATUS register");
@@ -569,6 +596,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * Clears the digit carry flag inside of status register {@link RamMemory RAM}.
      */
 
+    @SuppressWarnings("WeakerAccess")
     void clearDigitCarryFlag() {
 
         LOGGER.info("Clear 'Digit Carry' (DC) flag inside of STATUS register");
@@ -596,6 +624,17 @@ public final class InstructionExecutor implements ObservableExecution {
     }
 
     /**
+     * Determines if the carry flag is set.
+     *
+     * @return Returns true if carry flag is set, otherwise false
+     */
+
+    boolean isCarryFlag() {
+
+        return (ram.get(RamMemory.SFR.STATUS) & 0b0000_0001) != 0;
+    }
+
+    /**
      * Sets the zero flag inside of status register {@link RamMemory RAM}.
      */
 
@@ -609,6 +648,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * Clears the zero flag inside of status register {@link RamMemory RAM}.
      */
 
+    @SuppressWarnings("WeakerAccess")
     void clearZeroFlag() {
 
         LOGGER.info("Clear 'Zero' (Z) flag inside of STATUS register");
@@ -622,7 +662,7 @@ public final class InstructionExecutor implements ObservableExecution {
      * @return Returns 0 if first bank is selected, otherwise a none 0 value
      */
 
-    int getRP0Bit() {
+    private int getRP0Bit() {
 
         return (ram.get(RamMemory.SFR.STATUS) & 0b0010_0000) >> 5;
     }
@@ -634,21 +674,23 @@ public final class InstructionExecutor implements ObservableExecution {
      * @return Returns 0 if first bank is selected, otherwise a none 0 value
      */
 
-    int getIRPBit() {
+    private int getIRPBit() {
 
         return (ram.get(RamMemory.SFR.STATUS) & 0b1000_0000) >> 7;
     }
 
     /**
-     * Utility method used for checking an overflow/underflow. If result is lower
-     * than <i>-128</i> or bigger than <i>127</i>, the carry flag is set.
+     * Utility method used for checking an overflow/underflow. If result is bigger than
+     * 0xFF an overflow is occurred and the carry flag is set. <b>Please note:</b> This
+     * kind of validation does only work for unsigned integers, this mean the result
+     * parameter has to be an unsigned integer.
      *
-     * @param result Result of the calculated expression
+     * @param result Result of the calculated expression as unsigned integer
      */
 
     void checkCarryFlag(int result) {
 
-        if (Byte.MIN_VALUE > result || Byte.MAX_VALUE < result) {
+        if (0xFF < result) {
 
             setCarryFlag();
 
@@ -697,13 +739,13 @@ public final class InstructionExecutor implements ObservableExecution {
     }
 
     /**
-     * Determines if indirect addressingg is used or not.
+     * Internal helper method that determines if indirect addressing is used or not.
      *
      * @param instruction The actual instruction
      * @return Returns true if indirect addressing is used, otherwise false
      */
 
-    boolean usesIndirectAddressing(Instruction instruction) {
+    private boolean usesIndirectAddressing(Instruction instruction) {
 
         /*
         Two kind of instructions with file address exists, one with additional destination
@@ -787,5 +829,78 @@ public final class InstructionExecutor implements ObservableExecution {
 
             return 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
         }
+    }
+
+    /**
+     * Update timer by incrementing it. Moreover it checks for timer overflows, if
+     * a overflow occurred, the interrupt flag inside of the INTCON register is set.
+     */
+
+    private void updateTimer() {
+
+        // Check for timer overflow
+
+        if (0xFF == (0xFF & ram.get(RamMemory.SFR.TMR0))) {
+
+            // Indicate interrupt by setting T0IF bit inside of INTCON register
+
+            ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0100));
+        }
+
+        ram.set(RamMemory.SFR.TMR0, (byte) (ram.get(RamMemory.SFR.TMR0) + 1));
+    }
+
+    /**
+     * Check and handle occurred interrupts. The default handling behaviour is calling the
+     * Interrupt Service Routine. <b>Please note:</b> Because there's no default ISR, it's
+     * assumed that the loaded program (LST file) contains an ISR at address <i>0x0004</i>.
+     */
+
+    private void handleInterrupts() {
+
+        if (checkTMR0Interrupt()) {
+
+            callISR(0x0004); // Calls ISR at address 0x0004
+        }
+    }
+
+    /**
+     * Utility method for calling the Interrupt Service Routine (ISR). This is a helper method
+     * for the interrupt handling cycle. In addition this methods set the
+     * Global Interrupt Enable (GIE) already.
+     *
+     * @param address Address of the Interrupt Service Routine (ISR)
+     */
+
+    private void callISR(int address) {
+
+        // Enable the Global Interrupt Enable (GIE) bit before calling the ISR
+
+        ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) & 0b0111_1111));
+
+        stack.push(getProgramCounter()); // Save address of next instruction to stack memory
+
+        /*
+        Consists out of the opcode/address given as argument and the upper bits
+        (bit 3 + 4) of PCLATH register.
+         */
+
+        int pclathBits = (ram.get(RamMemory.SFR.PCLATH) & 0b0001_1000) << 8;
+
+        address &= 0b00111_1111_1111; // Clear upper two bits
+        address |= pclathBits; // Adding PCLATH
+
+        setProgramCounter(address);
+    }
+
+    /**
+     * Determines if timer (TMR0) interrupt occurred.
+     *
+     * @return Returns true if TMR0 interrupt occurred otherwise false
+     */
+
+    private boolean checkTMR0Interrupt() {
+
+        return (ram.get(RamMemory.SFR.INTCON) & 0b1010_0100) == 0xA4;
     }
 }

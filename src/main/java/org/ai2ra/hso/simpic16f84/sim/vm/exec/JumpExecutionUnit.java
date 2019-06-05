@@ -53,9 +53,11 @@ class JumpExecutionUnit {
 
         int pclathBits = (executor.ram.get(RamMemory.SFR.PCLATH) & 0b0001_1000) << 8;
 
-        executor.setProgramCounter(instruction.getArguments()[0]); // Load jump address
-        executor.setProgramCounter(executor.getProgramCounter() & 0b00111_1111_1111); // Clear upper two bits
-        executor.setProgramCounter(executor.getProgramCounter() | pclathBits); // Adding PCLATH
+        int address = instruction.getArguments()[0]; // Load jump address
+        address &= 0b00111_1111_1111; // Clear upper two bits
+        address |= pclathBits; // Adding PCLATH
+
+        executor.setProgramCounter(address);
 
         LOGGER.debug(String.format("CALL: Stores return address 0x%04X and calls subroutine at 0x%04X", executor.stack.top(), executor.getProgramCounter()));
     }
@@ -75,9 +77,11 @@ class JumpExecutionUnit {
 
         int pclathBits = (executor.ram.get(RamMemory.SFR.PCLATH) & 0b0001_1000) << 8;
 
-        executor.setProgramCounter(instruction.getArguments()[0]); // Load jump address
-        executor.setProgramCounter(executor.getProgramCounter() & 0b00111_1111_1111); // Clear upper two bits
-        executor.setProgramCounter(executor.getProgramCounter() | pclathBits); // Adding PCLATH
+        int address = instruction.getArguments()[0]; // Load jump address
+        address &= 0b00111_1111_1111; // Clear upper two bits
+        address |= pclathBits; // Adding PCLATH
+
+        executor.setProgramCounter(address);
 
         LOGGER.debug(String.format("GOTO: Goes to instruction at 0x%04X", executor.getProgramCounter()));
     }

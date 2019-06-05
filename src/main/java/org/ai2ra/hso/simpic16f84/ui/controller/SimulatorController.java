@@ -49,6 +49,7 @@ public class SimulatorController implements Initializable {
     @FXML private AnchorPane contentPane;
     @FXML private TextArea logViewer;
     @FXML private ToggleGroup logLevel;
+    @FXML private Label lstFileName;
 
     private LstViewer lstViewer;
 
@@ -428,6 +429,7 @@ public class SimulatorController implements Initializable {
 
                 // Load lst file to simulator
                 simulator.load(lstReaderService.getFile());
+                lstFileName.setText(lstReaderService.getFile().getName());
 
             } catch (Exception exc) {
 
