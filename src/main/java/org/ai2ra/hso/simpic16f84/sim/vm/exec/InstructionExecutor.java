@@ -45,10 +45,10 @@ public class InstructionExecutor implements ObservableExecution {
     Intentionally package-private to allow execution units direct access.
      */
 
-    ProgramMemory<Short> programMemory;
+    private ProgramMemory<Short> programMemory;
+    private EepromMemory<Byte> eeprom;
     RamMemory<Byte> ram;
     StackMemory<Integer> stack;
-    EepromMemory<Byte> eeprom;
 
     /**
      * Part of ALU that is responsible for literal operations.
@@ -448,7 +448,7 @@ public class InstructionExecutor implements ObservableExecution {
      * @param counter The given count
      */
 
-    void setRuntimeCounter(double counter) {
+    private void setRuntimeCounter(double counter) {
 
         changes.firePropertyChange("runtimeCounter", runtimeCounter, counter);
         runtimeCounter = counter;
@@ -460,7 +460,7 @@ public class InstructionExecutor implements ObservableExecution {
      * @param cycles The number of cycles that were used for executing the last instruction
      */
 
-    void updateRuntimeCounter(int cycles) {
+    private void updateRuntimeCounter(int cycles) {
 
         double timePerCycle = 4000000.0 / frequency;
         double oldRuntimeCounter = runtimeCounter;
@@ -566,6 +566,7 @@ public class InstructionExecutor implements ObservableExecution {
      * Sets the digit carry flag inside of status register {@link RamMemory RAM}.
      */
 
+    @SuppressWarnings("WeakerAccess")
     void setDigitCarryFlag() {
 
         LOGGER.info("Set 'Digit Carry' (DC) flag inside of STATUS register");
@@ -576,6 +577,7 @@ public class InstructionExecutor implements ObservableExecution {
      * Clears the digit carry flag inside of status register {@link RamMemory RAM}.
      */
 
+    @SuppressWarnings("WeakerAccess")
     void clearDigitCarryFlag() {
 
         LOGGER.info("Clear 'Digit Carry' (DC) flag inside of STATUS register");
@@ -627,6 +629,7 @@ public class InstructionExecutor implements ObservableExecution {
      * Clears the zero flag inside of status register {@link RamMemory RAM}.
      */
 
+    @SuppressWarnings("WeakerAccess")
     void clearZeroFlag() {
 
         LOGGER.info("Clear 'Zero' (Z) flag inside of STATUS register");
@@ -640,7 +643,7 @@ public class InstructionExecutor implements ObservableExecution {
      * @return Returns 0 if first bank is selected, otherwise a none 0 value
      */
 
-    int getRP0Bit() {
+    private int getRP0Bit() {
 
         return (ram.get(RamMemory.SFR.STATUS) & 0b0010_0000) >> 5;
     }
@@ -652,7 +655,7 @@ public class InstructionExecutor implements ObservableExecution {
      * @return Returns 0 if first bank is selected, otherwise a none 0 value
      */
 
-    int getIRPBit() {
+    private int getIRPBit() {
 
         return (ram.get(RamMemory.SFR.STATUS) & 0b1000_0000) >> 7;
     }
@@ -717,13 +720,13 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
-     * Determines if indirect addressingg is used or not.
+     * Internal helper method that determines if indirect addressing is used or not.
      *
      * @param instruction The actual instruction
      * @return Returns true if indirect addressing is used, otherwise false
      */
 
-    boolean usesIndirectAddressing(Instruction instruction) {
+    private boolean usesIndirectAddressing(Instruction instruction) {
 
         /*
         Two kind of instructions with file address exists, one with additional destination
@@ -809,13 +812,18 @@ public class InstructionExecutor implements ObservableExecution {
         }
     }
 
-    void updateTimer() {
+    /**
+     * Update timer by incrementing it. Moreover it checks for timer overflows, if
+     * a overflow occurred, the interrupt flag inside of the INTCON register is set.
+     */
+
+    private void updateTimer() {
 
         // Check for timer overflow
 
         if (0xFF == (0xFF & ram.get(RamMemory.SFR.TMR0))) {
 
-            // Throw interrupt by setting T0IF bit inside of INTCON register
+            // Indicate interrupt by setting T0IF bit inside of INTCON register
 
             ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0100));
         }
