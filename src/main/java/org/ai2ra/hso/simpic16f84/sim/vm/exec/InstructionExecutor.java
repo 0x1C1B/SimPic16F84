@@ -348,6 +348,18 @@ public class InstructionExecutor implements ObservableExecution {
                     updateRuntimeCounter(1);
                     break;
                 }
+                case BTFSC: {
+
+                    bitExecutionUnit.executeBTFSC(instruction);
+                    updateRuntimeCounter(2);
+                    break;
+                }
+                case BTFSS: {
+
+                    bitExecutionUnit.executeBTFSS(instruction);
+                    updateRuntimeCounter(2);
+                    break;
+                }
                 default: {
 
                     throw new IllegalStateException("Unsupported instruction code");
