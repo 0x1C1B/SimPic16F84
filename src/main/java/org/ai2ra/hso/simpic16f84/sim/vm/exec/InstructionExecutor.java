@@ -118,7 +118,10 @@ public class InstructionExecutor implements ObservableExecution {
         lock = new ReentrantLock();
         changes = new PropertyChangeSupport(this);
 
-        this.reset(); // Reset instruction executor to power-on state
+        // Initialize counters already
+
+        this.frequency = 4_000_000.0; // 4MHz
+        this.runtimeCounter = 0.0;
     }
 
     /**
@@ -347,6 +350,39 @@ public class InstructionExecutor implements ObservableExecution {
 
                     byteAndControlExecutionUnit.executeSWAPF(instruction);
                     updateRuntimeCounter(1);
+                    break;
+                }
+                case RETFIE: {
+
+                    byteAndControlExecutionUnit.executeRETFIE(instruction);
+                    updateRuntimeCounter(2);
+                    break;
+                }
+
+                // Bit operations
+
+                case BCF: {
+
+                    bitExecutionUnit.executeBCF(instruction);
+                    updateRuntimeCounter(1);
+                    break;
+                }
+                case BSF: {
+
+                    bitExecutionUnit.executeBSF(instruction);
+                    updateRuntimeCounter(1);
+                    break;
+                }
+                case BTFSC: {
+
+                    bitExecutionUnit.executeBTFSC(instruction);
+                    updateRuntimeCounter(2);
+                    break;
+                }
+                case BTFSS: {
+
+                    bitExecutionUnit.executeBTFSS(instruction);
+                    updateRuntimeCounter(2);
                     break;
                 }
                 default: {
