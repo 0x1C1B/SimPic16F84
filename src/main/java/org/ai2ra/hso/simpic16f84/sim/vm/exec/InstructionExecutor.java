@@ -128,6 +128,9 @@ public class InstructionExecutor implements ObservableExecution {
      *
      * <ol>
      *     <li>
+     *         Check for possible occurred interrupts. If occurred the ISR is called first.
+     *     </li>
+     *     <li>
      *         Load next instruction, indicated by the {@link InstructionExecutor#programCounter}
      *         into {@link InstructionExecutor#instructionRegister}
      *     </li>
@@ -154,6 +157,8 @@ public class InstructionExecutor implements ObservableExecution {
         lock.lock();
 
         try {
+
+            handleInterrupts(); // Check and handle occurred interrupts
 
             LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
 
@@ -843,5 +848,59 @@ public class InstructionExecutor implements ObservableExecution {
         }
 
         ram.set(RamMemory.SFR.TMR0, (byte) (ram.get(RamMemory.SFR.TMR0) + 1));
+    }
+
+    /**
+     * Check and handle occurred interrupts. The default handling behaviour is calling the
+     * Interrupt Service Routine. <b>Please note:</b> Because there's no default ISR, it's
+     * assumed that the loaded program (LST file) contains an ISR at address <i>0x0004</i>.
+     */
+
+    private void handleInterrupts() {
+
+        if (checkTMR0Interrupt()) {
+
+            callISR(0x0004); // Calls ISR at address 0x0004
+        }
+    }
+
+    /**
+     * Utility method for calling the Interrupt Service Routine (ISR). This is a helper method
+     * for the interrupt handling cycle. In addition this methods set the
+     * Global Interrupt Enable (GIE) already.
+     *
+     * @param address Address of the Interrupt Service Routine (ISR)
+     */
+
+    private void callISR(int address) {
+
+        // Enable the Global Interrupt Enable (GIE) bit before calling the ISR
+
+        ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) & 0b0111_1111));
+
+        stack.push(getProgramCounter()); // Save address of next instruction to stack memory
+
+        /*
+        Consists out of the opcode/address given as argument and the upper bits
+        (bit 3 + 4) of PCLATH register.
+         */
+
+        int pclathBits = (ram.get(RamMemory.SFR.PCLATH) & 0b0001_1000) << 8;
+
+        address &= 0b00111_1111_1111; // Clear upper two bits
+        address |= pclathBits; // Adding PCLATH
+
+        setProgramCounter(address);
+    }
+
+    /**
+     * Determines if timer (TMR0) interrupt occurred.
+     *
+     * @return Returns true if TMR0 interrupt occurred otherwise false
+     */
+
+    private boolean checkTMR0Interrupt() {
+
+        return (ram.get(RamMemory.SFR.INTCON) & 0b1010_0100) == 0xA4;
     }
 }
