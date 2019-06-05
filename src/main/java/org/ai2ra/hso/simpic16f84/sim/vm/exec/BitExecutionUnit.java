@@ -31,4 +31,46 @@ class BitExecutionUnit
 
         this.executor = executor;
     }
+
+    /**
+     * Clears the selected bit inside of a filer register.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments.
+     */
+
+    void executeBCF(Instruction instruction) {
+
+        int address = executor.getFileAddress(instruction);
+        RamMemory.Bank bank = executor.getSelectedBank(instruction);
+
+        LOGGER.debug(String.format("BCF: Clears bit %d of value at address 0x%02X in %s", instruction.getArguments()[0], address, bank));
+
+        byte value = executor.ram.get(bank, address); // Fetch value from given file register
+        byte mask = (byte) (0x01 << instruction.getArguments()[0]);
+
+        value = (byte) (value & (~mask)); // Clear bit using the mask
+
+        executor.ram.set(bank, address, value);
+    }
+
+    /**
+     * Sets the selected bit inside of a filer register.
+     *
+     * @param instruction Instruction consisting out of OPC and arguments.
+     */
+
+    void executeBSF(Instruction instruction) {
+
+        int address = executor.getFileAddress(instruction);
+        RamMemory.Bank bank = executor.getSelectedBank(instruction);
+
+        LOGGER.debug(String.format("BSF: Sets bit %d of value at address 0x%02X in %s", instruction.getArguments()[0], address, bank));
+
+        byte value = executor.ram.get(bank, address); // Fetch value from given file register
+        byte mask = (byte) (0x01 << instruction.getArguments()[0]);
+
+        value = (byte) (value | mask); // Sets bit using the mask
+
+        executor.ram.set(bank, address, value);
+    }
 }
