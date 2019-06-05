@@ -118,7 +118,10 @@ public class InstructionExecutor implements ObservableExecution {
         lock = new ReentrantLock();
         changes = new PropertyChangeSupport(this);
 
-        this.reset(); // Reset instruction executor to power-on state
+        // Initialize counters already
+
+        this.frequency = 4_000_000.0; // 4MHz
+        this.runtimeCounter = 0.0;
     }
 
     /**
