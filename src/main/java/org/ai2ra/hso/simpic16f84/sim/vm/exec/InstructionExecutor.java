@@ -352,6 +352,7 @@ public class InstructionExecutor implements ObservableExecution {
             lock.unlock();
         }
 
+        updateTimer();
         return programCounter;
     }
 
@@ -806,5 +807,19 @@ public class InstructionExecutor implements ObservableExecution {
 
             return 0 == getRP0Bit() ? RamMemory.Bank.BANK_0 : RamMemory.Bank.BANK_1;
         }
+    }
+
+    void updateTimer() {
+
+        // Check for timer overflow
+
+        if (0xFF == (0xFF & ram.get(RamMemory.SFR.TMR0))) {
+
+            // Throw interrupt by setting T0IF bit inside of INTCON register
+
+            ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0100));
+        }
+
+        ram.set(RamMemory.SFR.TMR0, (byte) (ram.get(RamMemory.SFR.TMR0) + 1));
     }
 }
