@@ -894,7 +894,7 @@ public class InstructionExecutor implements ObservableExecution {
 
     private void handleInterrupts() {
 
-        if (checkTMR0Interrupt()) {
+        if (checkTMR0Interrupt() || checkRB0Interrupt()) {
 
             callISR(0x0004); // Calls ISR at address 0x0004
         }
@@ -938,5 +938,10 @@ public class InstructionExecutor implements ObservableExecution {
     private boolean checkTMR0Interrupt() {
 
         return (ram.get(RamMemory.SFR.INTCON) & 0b1010_0100) == 0xA4;
+    }
+
+    private boolean checkRB0Interrupt() {
+
+        return (ram.get(RamMemory.SFR.INTCON) & 0b1001_0010) == 0x92;
     }
 }
