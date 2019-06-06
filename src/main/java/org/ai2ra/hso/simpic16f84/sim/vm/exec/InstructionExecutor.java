@@ -868,6 +868,20 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
+     * Checks if the 0 Bit of EECON1 is set.
+     * Returns true if it is and false if it isn't.
+     * @return if the RD Bit of EECON1 is set or not.
+     */
+    boolean checkForRDbit() {
+
+        byte register = ram.get(RamMemory.SFR.EECON1);
+
+        //Checking if the 0 Bit of EECON 1 is set or not.
+		  return (register & 0b0000_0001) == 0b0000_0001;
+    }
+
+
+    /**
      * Update timer by incrementing it. Moreover it checks for timer overflows, if
      * a overflow occurred, the interrupt flag inside of the INTCON register is set.
      */
