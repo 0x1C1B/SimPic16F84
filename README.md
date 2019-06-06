@@ -19,7 +19,9 @@ The SimPic16F84 project is being developed as part of a practical course in Appl
 This means the simlator will be able to interpret the basic instruction set and to simulate the OPC execution. Due to the fact that
 this is a software simulation and to keep the facts simple, however compliance with CPU cycles and real time execution is waived.
 
-![SimPic16F84 Screendump](https://raw.githubusercontent.com/0x1C1B/SimPic16F84/master/assets/screendump.PNG)
+| ![SimPic16F84 Screendump](https://raw.githubusercontent.com/0x1C1B/SimPic16F84/master/assets/screendump.PNG?token=AHWQOUNEL4RXTMVLKLSKC2C47EKWS) |
+|:--:| 
+| *Preview image of Pic16F84 v0.0.1-alpha* |
 
 The following features are partially or fully supported by the latest version of this simulator:
 
