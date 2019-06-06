@@ -351,6 +351,11 @@ public class Pic16F84VM {
 
         if (0x01 == (0x01 & (ram.get(RamMemory.SFR.TRISB) >> pin))) {
 
+            if (0x00 == pin) {
+
+                triggerRP0Interrupt(ram.get(RamMemory.SFR.PORTB) & (0x01 << pin), isSet ? 1 : 0);
+            }
+
             if (isSet) {
 
                 ram.set(RamMemory.SFR.PORTB, (byte) (ram.get(RamMemory.SFR.PORTB) | (0x01 << pin)));
@@ -366,5 +371,35 @@ public class Pic16F84VM {
         }
 
         LOGGER.debug(String.format("Sets pin %d of Port B to %s", pin, isSet ? "HIGH" : "LOW"));
+    }
+
+    /**
+     * Triggers an interrupt for RP0 pin if edge changed. If rising all falling edge is used
+     * depended to the OPTION register.
+     *
+     * @param oldValue Old RB0 bit
+     * @param newValue New RB0 bit
+     */
+
+    private void triggerRP0Interrupt(int oldValue, int newValue) {
+
+        if (oldValue != newValue) { // Edge changed
+
+            // Check if rising or falling edge is watched
+            int edgeChangeType = ram.get(RamMemory.SFR.OPTION) & 0b0100_0000;
+
+            if (0 == edgeChangeType && oldValue > newValue) {
+
+                // Indicate interrupt by setting INTF bit inside of INTCON register
+
+                ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0010));
+
+            } else if (0 != edgeChangeType && oldValue < newValue) {
+
+                // Indicate interrupt by setting INTF bit inside of INTCON register
+
+                ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0010));
+            }
+        }
     }
 }
