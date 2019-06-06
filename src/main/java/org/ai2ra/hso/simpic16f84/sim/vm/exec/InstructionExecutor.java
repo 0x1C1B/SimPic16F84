@@ -872,7 +872,7 @@ public class InstructionExecutor implements ObservableExecution {
      * Returns true if it is and false if it isn't.
      * @return if the RD Bit of EECON1 is set or not.
      */
-    boolean checkForRDbit() {
+    boolean checkForRDBit() {
 
         byte register = ram.get(RamMemory.SFR.EECON1);
 
@@ -880,6 +880,18 @@ public class InstructionExecutor implements ObservableExecution {
 		  return (register & 0b0000_0001) == 0b0000_0001;
     }
 
+    /**
+     * Checks if the 1 Bit of EECON1 is set.
+     * Returns true if it is and false if it isn't.
+     * @return if the WR Bit of EECON1 is set or not.
+     */
+    boolean checkForWRBit() {
+
+        byte register = ram.get(RamMemory.SFR.EECON1);
+
+        //Checking if the 1 Bit of EECON 1 is set or not.
+        return (register & 0b0000_0010) == 0b0000_0010;
+    }
 
     /**
      * Update timer by incrementing it. Moreover it checks for timer overflows, if
