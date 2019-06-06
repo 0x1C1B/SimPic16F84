@@ -889,7 +889,7 @@ public class InstructionExecutor implements ObservableExecution {
 
         byte register = ram.get(RamMemory.SFR.EECON1);
 
-        //Checking if the 1 Bit of EECON 1 is set or not.
+        //Checking if the 1 Bit of EECON1 is set or not.
         return (register & 0b0000_0010) == 0b0000_0010;
     }
 
@@ -902,7 +902,7 @@ public class InstructionExecutor implements ObservableExecution {
 
 		  byte register = ram.get(RamMemory.SFR.EECON1);
 
-		  //Checking if the 1 Bit of EECON 2 is set or not.
+		  //Checking if the 2 Bit of EECON1 is set or not.
 		  return (register & 0b0000_0100) == 0b0000_0100;
 	 }
 
@@ -915,7 +915,7 @@ public class InstructionExecutor implements ObservableExecution {
 
         byte register = ram.get(RamMemory.SFR.EECON1);
 
-        //Checking if the 1 Bit of EECON 3 is set or not.
+        //Checking if the 3 Bit of EECON1 is set or not.
         return (register & 0b0000_1000) == 0b0000_1000;
     }
 
@@ -928,7 +928,7 @@ public class InstructionExecutor implements ObservableExecution {
 
 		  byte register = ram.get(RamMemory.SFR.EECON1);
 
-		  //Checking if the 1 Bit of EECON 4 is set or not.
+		  //Checking if the 4 Bit of EECON1 is set or not.
 		  return (register & 0b0001_0000) == 0b0001_0000;
 	 }
 
@@ -936,11 +936,22 @@ public class InstructionExecutor implements ObservableExecution {
 	  * Checks if EEPROM can be written checking if the WR and WREN Bits are set.
 	  * @return boolean true or false depending on WR and WREN Bit.
 	  */
-	 boolean checkIfEEPROMCanBeWritten() {
+	 boolean isEEPROMWritable() {
 
 	 	 // Checking if WR and WREN Bits are Set.
     	 return checkForWRBit() && checkForWRENBit();
 	 }
+
+    /**
+     * Sets the 3rd Bit (WREER) of EECON1.
+     */
+	 void setWREER() {
+
+        byte register = ram.get(RamMemory.SFR.EECON1);
+
+        //Sets the 3 Bit of EECON1 is set or not.
+        ram.set(RamMemory.SFR.EECON1, (byte) (register | 0b0000_1000));
+    }
 
     /**
      * Update timer by incrementing it. Moreover it checks for timer overflows, if
