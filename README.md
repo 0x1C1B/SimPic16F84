@@ -5,6 +5,7 @@
 
 - [Overview](#overview)
 - [See also](#see-also)
+- [Authors](#authors)
 - [License](#license)
   - [Forbidden](#forbidden)
 
@@ -21,6 +22,13 @@ this is a software simulation and to keep the facts simple, however compliance w
 - [Romux PIC Tutorial](http://romux.com/tutorials/pic-tutorial)
 - [Microchip PIC16F84](https://www.microchip.com/wwwproducts/en/PIC16F84)
 - [PIC Microcontrollers](http://www.islavici.ro/cursuriold/conducere%20sist%20cu%20calculatorul/PICbook/0_Uvod.htm)
+
+## Authors
+
+- [Freddy1096](https://github.com/Freddy1096) (University of Applied Science Offenburg)
+- [0x1C1B](https://github.com/0x1C1B) (University of Applied Science Offenburg)
+
+See also the list of [contributors](https://github.com/0x1C1B/SimPic16F84/contributors) who participated in this project.
 
 ## License
 
