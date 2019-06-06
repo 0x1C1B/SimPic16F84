@@ -5,6 +5,7 @@
 
 - [Getting Started](#getting-started)
   - [Usage](#usage)
+  - [Custom Programs](#custom-programs)
 - [See also](#see-also)
 - [Authors](#authors)
 - [License](#license)
@@ -18,6 +19,18 @@ The SimPic16F84 project is being developed as part of a practical course in Appl
 This means the simlator will be able to interpret the basic instruction set and to simulate the OPC execution. Due to the fact that
 this is a software simulation and to keep the facts simple, however compliance with CPU cycles and real time execution is waived.
 
+The following features are partially or fully supported by the latest version of this simulator:
+
+- Executing custom programs parsed as LST file\*
+- Full support for the Pic16F84 instruction set
+- Partial support for interrupts (T0, INT)
+- Runtime Counter and modifyable quartz frequency
+- I/O Ports (Port A, Port B)
+- Timer support (TMR0)
+- Debugging mode (e.g. Breakpoints)
+
+\**For now a specific LST format is required. See [Custom Programs](#custom-programs) section for more details.*
+
 ### Usage
 
 Releases are available in two different formats generally, as executable native installer\* and executable JAR archive. Just get the [latest release](https://github.com/0x1C1B/SimPic16F84/releases) from the download section. Please note, for executing the JAR archive a Java runtime environment is required, at least Oracle's [JRE SE 8](https://www.oracle.com/technetwork/java/javase/overview/index.html).
@@ -25,6 +38,29 @@ Releases are available in two different formats generally, as executable native 
 - Download: [SimPic16F84 Latest Version](https://github.com/0x1C1B/SimPic16F84/releases)
 
 \**Depended to the version this kind of download is only supported for Microsoft Windows based systems. Because the JVM is already bundled inside of the installer, **no** addittional JRE is required.*
+
+### Custom Programs
+
+Testing/Writing custom programs with/for the simulator is quite easy. You've just to notice some points: Because a university's course
+related LST parser implementation is used for now, the loaded LST file **must** match a specific format to get processed successfully.
+Please note the following format is only required for lines containing machine instructions. The address as well as the instruction itself has to be formatted as hexadecimal number.
+
+**Format:** `<Address> <Instruction> ...` e.g. `0001 3930 ...`
+
+```
+                    00000  ;Lines without machine instructions are ignored
+                    00001  start    
+0000 3011           00002           movlw 11h           ;Rest of line after the instruction itself doesn't matter
+0001 3930           00003           andlw 30h
+0002 380D           00004           iorlw 0Dh
+0003 3C3D           00005           sublw 3Dh
+0004 3A20           00006           xorlw 20h
+0005 3E25           00007           addlw 25h
+                    00008             
+                    00009           
+                    00010  end     
+0006 2806           00011           goto end
+```
 
 ## See also
 
