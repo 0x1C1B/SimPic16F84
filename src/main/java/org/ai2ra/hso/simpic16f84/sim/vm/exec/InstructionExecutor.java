@@ -919,6 +919,19 @@ public class InstructionExecutor implements ObservableExecution {
         return (register & 0b0000_1000) == 0b0000_1000;
     }
 
+	 /**
+	  * Checks if the 4 Bit of EECON2 is set.
+	  * Returns true if it is and false if it isn't.
+	  * @return if the EEIF Bit of EECON1 is set or not.
+	  */
+    boolean checkForEEIFBit() {
+
+		  byte register = ram.get(RamMemory.SFR.EECON1);
+
+		  //Checking if the 1 Bit of EECON 4 is set or not.
+		  return (register & 0b0001_0000) == 0b0001_0000;
+	 }
+
     /**
      * Update timer by incrementing it. Moreover it checks for timer overflows, if
      * a overflow occurred, the interrupt flag inside of the INTCON register is set.
