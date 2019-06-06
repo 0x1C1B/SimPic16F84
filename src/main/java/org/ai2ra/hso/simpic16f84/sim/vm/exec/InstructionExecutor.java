@@ -885,7 +885,7 @@ public class InstructionExecutor implements ObservableExecution {
      * Returns true if it is and false if it isn't.
      * @return if the WR Bit of EECON1 is set or not.
      */
-    boolean checkForWRBit() {
+    private boolean checkForWRBit() {
 
         byte register = ram.get(RamMemory.SFR.EECON1);
 
@@ -898,7 +898,7 @@ public class InstructionExecutor implements ObservableExecution {
 	  * Returns true if it is and false if it isn't.
 	  * @return if the WREN Bit of EECON1 is set or not.
 	  */
-    boolean checkForWRENBit() {
+    private boolean checkForWRENBit() {
 
 		  byte register = ram.get(RamMemory.SFR.EECON1);
 
@@ -930,6 +930,16 @@ public class InstructionExecutor implements ObservableExecution {
 
 		  //Checking if the 1 Bit of EECON 4 is set or not.
 		  return (register & 0b0001_0000) == 0b0001_0000;
+	 }
+
+	 /**
+	  * Checks if EEPROM can be written checking if the WR and WREN Bits are set.
+	  * @return boolean true or false depending on WR and WREN Bit.
+	  */
+	 boolean checkIfEEPROMCanBeWritten() {
+
+	 	 // Checking if WR and WREN Bits are Set.
+    	 return checkForWRBit() && checkForWRENBit();
 	 }
 
     /**
