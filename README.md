@@ -3,19 +3,28 @@
 
 ## Table of Contents
 
-- [Overview](#overview)
+- [Getting Started](#getting-started)
+  - [Usage](#usage)
 - [See also](#see-also)
 - [Authors](#authors)
 - [License](#license)
   - [Forbidden](#forbidden)
 
-## Overview
+## Getting Started
 
 The SimPic16F84 project is being developed as part of a practical course in Applied Computer Science at
 [Offenburg University of Applied Sciences](https://www.hs-offenburg.de/). A software simulation of the
 [Pic16F84](http://www.microchip.com/wwwproducts/en/PIC16F84) µC is developed.
 This means the simlator will be able to interpret the basic instruction set and to simulate the OPC execution. Due to the fact that
 this is a software simulation and to keep the facts simple, however compliance with CPU cycles and real time execution is waived.
+
+### Usage
+
+Releases are available in two different formats generally, as executable native installer\* and executable JAR archive. Just get the [latest release](https://github.com/0x1C1B/SimPic16F84/releases) from the download section. Please note, for executing the JAR archive a Java runtime environment is required, at least Oracle's [JRE SE 8](https://www.oracle.com/technetwork/java/javase/overview/index.html).
+
+- Download: [SimPic16F84 Latest Version](https://github.com/0x1C1B/SimPic16F84/releases)
+
+\**Depended to the version this kind of download is only supported for Microsoft Windows based systems. Because the JVM is already bundled inside of the installer, **no** addittional JRE is required.*
 
 ## See also
 
