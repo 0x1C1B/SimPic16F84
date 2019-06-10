@@ -5,18 +5,21 @@ import javafx.concurrent.Task;
 import org.ai2ra.hso.simpic16f84.sim.Pic16F84VM;
 
 /**
- * Moves one step ahead. This means the next instruction is executed by this
- * services.
+ * Service for executing a single instruction. It's implementation causes that the next
+ * instruction in memory is executed.
  *
  * @author 0x1C1B
  * @see Pic16F84VM
  */
 
-public class NextStepService extends Service<Integer> {
+public class SingleExecutionService extends Service<Integer> {
 
+    /**
+     * Simulator instance accessed by this service wrapper
+     */
     private Pic16F84VM simulator;
 
-    public NextStepService() {
+    public SingleExecutionService() {
 
         setOnFailed(new ServiceErrorHandler()); // Register default error handler
     }
@@ -39,7 +42,7 @@ public class NextStepService extends Service<Integer> {
             @Override
             protected Integer call() throws Exception {
 
-                return simulator.nextStep();
+                return simulator.execute();
             }
         };
     }

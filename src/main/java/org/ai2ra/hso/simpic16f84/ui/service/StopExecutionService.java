@@ -13,6 +13,9 @@ import org.ai2ra.hso.simpic16f84.sim.Pic16F84VM;
 
 public class StopExecutionService extends Service<Void> {
 
+    /**
+     * Simulator instance accessed by this service wrapper
+     */
     private Pic16F84VM simulator;
 
     public StopExecutionService() {

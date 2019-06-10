@@ -27,7 +27,7 @@ import java.io.IOException;
  * Moreover it controls the whole execution flow. Therefor it holds the
  * {@link InstructionExecutor} utility. Some important methods to consider are the
  * {@link Pic16F84VM#load(File)} method, that's responsible for parsing and
- * loading a new program to memory, and the {@link Pic16F84VM#nextStep()} method,
+ * loading a new program to memory, and the {@link Pic16F84VM#execute()} method,
  * that's executing the next instruction. In addition, it supports
  * observing important virtual machine states, exclusively the
  * {@link Pic16F84VM#loaded} and {@link Pic16F84VM#running} state, using
@@ -159,9 +159,10 @@ public class Pic16F84VM {
     }
 
     /**
-     * Primarily used for observing internal states of the executor.
+     * Returns the main execution unit (CPU + ALU) in a readable state. This is primarily used
+     * for observing internal changes.
      *
-     * @return Returns the internally used instructione executor
+     * @return Returns the internally used instruction executor
      */
 
     public ObservableExecution getExecutor() {
@@ -233,7 +234,7 @@ public class Pic16F84VM {
      * @return Returns the address of next instruction
      */
 
-    public int nextStep() {
+    public int execute() {
 
         if (!loaded) {
 
@@ -267,7 +268,13 @@ public class Pic16F84VM {
     }
 
     /**
-     * Determines if runtime environment is currently running.
+     * Determines if runtime environment is currently running. This doesn't indicate if an
+     * instruction is executed in this moment. Instead it indicates if the VM already started to
+     * execute a loaded program.
+     *
+     * <p><b>Example:</b> If the first instruction of a program was already executed but a
+     * breakpoint is reached and the execution flow paused, this method will still return
+     * true.</p>
      *
      * @return Returns true if runtime environment is already running, otherwise false
      */

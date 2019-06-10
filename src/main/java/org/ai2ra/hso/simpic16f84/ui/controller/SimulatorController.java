@@ -5,7 +5,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder;
 import javafx.collections.transformation.FilteredList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -28,7 +27,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.beans.EventHandler;
 import java.beans.IndexedPropertyChangeEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -46,12 +44,12 @@ import java.util.ResourceBundle;
 
 public class SimulatorController implements Initializable {
 
+    private LstViewer lstViewer;
+
     @FXML private AnchorPane contentPane;
     @FXML private TextArea logViewer;
     @FXML private ToggleGroup logLevel;
     @FXML private Label lstFileName;
-
-    private LstViewer lstViewer;
 
     // Toolbar and Menus
 
@@ -98,7 +96,7 @@ public class SimulatorController implements Initializable {
     @FXML TextField workingRegister;
     @FXML TextField instructionRegister;
 
-    // Runtime counter related
+    // Runtime counter related fields
 
     @FXML Label runtimeCounter;
     @FXML Slider frequency;
@@ -131,9 +129,9 @@ public class SimulatorController implements Initializable {
     // Simulator related services
 
     private LstReaderService lstReaderService;
-    private NextStepService nextStepService;
+    private SingleExecutionService singleExecutionService;
     private StopExecutionService stopExecutionService;
-    private RunExecutionService runExecutionService;
+    private ConditionalExecutionService conditionalExecutionService;
 
     public SimulatorController() {
 
@@ -440,9 +438,9 @@ public class SimulatorController implements Initializable {
 
         // Service for initiating next execution step
 
-        nextStepService = new NextStepService();
+        singleExecutionService = new SingleExecutionService();
 
-        nextStepService.setOnSucceeded((event) -> {
+        singleExecutionService.setOnSucceeded((event) -> {
 
             lstViewer.setIndicator(lstViewer.addressToLineNumber((Integer) event.getSource().getValue()));
         });
@@ -458,9 +456,9 @@ public class SimulatorController implements Initializable {
 
         // Service for continue execution until breakpoint is reached
 
-        runExecutionService = new RunExecutionService();
+        conditionalExecutionService = new ConditionalExecutionService();
 
-        runExecutionService.valueProperty().addListener((observable, prevAddress, address) -> {
+        conditionalExecutionService.valueProperty().addListener((observable, prevAddress, address) -> {
 
             lstViewer.setIndicator(lstViewer.addressToLineNumber(null != address ? address : prevAddress));
         });
@@ -470,8 +468,8 @@ public class SimulatorController implements Initializable {
         executingProperty = new SimpleBooleanProperty();
 
         executingProperty.bind(Bindings.or(
-                runExecutionService.runningProperty(),
-                nextStepService.runningProperty()));
+                conditionalExecutionService.runningProperty(),
+                singleExecutionService.runningProperty()));
     }
 
     @FXML
@@ -522,16 +520,16 @@ public class SimulatorController implements Initializable {
     @FXML
     private void onNextStepAction(ActionEvent event) {
 
-        if (nextStepService.isRunning()) {
+        if (singleExecutionService.isRunning()) {
 
             ApplicationDialog.showWarning("The program is already running. This operation " +
                     "is invalid until it has stopped.");
 
         } else {
 
-            nextStepService.reset();
-            nextStepService.setSimulator(simulator);
-            nextStepService.start();
+            singleExecutionService.reset();
+            singleExecutionService.setSimulator(simulator);
+            singleExecutionService.start();
         }
     }
 
@@ -554,17 +552,17 @@ public class SimulatorController implements Initializable {
     @FXML
     private void onRunAction(ActionEvent event) {
 
-        if (runExecutionService.isRunning()) {
+        if (conditionalExecutionService.isRunning()) {
 
             ApplicationDialog.showWarning("The program is already running. This operation " +
                     "is invalid until it has stopped.");
 
         } else {
 
-            runExecutionService.reset();
-            runExecutionService.setSimulator(simulator);
-            runExecutionService.setLstViewer(lstViewer);
-            runExecutionService.start();
+            conditionalExecutionService.reset();
+            conditionalExecutionService.setSimulator(simulator);
+            conditionalExecutionService.setLstViewer(lstViewer);
+            conditionalExecutionService.start();
         }
     }
 

@@ -6,20 +6,24 @@ import org.ai2ra.hso.simpic16f84.sim.Pic16F84VM;
 import org.ai2ra.hso.simpic16f84.ui.component.LstViewer;
 
 /**
- * Continues the execution until a breakpoint is reached. This service is executed
- * in a separate thread.
+ * Continues the execution until a breakpoint is reached. The execution is continued until
+ * a breakpoint is detected.
  *
  * @author 0x1C1B
  * @see Pic16F84VM
  * @see LstViewer
  */
 
-public class RunExecutionService extends Service<Integer> {
+public class ConditionalExecutionService extends Service<Integer> {
 
+    /**
+     * Simulator instance accessed by this service wrapper
+     */
     private Pic16F84VM simulator;
+    /** LstView instance accessed by this service wrapper for determining breakpoints */
     private LstViewer lstViewer;
 
-    public RunExecutionService() {
+    public ConditionalExecutionService() {
 
         setOnFailed(new ServiceErrorHandler()); // Register default error handler
     }
@@ -56,7 +60,7 @@ public class RunExecutionService extends Service<Integer> {
 
                 do {
 
-                    address = simulator.nextStep();
+                    address = simulator.execute();
 
                     updateValue(address);
                     Thread.sleep(500); // Give the UI time for rendering updates
