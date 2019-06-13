@@ -161,7 +161,14 @@ public class InstructionExecutor implements ObservableExecution {
 
         try {
 
-            handleInterrupts(); // Check and handle occurred interrupts
+            // Check and handle occurred interrupts
+            if (checkTMR0Interrupt() || checkRB0Interrupt() || checkRBInterrupts()) {
+
+                callISR(0x0004); // Calls ISR at address 0x0004
+                updateTimer();
+
+                return programCounter; // Return cycle after ISR is called
+            }
 
             LOGGER.info(String.format("Load OPC from 0x%04X into instruction register (IR)", programCounter));
 
@@ -887,20 +894,6 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
-     * Check and handle occurred interrupts. The default handling behaviour is calling the
-     * Interrupt Service Routine. <b>Please note:</b> Because there's no default ISR, it's
-     * assumed that the loaded program (LST file) contains an ISR at address <i>0x0004</i>.
-     */
-
-    private void handleInterrupts() {
-
-        if (checkTMR0Interrupt()) {
-
-            callISR(0x0004); // Calls ISR at address 0x0004
-        }
-    }
-
-    /**
      * Utility method for calling the Interrupt Service Routine (ISR). This is a helper method
      * for the interrupt handling cycle. In addition this methods set the
      * Global Interrupt Enable (GIE) already.
@@ -916,6 +909,8 @@ public class InstructionExecutor implements ObservableExecution {
 
         stack.push(getProgramCounter()); // Save address of next instruction to stack memory
 
+        LOGGER.info(String.format("Stores return address 0x%04X and calls ISR at 0x%04X", stack.top(), address));
+
         /*
         Consists out of the opcode/address given as argument and the upper bits
         (bit 3 + 4) of PCLATH register.
@@ -930,7 +925,8 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
-     * Determines if timer (TMR0) interrupt occurred.
+     * Determines if timer (TMR0) interrupt occurred. This method just checks if the
+     * interrupt occurred, it <b>doesn't</b> throw it.
      *
      * @return Returns true if TMR0 interrupt occurred otherwise false
      */
@@ -938,5 +934,31 @@ public class InstructionExecutor implements ObservableExecution {
     private boolean checkTMR0Interrupt() {
 
         return (ram.get(RamMemory.SFR.INTCON) & 0b1010_0100) == 0xA4;
+    }
+
+    /**
+     * Determines if INT (RB0) interrupt occurred. <i>Please note:</i> For succeeding
+     * the interrupt must be enabled and already thrown when this method is called.
+     *
+     * @return Returns true if INT interrupt occurred otherwise false
+     */
+
+    private boolean checkRB0Interrupt() {
+
+        return (ram.get(RamMemory.SFR.INTCON) & 0b1001_0010) == 0x92;
+    }
+
+    /**
+     * Determines if a RBX (RB4-RB7) interrupt occurred. This kind of interrupt
+     * indicates if the edge of one of the pins RB4-RB7 changed. <i>Please note:</i>
+     * For succeeding the interrupt must be enabled and already thrown when
+     * this method is called.
+     *
+     * @return Returns true if a RB4-RB7 interrupt occurred otherwise false
+     */
+
+    private boolean checkRBInterrupts() {
+
+        return (ram.get(RamMemory.SFR.INTCON) & 0b1000_1001) == 0x89;
     }
 }
