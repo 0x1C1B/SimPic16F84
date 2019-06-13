@@ -162,7 +162,7 @@ public class InstructionExecutor implements ObservableExecution {
         try {
 
             // Check and handle occurred interrupts
-            if (checkTMR0Interrupt() || checkRB0Interrupt()) {
+            if (checkTMR0Interrupt() || checkRB0Interrupt() || checkRBInterrupts()) {
 
                 callISR(0x0004); // Calls ISR at address 0x0004
                 updateTimer();
@@ -925,7 +925,8 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
-     * Determines if timer (TMR0) interrupt occurred.
+     * Determines if timer (TMR0) interrupt occurred. This method just checks if the
+     * interrupt occurred, it <b>doesn't</b> throw it.
      *
      * @return Returns true if TMR0 interrupt occurred otherwise false
      */
@@ -935,8 +936,29 @@ public class InstructionExecutor implements ObservableExecution {
         return (ram.get(RamMemory.SFR.INTCON) & 0b1010_0100) == 0xA4;
     }
 
+    /**
+     * Determines if INT (RB0) interrupt occurred. <i>Please note:</i> For succeeding
+     * the interrupt must be enabled and already thrown when this method is called.
+     *
+     * @return Returns true if INT interrupt occurred otherwise false
+     */
+
     private boolean checkRB0Interrupt() {
 
         return (ram.get(RamMemory.SFR.INTCON) & 0b1001_0010) == 0x92;
+    }
+
+    /**
+     * Determines if a RBX (RB4-RB7) interrupt occurred. This kind of interrupt
+     * indicates if the edge of one of the pins RB4-RB7 changed. <i>Please note:</i>
+     * For succeeding the interrupt must be enabled and already thrown when
+     * this method is called.
+     *
+     * @return Returns true if a RB4-RB7 interrupt occurred otherwise false
+     */
+
+    private boolean checkRBInterrupts() {
+
+        return (ram.get(RamMemory.SFR.INTCON) & 0b1000_1001) == 0x89;
     }
 }

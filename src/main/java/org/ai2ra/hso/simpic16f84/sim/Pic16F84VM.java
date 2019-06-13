@@ -351,9 +351,16 @@ public class Pic16F84VM {
 
         if (0x01 == (0x01 & (ram.get(RamMemory.SFR.TRISB) >> pin))) {
 
-            if (0x00 == pin) {
+            // Check for possible interrupts
 
-                triggerRP0Interrupt(ram.get(RamMemory.SFR.PORTB) & (0x01 << pin), isSet ? 1 : 0);
+            if (0x00 == pin) { // RB0
+
+                triggerRB0Interrupt(ram.get(RamMemory.SFR.PORTB) & (0x01 << pin), isSet ? 1 : 0);
+            }
+
+            if (0x04 <= pin) { // RB4-RB7
+
+                triggerRBInterrupt(ram.get(RamMemory.SFR.PORTB) & (0x01 << pin), isSet ? 1 : 0);
             }
 
             if (isSet) {
@@ -374,14 +381,14 @@ public class Pic16F84VM {
     }
 
     /**
-     * Triggers an interrupt for RP0 pin if edge changed. If rising all falling edge is used
+     * Triggers an interrupt for RB0 pin if edge changed. If rising or falling edge is used
      * depended to the OPTION register.
      *
      * @param oldValue Old RB0 bit
      * @param newValue New RB0 bit
      */
 
-    private void triggerRP0Interrupt(int oldValue, int newValue) {
+    private void triggerRB0Interrupt(int oldValue, int newValue) {
 
         if (oldValue != newValue) { // Edge changed
 
@@ -400,6 +407,23 @@ public class Pic16F84VM {
 
                 ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0010));
             }
+        }
+    }
+
+    /**
+     * Triggers an interrupt for RB4-RB7 pin if edge changed. If rising or falling edge is used
+     * doesn't matter, the interrupt is thrown for both scenarios. It's just important, that
+     * the edge changed.
+     *
+     * @param oldValue Old RB bit
+     * @param newValue New RB bit
+     */
+
+    private void triggerRBInterrupt(int oldValue, int newValue) {
+
+        if (oldValue != newValue) { // Edge changed, throw an interrupt
+
+            ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0001));
         }
     }
 }
