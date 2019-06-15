@@ -1027,13 +1027,15 @@ public class InstructionExecutor implements ObservableExecution {
 
                     // Please note: For now WRERR and EEIF bits are ignored
 
+                    byte eeaddr = ram.get(RamMemory.SFR.EEADR);
+
                     if (isEepromWritable() && shouldWriteEeprom()) {
 
                         // TODO Implement writing to EEPROM
 
                     } else if (shouldReadEeprom()) {
 
-                        // TODO Implement reading from EEPROM
+                        ram.set(RamMemory.SFR.EEDATA, eeprom.get(eeaddr));
                     }
                 }
             }
