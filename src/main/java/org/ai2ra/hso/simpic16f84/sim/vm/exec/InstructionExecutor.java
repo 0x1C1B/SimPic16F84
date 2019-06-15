@@ -922,6 +922,17 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
+     * Indicates that writing the EEPROM finished. This is done by setting the
+     * EEIF bit inside of the EECON1 register.
+     */
+
+    private void writingEepromFinished() {
+
+        byte value = (byte) (ram.get(RamMemory.SFR.EECON1) | 0b0001_0000);
+        ram.set(RamMemory.SFR.EECON1, value);
+    }
+
+    /**
      * Update timer by incrementing it. Moreover it checks for timer overflows, if
      * a overflow occurred, the interrupt flag inside of the INTCON register is set.
      */
@@ -1025,13 +1036,14 @@ public class InstructionExecutor implements ObservableExecution {
 
                 if (RamMemory.SFR.EECON1.getAddress() == address) {
 
-                    // Please note: For now WRERR and EEIF bits are ignored
+                    // Please note: For now WRERR bit is ignored/unused
 
                     byte eeaddr = ram.get(RamMemory.SFR.EEADR);
 
                     if (isEepromWritable() && shouldWriteEeprom()) {
 
-                        // TODO Implement writing to EEPROM
+                        eeprom.set(eeaddr, ram.get(RamMemory.SFR.EEDATA));
+                        writingEepromFinished();
 
                     } else if (shouldReadEeprom()) {
 

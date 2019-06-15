@@ -86,7 +86,7 @@ public class EepromMemory<T> implements ObservableMemory<T> {
         }
     }
 
-    public void set(T toSet, int address) {
+    public void set(int address, T toSet) {
 
         lock.writeLock().lock();
 
