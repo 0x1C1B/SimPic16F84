@@ -122,7 +122,7 @@
                         <argument>SimPic16F84</argument>
                         <argument>-title</argument>
                         <argument>SimPic16F84</argument>
-                        <argument>-Bicon=${project.basedir}/favicon.ico</argument>
+                        <argument>-Bicon=${project.basedir}/assets/favicon.ico</argument>
                         <argument>-vendor</argument>
                         <argument>Hochschule Offenburg</argument>
                         <argument>-BsystemWide=true</argument>

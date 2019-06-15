@@ -27,7 +27,7 @@ import java.io.IOException;
  * Moreover it controls the whole execution flow. Therefor it holds the
  * {@link InstructionExecutor} utility. Some important methods to consider are the
  * {@link Pic16F84VM#load(File)} method, that's responsible for parsing and
- * loading a new program to memory, and the {@link Pic16F84VM#nextStep()} method,
+ * loading a new program to memory, and the {@link Pic16F84VM#execute()} method,
  * that's executing the next instruction. In addition, it supports
  * observing important virtual machine states, exclusively the
  * {@link Pic16F84VM#loaded} and {@link Pic16F84VM#running} state, using
@@ -159,9 +159,10 @@ public class Pic16F84VM {
     }
 
     /**
-     * Primarily used for observing internal states of the executor.
+     * Returns the main execution unit (CPU + ALU) in a readable state. This is primarily used
+     * for observing internal changes.
      *
-     * @return Returns the internally used instructione executor
+     * @return Returns the internally used instruction executor
      */
 
     public ObservableExecution getExecutor() {
@@ -233,7 +234,7 @@ public class Pic16F84VM {
      * @return Returns the address of next instruction
      */
 
-    public int nextStep() {
+    public int execute() {
 
         if (!loaded) {
 
@@ -267,7 +268,13 @@ public class Pic16F84VM {
     }
 
     /**
-     * Determines if runtime environment is currently running.
+     * Determines if runtime environment is currently running. This doesn't indicate if an
+     * instruction is executed in this moment. Instead it indicates if the VM already started to
+     * execute a loaded program.
+     *
+     * <p><b>Example:</b> If the first instruction of a program was already executed but a
+     * breakpoint is reached and the execution flow paused, this method will still return
+     * true.</p>
      *
      * @return Returns true if runtime environment is already running, otherwise false
      */
@@ -351,6 +358,18 @@ public class Pic16F84VM {
 
         if (0x01 == (0x01 & (ram.get(RamMemory.SFR.TRISB) >> pin))) {
 
+            // Check for possible interrupts
+
+            if (0x00 == pin) { // RB0
+
+                triggerRB0Interrupt(ram.get(RamMemory.SFR.PORTB) & (0x01 << pin), isSet ? 1 : 0);
+            }
+
+            if (0x04 <= pin) { // RB4-RB7
+
+                triggerRBInterrupt(ram.get(RamMemory.SFR.PORTB) & (0x01 << pin), isSet ? 1 : 0);
+            }
+
             if (isSet) {
 
                 ram.set(RamMemory.SFR.PORTB, (byte) (ram.get(RamMemory.SFR.PORTB) | (0x01 << pin)));
@@ -366,5 +385,52 @@ public class Pic16F84VM {
         }
 
         LOGGER.debug(String.format("Sets pin %d of Port B to %s", pin, isSet ? "HIGH" : "LOW"));
+    }
+
+    /**
+     * Triggers an interrupt for RB0 pin if edge changed. If rising or falling edge is used
+     * depended to the OPTION register.
+     *
+     * @param oldValue Old RB0 bit
+     * @param newValue New RB0 bit
+     */
+
+    private void triggerRB0Interrupt(int oldValue, int newValue) {
+
+        if (oldValue != newValue) { // Edge changed
+
+            // Check if rising or falling edge is watched
+            int edgeChangeType = ram.get(RamMemory.SFR.OPTION) & 0b0100_0000;
+
+            if (0 == edgeChangeType && oldValue > newValue) {
+
+                // Indicate interrupt by setting INTF bit inside of INTCON register
+
+                ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0010));
+
+            } else if (0 != edgeChangeType && oldValue < newValue) {
+
+                // Indicate interrupt by setting INTF bit inside of INTCON register
+
+                ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0010));
+            }
+        }
+    }
+
+    /**
+     * Triggers an interrupt for RB4-RB7 pin if edge changed. If rising or falling edge is used
+     * doesn't matter, the interrupt is thrown for both scenarios. It's just important, that
+     * the edge changed.
+     *
+     * @param oldValue Old RB bit
+     * @param newValue New RB bit
+     */
+
+    private void triggerRBInterrupt(int oldValue, int newValue) {
+
+        if (oldValue != newValue) { // Edge changed, throw an interrupt
+
+            ram.set(RamMemory.SFR.INTCON, (byte) (ram.get(RamMemory.SFR.INTCON) | 0b0000_0001));
+        }
     }
 }
