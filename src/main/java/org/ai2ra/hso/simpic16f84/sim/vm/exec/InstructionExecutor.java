@@ -5,6 +5,8 @@ import org.ai2ra.hso.simpic16f84.sim.vm.Instruction;
 import org.ai2ra.hso.simpic16f84.sim.vm.InstructionDecoder;
 import org.apache.log4j.Logger;
 
+import java.beans.IndexedPropertyChangeEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.concurrent.locks.ReentrantLock;
@@ -122,6 +124,9 @@ public class InstructionExecutor implements ObservableExecution {
 
         this.frequency = 4_000_000.0; // 4MHz
         this.runtimeCounter = 0.0;
+
+        // Observe RAM memory for detecting reading/writing the EEPROM
+        this.ram.addPropertyChangeListener(new EepromInteractionListener());
     }
 
     /**
@@ -875,103 +880,46 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
-     * Checks if the 0 Bit of EECON1 is set.
-     * Returns true if it is and false if it isn't.
-     * @return if the RD Bit of EECON1 is set or not.
+     * Checks if EEPROM should be written, means the WR bit is set.
+     *
+     * @return Returns true if should be written
      */
-    boolean checkForRDBit() {
+
+    private boolean shouldWriteEeprom() {
 
         byte register = ram.get(RamMemory.SFR.EECON1);
 
-        //Checking if the 0 Bit of EECON 1 is set or not.
-		  return (register & 0b0000_0001) == 0b0000_0001;
-    }
-
-    /**
-     * Checks if the 1 Bit of EECON1 is set.
-     * Returns true if it is and false if it isn't.
-     * @return if the WR Bit of EECON1 is set or not.
-     */
-    private boolean checkForWRBit() {
-
-        byte register = ram.get(RamMemory.SFR.EECON1);
-
-        //Checking if the 1 Bit of EECON1 is set or not.
+        //Checking if bit 1 of EECON1 is set or not
         return (register & 0b0000_0010) == 0b0000_0010;
     }
 
-	 /**
-	  * Checks if the 2 Bit of EECON1 is set.
-	  * Returns true if it is and false if it isn't.
-	  * @return if the WREN Bit of EECON1 is set or not.
-	  */
-    private boolean checkForWRENBit() {
-
-		  byte register = ram.get(RamMemory.SFR.EECON1);
-
-		  //Checking if the 2 Bit of EECON1 is set or not.
-		  return (register & 0b0000_0100) == 0b0000_0100;
-	 }
-
     /**
-     * Checks if the 3 Bit of EECON2 is set.
-     * Returns true if it is and false if it isn't.
-     * @return if the WRERR Bit of EECON1 is set or not.
+     * Checks if EEPROM should be read, means the RD bit is set.
+     *
+     * @return Returns true if should be read
      */
-	 boolean checkForWRERRBit() {
+
+    private boolean shouldReadEeprom() {
 
         byte register = ram.get(RamMemory.SFR.EECON1);
 
-        //Checking if the 3 Bit of EECON1 is set or not.
-        return (register & 0b0000_1000) == 0b0000_1000;
+        //Checking if bit 1 of EECON1 is set or not
+        return (register & 0b0000_0001) == 0b0000_0001;
     }
 
-	 /**
-	  * Checks if the 4 Bit of EECON2 is set.
-	  * Returns true if it is and false if it isn't.
-	  * @return if the EEIF Bit of EECON1 is set or not.
-	  */
-    boolean checkForEEIFBit() {
-
-		  byte register = ram.get(RamMemory.SFR.EECON1);
-
-		  //Checking if the 4 Bit of EECON1 is set or not.
-		  return (register & 0b0001_0000) == 0b0001_0000;
-	 }
-
-	 /**
-	  * Checks if EEPROM can be written checking if the WR and WREN Bits are set.
-	  * @return boolean true or false depending on WR and WREN Bit.
-	  */
-	 boolean isEEPROMWritable() {
-
-	 	 // Checking if WR and WREN Bits are Set.
-    	 return checkForWRBit() && checkForWRENBit();
-	 }
-
     /**
-     * Sets the 3rd Bit (WREER) of EECON1.
+     * Check if EEPROM is writable. This depends to the state of the WREN bit.
+     *
+     * @return Returns true if EEPROM is writeable
      */
-	 void setWREER() {
+
+    private boolean isEepromWritable() {
 
         byte register = ram.get(RamMemory.SFR.EECON1);
 
-        //Sets the 3 Bit of EECON1 is set or not.
-        ram.set(RamMemory.SFR.EECON1, (byte) (register | 0b0000_1000));
+        //Checking if bit 1 of EECON1 is set or not
+        return (register & 0b0000_0100) == 0b0000_0100;
     }
-
-	 /**
-	  * Sets the 4th Bit (EEIF) of EECON1.
-	  */
-	void setEEIF(){
-
-		 byte register = ram.get(RamMemory.SFR.EECON1);
-
-		 //Sets the 4 Bit of EECON1 is set or not.
-		 ram.set(RamMemory.SFR.EECON1, (byte) (register | 0b0001_0000));
-	}
-
-
 
     /**
      * Update timer by incrementing it. Moreover it checks for timer overflows, if
@@ -1059,5 +1007,36 @@ public class InstructionExecutor implements ObservableExecution {
     private boolean checkRBInterrupts() {
 
         return (ram.get(RamMemory.SFR.INTCON) & 0b1000_1001) == 0x89;
+    }
+
+    /**
+     * Change listener observing the EECON1 register at first bank for detecting
+     * reading/writing the EEPROM memory.
+     */
+
+    private class EepromInteractionListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+
+            if (event instanceof IndexedPropertyChangeEvent) {
+
+                int address = ((IndexedPropertyChangeEvent) event).getIndex();
+
+                if (RamMemory.SFR.EECON1.getAddress() == address) {
+
+                    // Please note: For now WRERR and EEIF bits are ignored
+
+                    if (isEepromWritable() && shouldWriteEeprom()) {
+
+                        // TODO Implement writing to EEPROM
+
+                    } else if (shouldReadEeprom()) {
+
+                        // TODO Implement reading from EEPROM
+                    }
+                }
+            }
+        }
     }
 }
