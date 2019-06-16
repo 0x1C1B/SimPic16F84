@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 
 public class EepromMemoryTest {
 
-    EepromMemory<Byte> eeprom;
+    private EepromMemory<Byte> eeprom;
 
     @Before
     public void setUp() throws Exception {

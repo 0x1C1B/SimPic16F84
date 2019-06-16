@@ -7,42 +7,30 @@ import static org.junit.Assert.*;
 
 public class ProgramMemoryTest {
 
-    ProgramMemory<Short> testee = new <Short>ProgramMemory(64);
-
+    private ProgramMemory<Short> memory;
 
     @Before
-    public void testSetUp(){
+    public void setUp() throws Exception {
 
-        testee.set((short) 1,0);
-        testee.set((short) 5, 63);
-        testee.set((short) 6, 30);
-
+        this.memory = new ProgramMemory<>(64);
     }
 
     @Test
     public void testSet(){
 
-
-        assertEquals("A wrong number was returned", 1, (short)testee.get(0));
-        assertEquals("A wrong number was returned", 5, (short)testee.get(63));
-        assertEquals("A wrong number was returned", 6, (short)testee.get(30));
-
+        memory.set(0, (short) 1);
+        assertEquals("A wrong number was set", 1, (short) memory.get(0));
     }
 
     @Test(expected = MemoryIndexOutOfBoundsException.class) public void testInvalidSet() {
 
-        testee.set((short) 2, -1);
-        testee.set((short) 4, 64);
-        testee.get(-1);
-        testee.get(64);
+        memory.set(-1, (short) 2);
     }
 
     @Test
     public void testGet() {
 
-        assertEquals("A wrong number was returned", 1, (short)testee.get(0));
-        assertEquals("A wrong number was returned", 5, (short)testee.get(63));
-        assertEquals("A wrong number was returned", 6, (short)testee.get(30));
-
+        memory.set(30, (short) 6);
+        assertEquals("A wrong value was returned", 6, (short) memory.get(30));
     }
 }
