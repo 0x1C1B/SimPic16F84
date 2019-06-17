@@ -214,7 +214,7 @@ public class Pic16F84VM {
 
         for (int address = 0; address < instructions.length; ++address) {
 
-            programMemory.set(instructions[address], address);
+            programMemory.set(address, instructions[address]);
         }
 
         loaded = true; // Set state to execution ready

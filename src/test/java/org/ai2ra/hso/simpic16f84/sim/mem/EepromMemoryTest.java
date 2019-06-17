@@ -7,42 +7,41 @@ import static org.junit.Assert.*;
 
 public class EepromMemoryTest {
 
-    EepromMemory<Byte> testee = new EepromMemory(64);
+    private EepromMemory<Byte> eeprom;
 
     @Before
-    public void setTestee() {
+    public void setUp() throws Exception {
 
-        testee.set((byte) 1,0);
-        testee.set((byte) 5, 63);
-        testee.set((byte) 6, 30);
-
+        this.eeprom = new EepromMemory<>(64);
     }
 
     @Test
     public void testSet(){
 
+        eeprom.set(0, (byte) 1);
+        eeprom.set(63, (byte) 5);
+        eeprom.set(30, (byte) 6);
 
-        assertEquals("A wrong number was returned", 1, (byte)testee.get(0));
-        assertEquals("A wrong number was returned", 5, (byte)testee.get(63));
-        assertEquals("A wrong number was returned", 6, (byte)testee.get(30));
-
+        assertEquals("A wrong value was set", 1, (byte) eeprom.get(0));
+        assertEquals("A wrong value was set", 5, (byte) eeprom.get(63));
+        assertEquals("A wrong value was set", 6, (byte) eeprom.get(30));
     }
 
     @Test(expected = MemoryIndexOutOfBoundsException.class) public void testInvalidSet() {
 
-        testee.set((byte) 2, -1);
-        testee.set((byte) 4, 64);
-        testee.get(-1);
-        testee.get(64);
+        eeprom.set(-1, (byte) 2);
     }
 
     @Test
     public void testGet() {
 
-        assertEquals("A wrong number was returned", 1, (byte)testee.get(0));
-        assertEquals("A wrong number was returned", 5, (byte)testee.get(63));
-        assertEquals("A wrong number was returned", 6, (byte)testee.get(30));
+        eeprom.set(0, (byte) 1);
+        eeprom.set(63, (byte) 5);
+        eeprom.set(30, (byte) 6);
 
+        assertEquals("A wrong value was returned", 1, (byte) eeprom.get(0));
+        assertEquals("A wrong value was returned", 5, (byte) eeprom.get(63));
+        assertEquals("A wrong value was returned", 6, (byte) eeprom.get(30));
     }
 
 }

@@ -5,6 +5,8 @@ import org.ai2ra.hso.simpic16f84.sim.vm.Instruction;
 import org.ai2ra.hso.simpic16f84.sim.vm.InstructionDecoder;
 import org.apache.log4j.Logger;
 
+import java.beans.IndexedPropertyChangeEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.concurrent.locks.ReentrantLock;
@@ -122,6 +124,9 @@ public class InstructionExecutor implements ObservableExecution {
 
         this.frequency = 4_000_000.0; // 4MHz
         this.runtimeCounter = 0.0;
+
+        // Observe RAM memory for detecting reading/writing the EEPROM
+        this.ram.addPropertyChangeListener(new EepromInteractionListener());
     }
 
     /**
@@ -875,6 +880,65 @@ public class InstructionExecutor implements ObservableExecution {
     }
 
     /**
+     * Check if EEPROM is readable. This depends to the state of the RD bit.
+     *
+     * @return Returns true if EEPROM is readable
+     */
+
+    private boolean isEepromReadable() {
+
+        Byte register = ram.get(RamMemory.SFR.EECON1);
+        register = null == register ? 0x00 : register;
+
+        //Checking if bit RD(1) of EECON1 is set or not
+        return (register & 0b0000_0001) == 0x01;
+    }
+
+    /**
+     * Check if EEPROM is writable. This depends to the state of the WREN bit.
+     *
+     * @return Returns true if EEPROM is writable
+     */
+
+    private boolean isEepromWritable() {
+
+        Byte register = ram.get(RamMemory.SFR.EECON1);
+        register = null == register ? 0x00 : register;
+
+        //Checking if bit WR(1) and WREN(2) of EECON1 are set or not
+        return ((register & 0b0000_0110) >> 0x01) == 0x03;
+    }
+
+    /**
+     * Determines if writing EEPROM finished successfully.
+     *
+     * @return Retursn true if writing finished, otherwise false
+     */
+
+    private boolean isEepromWritingFinished() {
+
+        Byte register = ram.get(RamMemory.SFR.EECON1);
+        register = null == register ? 0x00 : register;
+
+        //Checking if bit EEIF(4) of EECON1 is set or not
+        return ((register & 0b0001_0000) >> 0x04) == 0x01;
+    }
+
+    /**
+     * Indicates that writing the EEPROM finished. This is done by setting the
+     * EEIF bit inside of the EECON1 register.
+     */
+
+    private void writingEepromFinished() {
+
+        Byte register = ram.get(RamMemory.SFR.EECON1);
+        register = null == register ? 0x00 : register;
+
+        byte value = (byte) (register | 0b0001_0000);
+        ram.set(RamMemory.SFR.EECON1, value);
+    }
+
+    /**
      * Update timer by incrementing it. Moreover it checks for timer overflows, if
      * a overflow occurred, the interrupt flag inside of the INTCON register is set.
      */
@@ -960,5 +1024,50 @@ public class InstructionExecutor implements ObservableExecution {
     private boolean checkRBInterrupts() {
 
         return (ram.get(RamMemory.SFR.INTCON) & 0b1000_1001) == 0x89;
+    }
+
+    /**
+     * Change listener observing the EECON1 register at first bank for detecting
+     * reading/writing the EEPROM memory.
+     */
+
+    private class EepromInteractionListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+
+            if (event instanceof IndexedPropertyChangeEvent) {
+
+                int address = ((IndexedPropertyChangeEvent) event).getIndex();
+                RamMemory.Bank bank = "bank0".equals(event.getPropertyName()) ?
+                        RamMemory.Bank.BANK_0 :
+                        RamMemory.Bank.BANK_1;
+
+                if (RamMemory.Bank.BANK_1.equals(bank) &&
+                        RamMemory.SFR.EECON1.getAddress() == address) {
+
+                    // Please note: For now WRERR bit is ignored/unused
+
+                    Byte eeaddr = ram.get(RamMemory.SFR.EEADR);
+                    eeaddr = null == eeaddr ? 0x00 : eeaddr;
+
+                    if (isEepromWritable() && !isEepromWritingFinished()) {
+
+                        byte data = ram.get(RamMemory.SFR.EEDATA);
+                        eeprom.set(eeaddr, data);
+                        writingEepromFinished();
+
+                        LOGGER.info(String.format("Write 0x%02X into EEPROM at 0x%02X", data, eeaddr));
+
+                    } else if (isEepromReadable()) {
+
+                        byte data = eeprom.get(eeaddr);
+                        ram.set(RamMemory.SFR.EEDATA, data);
+
+                        LOGGER.info(String.format("Read 0x%02X from EEPROM at 0x%02X", data, eeaddr));
+                    }
+                }
+            }
+        }
     }
 }

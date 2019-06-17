@@ -106,10 +106,10 @@ public class StackMemory<T> implements ObservableMemory<T> {
                 throw new MemoryIndexOutOfBoundsException("Stack overflow detected, stack is full");
             }
 
-            changes.fireIndexedPropertyChange("memory",
-                    pointer + 1, null, value);
-
             memory[++pointer] = value;
+
+            changes.fireIndexedPropertyChange("memory",
+                    pointer, null, value);
 
         } finally {
 

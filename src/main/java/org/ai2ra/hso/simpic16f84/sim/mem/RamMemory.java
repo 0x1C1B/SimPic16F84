@@ -235,14 +235,16 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
                         // Handle mapped registers
 
-                        changes.fireIndexedPropertyChange("bank0",
-                                address, bank0[address], value);
-
-                        changes.fireIndexedPropertyChange("bank1",
-                                address, bank1[address], value);
+                        T oldValue = bank0[address];
 
                         bank0[address] = value;
                         bank1[address] = value;
+
+                        changes.fireIndexedPropertyChange("bank0",
+                                address, oldValue, value);
+
+                        changes.fireIndexedPropertyChange("bank1",
+                                address, oldValue, value);
 
                         break;
                     }
@@ -252,17 +254,19 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
                         if(bank.equals(Bank.BANK_0)) {
 
-                            changes.fireIndexedPropertyChange("bank0",
-                                    address, bank0[address], value);
-
+                            T oldValue = bank0[address];
                             bank0[address] = value;
+
+                            changes.fireIndexedPropertyChange("bank0",
+                                    address, oldValue, value);
 
                         } else {
 
-                            changes.fireIndexedPropertyChange("bank1",
-                                    address, bank1[address], value);
-
+                            T oldValue = bank1[address];
                             bank1[address] = value;
+
+                            changes.fireIndexedPropertyChange("bank1",
+                                    address, oldValue, value);
                         }
                         break;
                     }
@@ -270,11 +274,9 @@ public class RamMemory<T> implements ObservableMemory<T> {
 
             } else {
 
-                changes.fireIndexedPropertyChange("bank0",
-                        address, bank0[address], value);
+                // Fill General Purpose Registers and map them
 
-                changes.fireIndexedPropertyChange("bank1",
-                        address, bank1[address], value);
+                T oldValue = bank0[address];
 
                 if(bank.equals(Bank.BANK_0)) {
 
@@ -286,6 +288,12 @@ public class RamMemory<T> implements ObservableMemory<T> {
                     bank1[address] = value;
                     bank0[address] = value; // Mapped to second bank
                 }
+
+                changes.fireIndexedPropertyChange("bank0",
+                        address, oldValue, value);
+
+                changes.fireIndexedPropertyChange("bank1",
+                        address, oldValue, value);
             }
 
         } finally {
