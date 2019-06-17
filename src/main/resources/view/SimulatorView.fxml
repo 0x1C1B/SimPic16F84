@@ -288,11 +288,11 @@
                               </ScrollPane>
                            </content>
                         </TitledPane>
-                        <TitledPane prefHeight="200.0" prefWidth="200.0" text="I/O Ports">
+                        <TitledPane prefHeight="200.0" prefWidth="200.0" text="I/O Ports &amp; EEPROM">
                            <content>
                               <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0">
                                 <content>
-                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
+                                    <AnchorPane>
                                         <children>
                                             <Label layoutX="47.0" layoutY="32.0" text="Port A"
                                                    AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -391,6 +391,23 @@
                                                               GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                                                 </children>
                                             </GridPane>
+                                            <Separator layoutX="45.0" layoutY="266.0" prefWidth="200.0"
+                                                       AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                       AnchorPane.topAnchor="255.0"/>
+                                            <Label layoutX="75.0" layoutY="312.0" text="EEPROM"
+                                                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                   AnchorPane.topAnchor="235.0">
+                                                <font>
+                                                    <Font name="System Bold" size="12.0"/>
+                                                </font>
+                                            </Label>
+                                            <TableView fx:id="eeprom" layoutX="32.0" layoutY="273.0" prefHeight="200.0"
+                                                       prefWidth="200.0" AnchorPane.leftAnchor="0.0"
+                                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="270.0">
+                                                <tooltip>
+                                                    <Tooltip text="Shows the EEPROM's content"/>
+                                                </tooltip>
+                                            </TableView>
                                         </children>
                                         <padding>
                                             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>

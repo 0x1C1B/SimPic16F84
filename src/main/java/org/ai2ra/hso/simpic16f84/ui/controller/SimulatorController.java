@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.beans.property.adapter.ReadOnlyJavaBeanBooleanPropertyBuilder;
+import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,8 +33,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Controls the interface of the simulator scene. Every GUI related listener
@@ -119,6 +124,10 @@ public class SimulatorController implements Initializable {
     @FXML CheckBox rb6;
     @FXML CheckBox rb7;
 
+    // EEPROM representation
+
+    @FXML TableView<Byte[]> eeprom;
+
     // Simulator related utilities
 
     private Pic16F84VM simulator;
@@ -157,6 +166,7 @@ public class SimulatorController implements Initializable {
         initializeRegisters();
         initializeRuntimeCounter();
         initializePorts();
+        initializeEEPROM();
     }
 
     /**
@@ -268,6 +278,30 @@ public class SimulatorController implements Initializable {
         rb7.setDisable(true);
     }
 
+    private void initializeEEPROM() {
+
+        eeprom.getColumns().setAll(IntStream.range(0, 8)
+                .mapToObj(this::createEepromColumn).collect(Collectors.toList()));
+
+        eeprom.setItems(FXCollections.observableArrayList(IntStream.range(0, 8)
+                .mapToObj(r -> {
+
+                    Byte[] row = new Byte[8];
+                    Arrays.fill(row, (byte) 0x00);
+                    return row;
+                })
+                .collect(Collectors.toList())));
+    }
+
+    private TableColumn<Byte[], String> createEepromColumn(int basis) {
+
+        TableColumn<Byte[], String> column = new TableColumn<>();
+        column.setSortable(false);
+        column.setCellValueFactory(param -> new SimpleStringProperty(String.format("0x%02X", param.getValue()[basis])));
+
+        return column;
+    }
+
     /**
      * Initialize register related components. This includes SFRs as well as GPRs.
      */
@@ -335,9 +369,9 @@ public class SimulatorController implements Initializable {
         });
 
         // Initialize working register
-        workingRegister.setText(String.format("0x%02X", simulator.getExecutor().getWorkingRegister()));
+        workingRegister.setText(String.format("0x%02X", 0x00));
         // Initialize instruction register
-        instructionRegister.setText(String.format("0x%04X", simulator.getExecutor().getInstructionRegister()));
+        instructionRegister.setText(String.format("0x%04X", 0x00));
 
         initializeStatusRegister();
     }
@@ -404,6 +438,7 @@ public class SimulatorController implements Initializable {
 
         simulator.getRam().addPropertyChangeListener(new RamMemoryChangeListener());
         simulator.getStack().addPropertyChangeListener(new StackMemoryChangeListener());
+        simulator.getEeprom().addPropertyChangeListener(new EeepromChangedListener());
         simulator.getExecutor().addPropertyChangeListener(new ExecutorChangeListener());
     }
 
@@ -878,6 +913,22 @@ public class SimulatorController implements Initializable {
                     runtimeCounter.setText(String.format("%.4fμs", (double) event.getNewValue()));
                 }
             });
+        }
+    }
+
+    private class EeepromChangedListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+
+            if (event instanceof IndexedPropertyChangeEvent) {
+
+                int address = ((IndexedPropertyChangeEvent) event).getIndex();
+                Byte value = (Byte) event.getNewValue();
+
+                eeprom.getItems().get(address / 8)[address % 8] = value;
+                eeprom.refresh();
+            }
         }
     }
 }
