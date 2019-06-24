@@ -27,7 +27,8 @@ The following features are partially or fully supported by the latest version of
 
 - Executing custom programs parsed as LST file\*
 - Full support for the Pic16F84 instruction set
-- Partial support for interrupts (T0, INT)
+- Full support for interrupts (T0, INT, RB4-RB7)
+- Support for reading and writing to the EEPROM
 - Runtime Counter and modifyable quartz frequency
 - I/O Ports (Port A, Port B)
 - Timer support (TMR0)
