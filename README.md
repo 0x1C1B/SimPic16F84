@@ -21,7 +21,7 @@ this is a software simulation and to keep the facts simple, however compliance w
 
 | ![SimPic16F84 Screendump](https://github.com/0x1C1B/SimPic16F84/blob/master/assets/screendump.PNG?raw=true) |
 |:--:| 
-| *Preview image of Pic16F84 v0.0.1-alpha* |
+| *Preview image of Pic16F84 v0.0.2-alpha* |
 
 The following features are partially or fully supported by the latest version of this simulator:
 
